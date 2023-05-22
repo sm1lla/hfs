@@ -13,10 +13,24 @@ from abc import ABC
 
 
 class Filter(BaseEstimator, ABC):
-    def __init__(self, graph_data=None, estimator = BernoulliNB(), k=0, option="HNB"): #todo G = None
+    """
+    Abstract class used for all filter methods.
+
+    Every method should implement the method select_and_predict.
+    """
+
+    def __init__(self, graph_data=None, estimator = BernoulliNB()): #todo G = None
+        """
+        Initialize a Filter with the required data.
+
+        Parameters
+        ----------
+        graph_data 
+                    {Numpy Array} of directed acyclic graph
+        estimator
+                    Estimator to use for predictions
+        """
         self.graph_data = graph_data
-        self.option = option
-        self.k = k
         self.estimator = estimator
 
     def __get_relevance(self, node):
@@ -84,7 +98,7 @@ class Filter(BaseEstimator, ABC):
         )
         return self 
     
-    def lazy_fit_predict(self, X_train, y_train, X_test, predict = True):
+    def fit_selector(self, X_train, y_train, X_test, predict = True):
         """
         Fit Filter class. Due to laziness fitting of parameters as well as predictions are obtained per instance.
 
@@ -97,17 +111,13 @@ class Filter(BaseEstimator, ABC):
             converted into a sparse ``csc_matrix``.
         y_train : array-like of shape (n_samples, n_levels)
             The target values, i.e., hierarchical class labels for classification.
-        
-
-        Returns
-        -------
-        predictions for test input samples.
         """
         # Create DAG
         self.__create_digraph()
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
+        self._features = np.zeros(shape=X_test.shape)
 
         # Get relevance, ancestors and descendants of each node
         self._relevance = {}
@@ -122,18 +132,10 @@ class Filter(BaseEstimator, ABC):
         self._instance_status = {}
         for node in self._digraph:
             self._instance_status[node] = 1
-
-        predictions = np.array([])
-        for idx, instance in enumerate(self._xtest):
-            if self.option == "HNB-s" or self.option == "HNB":
-                self._get_nonredundant_features(idx)
-            if self.option == "HNB":
-                self._get_top_k()
-            if self.option == "RNB":
-                self._get_top_k()
-            predictions = np.append(predictions, self._predict(idx)[0])
-
-        return predictions
+    
+    
+    def select_and_predict(self, predict = True, saveFeatures = False):
+       pass
 
     def _get_nonredundant_features(self, idx):
         """
@@ -162,10 +164,10 @@ class Filter(BaseEstimator, ABC):
         counter = 0
         for node in self._sorted_relevance:
             if (counter < self.k or not self.k) and self._instance_status[node]:
-                pass
+                counter+=1
             else:
                 self._instance_status[node] = 0
-            counter+=1
+ 
 
     def _predict(self, idx):
         """
@@ -189,15 +191,15 @@ class Filter(BaseEstimator, ABC):
     def score(self, ytest, predictions):
         print(accuracy_score(y_true = ytest, y_pred=predictions))
 
-x = Filter(getFixedDag())
-x_t, y_t = getFixedData(10)
-x_test, y_test = getFixedData(5)     
-pred = x.lazy_fit_predict(x_t, y_t, x_test)
-print(pred)
-x.score(y_test, pred)
+    def get_features(self):
+        return self._features
+
+
 #todo:
-#pipeline, test in fit
-#kindklassen, 
-# optionen: predict, feature-ausgabe
+
+#pipeline + wofür? macht eigentlich keinen Sinn, dafür wäre tatsächlich fit und transform notwendig.
+#test in fit ob DAten korrekt für DAG
+#kindklassen, +
+#optionen: predict, feature-ausgabe + 
 #test!
-#dokumentation
+#dokumentation und klassendokumentation +
