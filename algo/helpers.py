@@ -30,10 +30,9 @@ def getRelevance(xdata, ydata, node):
     #print(p1, p2, p3, p4, rel)
     return rel
 
-def checkData(dag, x_data, y_data):
+def checkData(dag, x_data, y_data): # possible: bool checking
     data = np.column_stack((x_data, y_data))
     edges = list(nx.edge_dfs(dag, source=0, orientation = "original"))
-    print(data)
     for edge in edges:
         for idx in range(len(data)):
             if data[idx,edge[0]] == 0 and data[idx,edge[1]] == 1:

@@ -193,7 +193,7 @@ class Filter(BaseEstimator, ABC):
         return clf.predict(self._xtest[idx][features].reshape(1, -1))
     
     def score(self, ytest, predictions):
-        print(accuracy_score(y_true = ytest, y_pred=predictions))
+        return accuracy_score(y_true = ytest, y_pred=predictions)
 
     def get_features(self):
         return self._features
