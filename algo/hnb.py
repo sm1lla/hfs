@@ -11,12 +11,12 @@ class HNB(Filter):
     Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas 
     """
         
-    def __init__(self, graph_data=None, k=0, estimator = BernoulliNB()):
+    def __init__(self, graph_data=None, k=0):
 
-        super(HNB, self).__init__(graph_data, estimator)
+        super(HNB, self).__init__(graph_data)
         self.k = k
 
-    def select_and_predict(self, predict = True, saveFeatures = False):
+    def select_and_predict(self, predict = True, saveFeatures = False, estimator = BernoulliNB()):
         """
         Select features lazy for each test instance amd optionally predict target value of test instances.
 
@@ -26,6 +26,8 @@ class HNB(Filter):
             true if predictions shall be obtained
         saveFeatures: {bool}
             true if features selected for each test instance shall be saved.
+        estimator
+                    Estimator to use for predictions
         
 
         Returns
@@ -37,7 +39,7 @@ class HNB(Filter):
             self._get_nonredundant_features(idx)
             self._get_top_k()
             if predict:
-                predictions = np.append(predictions, self._predict(idx)[0])
+                predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
                 # self._features = np.vstack((np.array(list(self._instance_status.values())), self._features)) (but appending to np is very inefficient)
@@ -49,7 +51,7 @@ class HNBs(Filter):
     Select non-redundant features following the algorithm proposed by Wan and Freitas 
     """
 
-    def select_and_predict(self, predict = True, saveFeatures = False):
+    def select_and_predict(self, predict = True, saveFeatures = False, estimator = BernoulliNB()):
         """
         Select features lazy for each test instance amd optionally predict target value of test instances.
 
@@ -58,7 +60,9 @@ class HNBs(Filter):
         predict :   {bool}
             true if predictions shall be obtained
         saveFeatures: {bool}
-            true if features selected for each test instance shall be saved.
+            true if features selected for each test instance shall be saved
+        estimator
+            Estimator to use for predictions.
         
 
         Returns
@@ -69,7 +73,7 @@ class HNBs(Filter):
         for idx in range(len(self._xtest)):
             self._get_nonredundant_features(idx)
             if predict:
-                predictions = np.append(predictions, self._predict(idx)[0])
+                predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
                 # self._features = np.vstack((np.array(list(self._instance_status.values())), self._features)) (but appending to np is very inefficient)
@@ -82,12 +86,12 @@ class RNB(Filter):
 
     """
 
-    def __init__(self, graph_data=None, k=0, estimator = BernoulliNB()):
+    def __init__(self, graph_data=None, k=0):
 
-        super(RNB, self).__init__(graph_data, estimator)
+        super(RNB, self).__init__(graph_data)
         self.k = k
 
-    def select_and_predict(self, predict = True, saveFeatures = False):
+    def select_and_predict(self, predict = True, saveFeatures = False, estimator = BernoulliNB()):
         """
         Select features lazy for each test instance amd optionally predict target value of test instances.
 
@@ -96,8 +100,9 @@ class RNB(Filter):
         predict :   {bool}
             true if predictions shall be obtained
         saveFeatures: {bool}
-            true if features selected for each test instance shall be saved.
-        
+            true if features selected for each test instance shall be saved
+        estimator
+                    Estimator to use for predictions.
 
         Returns
         -------
@@ -107,7 +112,7 @@ class RNB(Filter):
         for idx in range(len(self._xtest)):
             self._get_top_k() #change as equal for each test instance
             if predict:
-                predictions = np.append(predictions, self._predict(idx)[0])
+                predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
                 # self._features = np.vstack((np.array(list(self._instance_status.values())), self._features)) (but appending to np is very inefficient)
@@ -115,14 +120,6 @@ class RNB(Filter):
     
 
     
-
-
     
-x = HNBs(getFixedDag())
-x_t, y_t = getFixedData(50)
-x_test, y_test = getFixedData(5)    
-x.fit_selector(x_t, y_t, x_test)
-pred = x.select_and_predict(True, True)
-print(x.score(y_test, pred))
-fe = x.get_features()
-#print(fe)
+
+

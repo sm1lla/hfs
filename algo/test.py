@@ -1,3 +1,4 @@
+from fractions import Fraction
 from sklearn.utils.estimator_checks import check_estimator
 from hnb import HNB
 from fixtures import getFixedData, getFixedDag
@@ -16,26 +17,20 @@ small_y_data = np.array([0, 0, 1, 1])
 
 # Test scikit-compatibility
 sest = check_estimator(Filter())
-print(sest)
+assert(sest == None)
 
 # Test Relevance calculation
-for node in small_DAG:
-    print(getRelevance(small_DAG, small_x_data, small_y_data, node))
+results = [Fraction(1,2),Fraction(8,9),2,0]
+for node_idx in range(len(small_DAG)):
+    value = getRelevance(small_x_data, small_y_data, node_idx)
+    assert(value == results[node_idx])
     
 
-x = HNBs(getFixedDag())
-x_t, y_t = getFixedData(50)
+x = HNB(getFixedDag())
+x_t, y_t = getFixedData(5)
 x_test, y_test = getFixedData(5)    
 x.fit_selector(x_t, y_t, x_test)
-pred = x.select_and_predict(True, True)
-print(x.score(y_test, pred))
-fe = x.get_features()
-#print(fe)
 
-x_t, y_t = getFixedData(50)
-x_test, y_test = getFixedData(5)
-dag = nx.from_numpy_array(getFixedDag(), parallel_edges = False, create_using = nx.DiGraph)
 
-checkData(dag, x_test, y_test)
 
 

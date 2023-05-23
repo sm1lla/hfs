@@ -21,7 +21,7 @@ def getRelevance(xdata, ydata, node):
         data as np array
     """
     p1 = Fraction(xdata[(xdata[:,node]==1)& (ydata==1)].shape[0], xdata[(xdata[:,node]==1)].shape[0]) if xdata[(xdata[:,node]==1)].shape[0] != 0 else 0
-    p2 = Fraction(xdata[(xdata[:,node]==1)& (ydata==0)].shape[0], xdata[(xdata[:,node]==1)].shape[0]) if xdata[(xdata[:,node]==1)].shape[0] != 0 else 0
+    p2 = Fraction(xdata[(xdata[:,node]==0)& (ydata==1)].shape[0], xdata[(xdata[:,node]==0)].shape[0]) if xdata[(xdata[:,node]==0)].shape[0] != 0 else 0
     p3 = 1 -p1
     p4 = 1 -p2
 

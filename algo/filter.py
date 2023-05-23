@@ -19,7 +19,7 @@ class Filter(BaseEstimator, ABC):
     Every method should implement the method select_and_predict.
     """
 
-    def __init__(self, graph_data=None, estimator = BernoulliNB()): #todo G = None
+    def __init__(self, graph_data=None): #todo G = None
         """
         Initialize a Filter with the required data.
 
@@ -27,11 +27,8 @@ class Filter(BaseEstimator, ABC):
         ----------
         graph_data 
                     {Numpy Array} of directed acyclic graph
-        estimator
-                    Estimator to use for predictions
         """
         self.graph_data = graph_data
-        self.estimator = estimator
 
     def __get_relevance(self, node):
         """
@@ -116,6 +113,7 @@ class Filter(BaseEstimator, ABC):
         self._create_digraph()
         self._xtrain = X_train
         self._ytrain = y_train
+        print(f"yt{y_train}")
         self._xtest = X_test
         self._features = np.zeros(shape=X_test.shape)
 
@@ -138,7 +136,7 @@ class Filter(BaseEstimator, ABC):
             self._instance_status[node] = 1
     
     
-    def select_and_predict(self, predict = True, saveFeatures = False):
+    def select_and_predict(self, predict = True, saveFeatures = False, estimator = BernoulliNB()):
        pass
 
     def _get_nonredundant_features(self, idx):
@@ -173,14 +171,16 @@ class Filter(BaseEstimator, ABC):
                 self._instance_status[node] = 0
  
 
-    def _predict(self, idx):
+    def _predict(self, idx, estimator):
         """
         Predicts for .
 
         Parameters
         ----------
         idx
-            Index of test instance which shall be predicted.
+            Index of test instance which shall be predicted
+        estimator
+                    Estimator to use for predictions.
 
         Returns
         -------
@@ -188,11 +188,15 @@ class Filter(BaseEstimator, ABC):
             prediction of test instance's target value.
         """
         features = [nodes for nodes, status in self._instance_status.items() if status]
-        clf = self.estimator
+        clf = estimator
         clf.fit(self._xtrain[:,features], self._ytrain)
+        #print(clf.predict(self._xtest[idx][features].reshape(1, -1)))
         return clf.predict(self._xtest[idx][features].reshape(1, -1))
     
-    def score(self, ytest, predictions):
+    def get_score(self, ytest, predictions):
+        print(f"yt:{ytest}")
+        print(f"yp_{predictions}")#
+        print(type(ytest))
         return accuracy_score(y_true = ytest, y_pred=predictions)
 
     def get_features(self):
