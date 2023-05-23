@@ -7,7 +7,7 @@ import networkx as nx
 from sklearn.naive_bayes import BernoulliNB
 from fixtures import getFixedData, getFixedDag
 
-from helpers import getRelevance
+from helpers import checkData, getRelevance
 
 from abc import ABC
 
@@ -66,7 +66,7 @@ class Filter(BaseEstimator, ABC):
         """
         return nx.descendants(self._digraph, node)
     
-    def __create_digraph(self):
+    def _create_digraph(self):
         """"
         Create digraph from numpy array.
         """
@@ -113,11 +113,15 @@ class Filter(BaseEstimator, ABC):
             The target values, i.e., hierarchical class labels for classification.
         """
         # Create DAG
-        self.__create_digraph()
+        self._create_digraph()
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
         self._features = np.zeros(shape=X_test.shape)
+
+        # Validate data
+        checkData(self._digraph, self._xtrain, self._ytrain)
+        #checkData(self._digraph, self._xtest, self._ytest) ???
 
         # Get relevance, ancestors and descendants of each node
         self._relevance = {}

@@ -14,23 +14,24 @@ def rand():
     return random.getrandbits(1)
 
 
-def randomLinesWithAssertions():
+def randomLinesWithAssertions(y):
     b = rand()
     c = rand()
     d = rand()
     e = rand() if b == 1 else 0
     f = rand() if b == 1 else 0
     g = rand() if e*d == 1 else 0
-    h = rand() if e == 1 else 0
+    h = rand() if e == 1 and d == 1 else 0
     i = rand() if f == 1 else 0
     return (1,b,c,d,e,f,g,h,i)
 
 
 def getFixedData(instance_number = _instance_number):
     df = pd.DataFrame(columns=[i for i in range(0,_feature_number)])
+    y = np.random.randint(0, 2, instance_number)
     for row in range(0,instance_number):
-        df.loc[len(df)] = randomLinesWithAssertions()
-    return df.to_numpy(), np.random.randint(0, 2, df.shape[0])
+        df.loc[len(df)] = randomLinesWithAssertions(y)
+    return df.to_numpy(), y
     df["y"] = np.random.randint(0, 2, df.shape[0])
     x = df.to_numpy()
     return x
