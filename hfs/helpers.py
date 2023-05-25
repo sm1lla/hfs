@@ -10,6 +10,8 @@ def create_feature_tree(hierarchy: nx.DiGraph) -> nx.DiGraph:
     for root_node in roots:
         hierarchy.add_edge("ROOT", root_node)
 
+    return hierarchy
+
 
 def get_paths(graph: nx.DiGraph):
     leafs = [
@@ -29,7 +31,7 @@ def lift(data: np.ndarray, labels: np.ndarray):
 
     for index in range(num_features):
         column = data[:, index]
-        prob_feature = len(np.nonzero(column)) / num_samples
+        prob_feature = np.count_nonzero(column) / num_samples
         prob_event_conditional = len(
             [
                 value
@@ -39,3 +41,4 @@ def lift(data: np.ndarray, labels: np.ndarray):
         ) / len(np.nonzero(column))
 
         lift_values.append(prob_event_conditional / prob_feature)
+    return lift_values

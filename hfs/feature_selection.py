@@ -3,7 +3,7 @@ Sklearn compatible estimators for feature selection
 """
 import networkx as nx
 import numpy as np
-from networkx.algorithms.dag import descendants
+from networkx.algorithms.dag import descendants, is_directed_acyclic_graph
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_X_y
 
@@ -13,11 +13,10 @@ from .helpers import create_feature_tree, get_paths, lift
 class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
     """A tree-based feature selection method for hierarchical features"""
 
-    def __init__(self, hierarchy: nx.DiGraph, columns: list[str]):
-        assert nx.is_directed_acyclic_graph(
-            hierarchy
-        ), "The hierarchy needs to be an directed acyclic graph."
-
+    def __init__(self, hierarchy: nx.DiGraph = None, columns: list[str] = []):
+        if not hierarchy:
+            hierarchy = nx.DiGraph()
+        # TODO make sure all labels are in the hierarchy
         self.feature_tree = create_feature_tree(hierarchy)
         self.columns = columns
         self.representatives = None
@@ -39,10 +38,10 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
         """
         X, y = check_X_y(X, y)
 
-        paths = get_paths()
-        get_lift_values = lift(X, y)
+        paths = get_paths(self.feature_tree)
+        lift_values = lift(X, y)
         self.node_to_lift = {
-            self.columns[index]: get_lift_values[index]
+            self.columns[index]: lift_values[index]
             for index, _ in enumerate(self.columns)
         }
         self.representatives = self.find_representatives(paths)
@@ -59,7 +58,7 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
         for path in paths:
             path.remove("ROOT")
             max_node = max(path, key=lambda x: self.node_to_lift[x])
-            representatives.append(max_node)
+            representatives.add(max_node)
         return self._filter_representatives(representatives)
 
     def _filter_representatives(self, representatives: list[str]):
