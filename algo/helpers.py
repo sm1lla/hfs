@@ -27,7 +27,6 @@ def getRelevance(xdata, ydata, node):
 
 
     rel = (p1-p2)**2 + (p3-p4)**2
-    #print(p1, p2, p3, p4, rel)
     return rel
 
 def checkData(dag, x_data, y_data): # possible: bool checking
@@ -42,3 +41,9 @@ def checkData(dag, x_data, y_data): # possible: bool checking
                     f"{data[idx]}"
                 )
             
+
+def expand_data(x_data, x_identifier, graph_data, graph_identifier):
+    pass
+
+def shrink_dag(x_identifier, graph_data, graph_identifier):
+    pass

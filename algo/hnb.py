@@ -42,7 +42,8 @@ class HNB(Filter):
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
-                # self._features = np.vstack((np.array(list(self._instance_status.values())), self._features)) (but appending to np is very inefficient)
+            for node in self._digraph:
+                self._instance_status[node] = 1
         return predictions
 
 class HNBs(Filter):
@@ -119,7 +120,6 @@ class RNB(Filter):
         return predictions
     
 
-    
     
 
 

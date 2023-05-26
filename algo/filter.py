@@ -95,7 +95,7 @@ class Filter(BaseEstimator, ABC):
         )
         return self 
     
-    def fit_selector(self, X_train, y_train, X_test, predict = True):
+    def fit_selector(self, X_train, y_train, X_test):
         """
         Fit Filter class. Due to laziness fitting of parameters as well as predictions are obtained per instance.
 
@@ -113,7 +113,6 @@ class Filter(BaseEstimator, ABC):
         self._create_digraph()
         self._xtrain = X_train
         self._ytrain = y_train
-        print(f"yt{y_train}")
         self._xtest = X_test
         self._features = np.zeros(shape=X_test.shape)
 
@@ -164,7 +163,7 @@ class Filter(BaseEstimator, ABC):
 
         """
         counter = 0
-        for node in self._sorted_relevance:
+        for node in reversed(self._sorted_relevance):
             if (counter < self.k or not self.k) and self._instance_status[node]:
                 counter+=1
             else:
@@ -190,24 +189,10 @@ class Filter(BaseEstimator, ABC):
         features = [nodes for nodes, status in self._instance_status.items() if status]
         clf = estimator
         clf.fit(self._xtrain[:,features], self._ytrain)
-        #print(clf.predict(self._xtest[idx][features].reshape(1, -1)))
         return clf.predict(self._xtest[idx][features].reshape(1, -1))
     
     def get_score(self, ytest, predictions):
-        print(f"yt:{ytest}")
-        print(f"yp_{predictions}")#
-        print(type(ytest))
         return accuracy_score(y_true = ytest, y_pred=predictions)
 
     def get_features(self):
         return self._features
-
-
-#todo:
-
-#pipeline + wofür? macht eigentlich keinen Sinn, dafür wäre tatsächlich fit und transform notwendig.
-#test in fit ob DAten korrekt für DAG
-#kindklassen, +
-#optionen: predict, feature-ausgabe + 
-#test!
-#dokumentation und klassendokumentation +
