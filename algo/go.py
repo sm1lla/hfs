@@ -29,6 +29,5 @@ def open_dag(file_name):
 def main():
     url = "http://release.geneontology.org/2023-05-10/ontology/go-basic.json.gz"
     file_name = "./algo/data/go_digraph"
-    #load_dag(url=url, file_name=file_name)
+    load_dag(url=url, file_name=file_name)
     open_dag(file_name=file_name)
-

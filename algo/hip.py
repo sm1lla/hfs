@@ -1,12 +1,11 @@
-"HNB feature selection"
-
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
+from fixtures import getFixedDag, getFixedData
 from filter import Filter
 
 
 
-class HNB(Filter):
+class HIP(Filter):
 
     """
     Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas 
@@ -46,3 +45,6 @@ class HNB(Filter):
             for node in self._digraph:
                 self._instance_status[node] = 1
         return predictions
+    
+
+

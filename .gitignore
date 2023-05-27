@@ -1,3 +1,7 @@
+algo/data/
+algo/try/
+lazypredict
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,20 +1,20 @@
-"HNB feature selection"
+"RNB feature selection"
 
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 from filter import Filter
 
 
-
-class HNB(Filter):
+class RNB(Filter):
 
     """
-    Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas 
+    Select the k features with the highest relevance
+
     """
-        
+
     def __init__(self, graph_data=None, k=0):
 
-        super(HNB, self).__init__(graph_data)
+        super(RNB, self).__init__(graph_data)
         self.k = k
 
     def select_and_predict(self, predict = True, saveFeatures = False, estimator = BernoulliNB()):
@@ -26,10 +26,9 @@ class HNB(Filter):
         predict :   {bool}
             true if predictions shall be obtained
         saveFeatures: {bool}
-            true if features selected for each test instance shall be saved.
+            true if features selected for each test instance shall be saved
         estimator
-                    Estimator to use for predictions
-        
+                    Estimator to use for predictions.
 
         Returns
         -------
@@ -37,12 +36,15 @@ class HNB(Filter):
         """
         predictions = np.array([])
         for idx in range(len(self._xtest)):
-            self._get_nonredundant_features(idx)
-            self._get_top_k()
+            self._get_top_k() #change as equal for each test instance
             if predict:
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
-            for node in self._digraph:
-                self._instance_status[node] = 1
+                # self._features = np.vstack((np.array(list(self._instance_status.values())), self._features)) (but appending to np is very inefficient)
         return predictions
+    
+
+    
+
+

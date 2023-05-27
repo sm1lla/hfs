@@ -1,17 +1,16 @@
 import sys
 sys.path.append('/home/kathrin/hfs/algo/')
-from data.go import open_dag
-import nxontology
-import networkx as nx
+
+from go import open_dag
 import numpy as np
 
-from helpers import get_leaves, shrink_dag
+from helpers import shrink_dag
 
 def test_shrink_dag():
     x_identifiers = ""
     
     nodes = np.load("./algo/data/nodes_go.npy")
-    graph = open_dag("./algo/data/go_digraph2")
+    graph = open_dag("./algo/data/go_digraph")
 
     nonexist_nodes = ['GO:2001301', 'GO:2001302', 'GO:2001303', 'GO:2001304', 
                         'GO:2001305', 'GO:2001306', 'GO:2001307', 'GO:2001308', 
