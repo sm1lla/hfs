@@ -1,21 +1,16 @@
+import sys
+sys.path.append('/home/kathrin/hfs/algo/')
+
 from fractions import Fraction
 from sklearn.utils.estimator_checks import check_estimator
+from filter import Filter
 from hnb import HNB, HNBs, RNB
 from fixtures import getFixedData, getFixedDag
 from helpers import getRelevance
-from filter import Filter
+#from algo.filter import Filter
 import networkx as nx
 import numpy as np
-
-#Fixtures
-bigDAG = getFixedDag()
-data = getFixedData(20)
-
-small_DAG = nx.to_numpy_array(nx.DiGraph([(0,1),(0,2),(1,2),(1,3)]))
-train_x_data = np.array([[1,1,0,1],[1,0,0,0], [1,1,1,0],[1,1,1,1]])
-train_y_data = np.array([0, 0, 1, 1])
-test_x_data = np.array([[1,1,0,0], [1,1,1,0]])
-test_y_data = np.array([1,0])
+from test_fixtures import *
 
 # Test scikit-compatibility
 sest = check_estimator(Filter())
@@ -50,3 +45,5 @@ pred = filter.select_and_predict(predict=True, saveFeatures=True)
 assert(np.array_equal(pred,np.array([0, 1])))
 assert(np.array_equal(filter.get_features(), np.array([[0, 1, 1, 0], [0, 1, 1, 0]])))
 assert(filter.get_score(test_y_data, pred) == 0.0)
+
+

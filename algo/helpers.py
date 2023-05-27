@@ -45,5 +45,21 @@ def checkData(dag, x_data, y_data): # possible: bool checking
 def expand_data(x_data, x_identifier, graph_data, graph_identifier):
     pass
 
-def shrink_dag(x_identifier, graph_data, graph_identifier):
-    pass
+def get_leaves(x_identifier, graph):
+    return [x for x in graph.nodes() if graph.out_degree(x)==0 and graph.in_degree(x)==1 and x not in x_identifier]
+
+def shrink_dag(x_identifier, graph):
+    reversed_graph = graph.reverse()
+    leaves = get_leaves(x_identifier=x_identifier, graph=graph)
+    while(leaves):
+        for x in leaves:
+            graph.remove_node(x)
+        leaves = get_leaves(x_identifier=x_identifier, graph=graph)
+    return graph
+
+
+
+
+
+
+    #sort x_identifiers
