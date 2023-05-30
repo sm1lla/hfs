@@ -156,6 +156,52 @@ class Filter(BaseEstimator, ABC):
                 for desc in self._descendants[node]:
                     if self._relevance[desc] <= self._relevance[node]:
                         self._instance_status[desc] = 0
+
+    def get_nonredundant_features_mrt(self, idx):
+        """
+        Get nonredundant features. Basic functionality of the algorithm poropes by Wan & Freitas.
+
+        Parameters
+        ----------
+        idx
+            Index of test instance for which the features shall be selected.
+        """
+        
+        top_sort = nx.topological_sort(self._digraph)
+
+        # all mrts from all pathes to (1) or from (0) nodes
+        rel_top = {}
+        for node in top_sort:
+            
+            rel_top[node] = []
+            rel = (self._relevance[node], node)
+            current_node_included = 0
+
+            if self._xtest[idx][node]:
+            
+                # all predecessors have pathes to current node
+                for pred in self._digraph.predecessors(node):
+                    for mrt_pred in rel[pred]:
+                        if mrt_pred.first > self._relevance[node]:
+                            rel_top[node].append(mrt_pred)
+                        else:
+                            if not current_node_included:
+                                rel_top[node].append((self._relevance[node], node))
+                                current_node_included = 1
+
+            if not self._xtest[idx][node]:
+                
+                # all predecessors have pathes to current node
+                for pred in self._digraph.predecessors(node):
+                    for mrt_pred in rel[pred]:
+                        if mrt_pred.first > self._relevance[node]:
+                            rel_top[node].append(mrt_pred)
+                        else:
+                            if not current_node_included:
+                                rel_top[node].append((self._relevance[node], node))
+                                current_node_included = 1
+
+
     
     def _get_top_k(self):
         """
