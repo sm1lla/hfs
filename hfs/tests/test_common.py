@@ -1,4 +1,3 @@
-import networkx as nx
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 

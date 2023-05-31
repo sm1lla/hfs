@@ -3,7 +3,7 @@ Sklearn compatible estimators for feature selection
 """
 import networkx as nx
 import numpy as np
-from networkx.algorithms.dag import descendants, is_directed_acyclic_graph
+from networkx.algorithms.dag import descendants
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
@@ -17,7 +17,7 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
         self.hierarchy = hierarchy
 
     def fit(self, X: np.ndarray, y: np.ndarray, columns: list[str] = []):
-        """A reference implementation of a fitting function for a transformer.
+        """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
         ----------
@@ -31,15 +31,23 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
         self : object
             Returns self.
         """
-        self._columns = columns
+
+        # Input validation
         X, y = check_X_y(X, y, accept_sparse=True)
+
+        self._columns = columns
         if not self._columns:
             self._set_columns(X.shape[1])
+
         if not self.hierarchy:
             self._feature_tree = nx.DiGraph()
         else:
             self._feature_tree = self.hierarchy
+
+        # Build feature tree
         self._feature_tree = create_feature_tree(self._feature_tree, self._columns)
+
+        # Feature Selection Algorithm
         paths = get_paths(self._feature_tree)
         lift_values = lift(X, y)
         self._node_to_lift = {
@@ -47,16 +55,22 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
             for index, _ in enumerate(self._columns)
         }
         self.representatives_ = self.find_representatives(paths)
+
         self.is_fitted_ = True
         return self
 
     def transform(self, X: np.ndarray):
-        X = check_array(X, accept_sparse=True)
+        # Only allow transform after estimator was fitted
         check_is_fitted(self, "representatives_")
+
+        # Input validation
+        X = check_array(X, accept_sparse=True)
         if X.shape[1] != len(self._columns):
             raise ValueError(
                 "Shape of input is different from what was seen" "in `fit`"
             )
+
+        # Keep selected columns
         column_indices = [self._columns.index(node) for node in self.representatives_]
         columns = [X[:, index] for index in column_indices]
         return np.column_stack(columns)

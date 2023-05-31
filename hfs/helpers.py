@@ -36,20 +36,27 @@ def lift(data: np.ndarray, labels: np.ndarray):
     num_samples, num_features = data.shape
 
     for index in range(num_features):
+        # deal with sparse matrices
         if sparse.issparse(data):
             data = data.tocsr()
-        column = data[:, index]
-        if sparse.issparse(column):
-            prob_feature = column.size / num_samples
+            column = data[:, index]
+            non_zero_values = column.size
         else:
-            prob_feature = np.count_nonzero(column) / num_samples
-        prob_event_conditional = len(
-            [
-                value
-                for index, value in enumerate(column)
-                if value != 0 and labels[index] != 0
-            ]
-        ) / len(np.nonzero(column))
+            column = data[:, index]
+            non_zero_values = np.count_nonzero(column)
+
+        prob_feature = non_zero_values / num_samples
+
+        prob_event_conditional = (
+            len(
+                [
+                    value
+                    for index, value in enumerate(column)
+                    if value != 0 and labels[index] != 0
+                ]
+            )
+            / non_zero_values
+        )
 
         lift_values.append(prob_event_conditional / prob_feature)
     return lift_values
