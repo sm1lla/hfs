@@ -28,7 +28,7 @@ def data():
 
 def test_tree_based_selection(data):
     X, y, hierarchy, columns = data
-    selector = TreeBasedFeatureSelector(hierarchy, columns)
-    selector.fit(X, y)
+    selector = TreeBasedFeatureSelector(hierarchy)
+    selector.fit(X, y, columns)
     X = selector.transform(X)
     assert np.array_equal(X, np.array([[0], [0], [0], [0], [1]]))

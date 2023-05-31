@@ -1,11 +1,11 @@
-"""
+"""ee
 Sklearn compatible estimators for feature selection
 """
 import networkx as nx
 import numpy as np
 from networkx.algorithms.dag import descendants, is_directed_acyclic_graph
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_X_y
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 from .helpers import create_feature_tree, get_paths, lift
 
@@ -13,15 +13,10 @@ from .helpers import create_feature_tree, get_paths, lift
 class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
     """A tree-based feature selection method for hierarchical features"""
 
-    def __init__(self, hierarchy: nx.DiGraph = None, columns: list[str] = []):
-        if not hierarchy:
-            hierarchy = nx.DiGraph()
-        # TODO make sure all labels are in the hierarchy
-        self.feature_tree = create_feature_tree(hierarchy)
-        self.columns = columns
-        self.representatives = None
+    def __init__(self, hierarchy: nx.DiGraph = None):
+        self.hierarchy = hierarchy
 
-    def fit(self, X: np.ndarray, y: np.ndarray):
+    def fit(self, X: np.ndarray, y: np.ndarray, columns: list[str] = []):
         """A reference implementation of a fitting function for a transformer.
 
         Parameters
@@ -36,20 +31,33 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
         self : object
             Returns self.
         """
-        X, y = check_X_y(X, y)
-
-        paths = get_paths(self.feature_tree)
+        self._columns = columns
+        X, y = check_X_y(X, y, accept_sparse=True)
+        if not self._columns:
+            self._set_columns(X.shape[1])
+        if not self.hierarchy:
+            self._feature_tree = nx.DiGraph()
+        else:
+            self._feature_tree = self.hierarchy
+        self._feature_tree = create_feature_tree(self._feature_tree, self._columns)
+        paths = get_paths(self._feature_tree)
         lift_values = lift(X, y)
-        self.node_to_lift = {
-            self.columns[index]: lift_values[index]
-            for index, _ in enumerate(self.columns)
+        self._node_to_lift = {
+            self._columns[index]: lift_values[index]
+            for index, _ in enumerate(self._columns)
         }
-        self.representatives = self.find_representatives(paths)
-
+        self.representatives_ = self.find_representatives(paths)
+        self.is_fitted_ = True
         return self
 
     def transform(self, X: np.ndarray):
-        column_indices = [self.columns.index(node) for node in self.representatives]
+        X = check_array(X, accept_sparse=True)
+        check_is_fitted(self, "representatives_")
+        if X.shape[1] != len(self._columns):
+            raise ValueError(
+                "Shape of input is different from what was seen" "in `fit`"
+            )
+        column_indices = [self._columns.index(node) for node in self.representatives_]
         columns = [X[:, index] for index in column_indices]
         return np.column_stack(columns)
 
@@ -57,7 +65,7 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
         representatives = set()
         for path in paths:
             path.remove("ROOT")
-            max_node = max(path, key=lambda x: self.node_to_lift[x])
+            max_node = max(path, key=lambda x: self._node_to_lift[x])
             representatives.add(max_node)
         return self._filter_representatives(representatives)
 
@@ -66,9 +74,12 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
         for node in representatives:
             selected_decendents = [
                 descendent
-                for descendent in descendants(self.feature_tree, node)
+                for descendent in descendants(self._feature_tree, node)
                 if descendent in representatives
             ]
             if not selected_decendents:
                 updated_representatives.append(node)
         return updated_representatives
+
+    def _set_columns(self, num_columns):
+        self._columns = [str(index) for index in range(num_columns)]

@@ -1,14 +1,20 @@
 import networkx as nx
 import numpy as np
 from networkx.algorithms.simple_paths import all_simple_paths
+from scipy import sparse
 
 
-def create_feature_tree(hierarchy: nx.DiGraph) -> nx.DiGraph:
-    # create parent node to join hierarchies
+def create_feature_tree(hierarchy: nx.DiGraph, column_names: list[str]) -> nx.DiGraph:
+    # add missing nodes to hierarchy
+    for column in column_names:
+        if column not in hierarchy.nodes():
+            hierarchy.add_node(column)
     roots = [x for x in hierarchy.nodes() if hierarchy.in_degree(x) == 0]
-
+    # create parent node to join hierarchies
     for root_node in roots:
         hierarchy.add_edge("ROOT", root_node)
+    if not roots:
+        hierarchy.add_node("ROOT")
 
     return hierarchy
 
@@ -30,8 +36,13 @@ def lift(data: np.ndarray, labels: np.ndarray):
     num_samples, num_features = data.shape
 
     for index in range(num_features):
+        if sparse.issparse(data):
+            data = data.tocsr()
         column = data[:, index]
-        prob_feature = np.count_nonzero(column) / num_samples
+        if sparse.issparse(column):
+            prob_feature = column.size / num_samples
+        else:
+            prob_feature = np.count_nonzero(column) / num_samples
         prob_event_conditional = len(
             [
                 value
