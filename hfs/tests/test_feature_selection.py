@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 from scipy import sparse
 
-from ..feature_selection import TreeBasedFeatureSelector
+from ..feature_selection import TSELSelector
 
 
 def data1():
@@ -77,10 +77,10 @@ def data():
     return [data1(), data2(), data3()]
 
 
-def test_tree_based_selection(data):
+def test_TSEL_selection(data):
     for example in data:
         X, y, hierarchy, result, support = example
-        selector = TreeBasedFeatureSelector(hierarchy)
+        selector = TSELSelector(hierarchy)
         selector.fit(X, y)
         X = selector.transform(X)
         assert np.array_equal(X, result)

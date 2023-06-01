@@ -11,7 +11,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from .helpers import create_feature_tree, get_paths, lift
 
 
-class TreeBasedFeatureSelector(SelectorMixin, BaseEstimator):
+class TSELSelector(SelectorMixin, BaseEstimator):
     """A tree-based feature selection method for hierarchical features"""
 
     def __init__(
@@ -110,3 +110,6 @@ class TreeBasedFeatureSelector(SelectorMixin, BaseEstimator):
             if not selected_decendents:
                 updated_representatives.append(node)
         return updated_representatives
+
+
+class S(SelectorMixin, BaseEstimator):

@@ -1,18 +1,13 @@
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from hfs import (
-    TemplateClassifier,
-    TemplateEstimator,
-    TemplateTransformer,
-    TreeBasedFeatureSelector,
-)
+from hfs import TemplateClassifier, TemplateEstimator, TemplateTransformer, TSELSelector
 
 
 @pytest.mark.parametrize(
     "estimator",
     [
-        TreeBasedFeatureSelector(),
+        TSELSelector(),
         TemplateEstimator(),
         TemplateTransformer(),
         TemplateClassifier(),
