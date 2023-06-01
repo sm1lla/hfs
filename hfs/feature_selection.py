@@ -1,23 +1,73 @@
 """ee
 Sklearn compatible estimators for feature selection
 """
+import statistics
+
 import networkx as nx
 import numpy as np
 from networkx.algorithms.dag import descendants
 from sklearn.base import BaseEstimator
 from sklearn.feature_selection import SelectorMixin
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_X_y
 
-from .helpers import create_feature_tree, get_paths, lift
+from .helpers import create_feature_tree, get_leaves, get_paths, information_gain, lift
 
 
-class TSELSelector(SelectorMixin, BaseEstimator):
-    """A tree-based feature selection method for hierarchical features"""
+class HierarchicalFeatureSelector(BaseEstimator):
+    def __init__(self, hierarchy: np.ndarray = None):
+        self.hierarchy = hierarchy
+
+    def fit(self, X, y, columns: list[str] = []):
+        """Fitting function that sets self.representatives_ to include the columns that are kept.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            The training input samples.
+        y : array-like, shape (n_samples,)
+            The target values. An array of int, that should either be 1 or 0.
+
+        Returns
+        -------
+        self : object
+            Returns self.
+        """
+
+        self._columns = columns
+        self._num_features = X.shape[1]
+        if not self._columns:
+            self._columns = range(self._num_features)
+
+        if self.hierarchy is None:
+            self._feature_tree = nx.DiGraph()
+        else:
+            self._feature_tree = nx.from_numpy_array(
+                self.hierarchy, create_using=nx.DiGraph
+            )
+
+        # Build feature tree
+        self._feature_tree = create_feature_tree(self._feature_tree, self._columns)
+
+        self.representatives_ = []
+
+        return self
+
+    def _get_support_mask(self):
+        return np.asarray(
+            [
+                True if index in self.representatives_ else False
+                for index in range(self._num_features)
+            ]
+        )
+
+
+class TSELSelector(HierarchicalFeatureSelector, SelectorMixin):
+    """A tree-based feature selection method for hierarchical features proposed by Jeong and Myaeng"""
 
     def __init__(
         self, hierarchy: np.ndarray = None, use_original_implementation: bool = True
     ):
-        self.hierarchy = hierarchy
+        super().__init__(hierarchy)
         self.use_original_implementation = use_original_implementation
 
     # TODO : check if columns parameter is really needed and think about how input should look like
@@ -36,23 +86,9 @@ class TSELSelector(SelectorMixin, BaseEstimator):
         self : object
             Returns self.
         """
-
-        # Input validation
         X, y = check_X_y(X, y, accept_sparse=True)
 
-        self._columns = columns
-        if not self._columns:
-            self._columns = range(X.shape[1])
-
-        if self.hierarchy is None:
-            self._feature_tree = nx.DiGraph()
-        else:
-            self._feature_tree = nx.from_numpy_array(
-                self.hierarchy, create_using=nx.DiGraph
-            )
-
-        # Build feature tree
-        self._feature_tree = create_feature_tree(self._feature_tree, self._columns)
+        super().fit(X, y, columns)
 
         # Feature Selection Algorithm
         paths = get_paths(self._feature_tree)
@@ -65,14 +101,6 @@ class TSELSelector(SelectorMixin, BaseEstimator):
 
         self.is_fitted_ = True
         return self
-
-    def _get_support_mask(self):
-        return np.asarray(
-            [
-                True if index in self.representatives_ else False
-                for index in range(len(self._columns))
-            ]
-        )
 
     def _find_representatives(self, paths: list[list[str]]):
         representatives = set()
@@ -112,4 +140,91 @@ class TSELSelector(SelectorMixin, BaseEstimator):
         return updated_representatives
 
 
-class S(SelectorMixin, BaseEstimator):
+class SHSELSelector(HierarchicalFeatureSelector, SelectorMixin):
+    """SHSEL feature selection method for hierarchical features proposed by Ristoski and Paulheim"""
+
+    def __init__(
+        self,
+        hierarchy: np.ndarray = None,
+        relevance_metric: str = "IG",
+        similarity_threshold=0.99,
+    ):
+        super().__init__(hierarchy)
+        self.relevance_metric = relevance_metric
+        self.similarity_threshold = similarity_threshold
+
+    def fit(self, X, y, columns: list[str] = []):
+        """Fitting function that sets self.representatives_ to include the columns that are kept.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            The training input samples.
+        y : array-like, shape (n_samples,)
+            The target values. An array of int, that should either be 1 or 0.
+
+        Returns
+        -------
+        self : object
+            Returns self.
+        """
+        # Input validation
+        X, y = check_X_y(X, y, accept_sparse=True)
+
+        super().fit(X, y, columns)
+
+        # Feature Selection Algorithm
+        self._calculate_relevance(X, y)
+        self._fit()
+
+        self.is_fitted_ = True
+        return self
+
+    def _fit(self):
+        paths = get_paths(self._feature_tree, reverse=True)
+        self._inital_selection(paths)
+        self._pruning(paths)
+
+    def _inital_selection(self, paths):
+        remove_nodes = set()
+
+        for path in paths:
+            for index, node in enumerate(path):
+                parent_node = path[index + 1]
+                if parent_node == "ROOT":
+                    return
+                relevance_similarity = 1 - abs(
+                    self._relevance_values[parent_node] - self._relevance_values[node]
+                )
+                if relevance_similarity >= self.similarity_threshold:
+                    remove_nodes.add(node)
+
+        self.representatives_ = [
+            feature for feature in self._columns if feature not in remove_nodes
+        ]
+
+    def _pruning(self, paths):
+        paths = get_paths(self._feature_tree, reverse=True)
+        updated_representatives = []
+
+        for path in paths:
+            average_relevance = statistics.mean(
+                {
+                    self._relevance_values[node]
+                    for node in path
+                    if node in self.representatives_
+                }
+            )
+            for node in path:
+                if (
+                    node in self.representatives_
+                    and self._relevance_values[node] >= average_relevance
+                ):
+                    updated_representatives.append(node)
+
+        self.representatives_ = updated_representatives
+
+    def _calculate_relevance(self, X, y):
+        if self.relevance_metric == "IG":
+            values = information_gain(X, y)
+            self._relevance_values = dict(zip(self._columns, values))

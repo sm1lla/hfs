@@ -1,5 +1,6 @@
 import networkx as nx
 import numpy as np
+from info_gain import info_gain
 from networkx.algorithms.simple_paths import all_simple_paths
 from scipy import sparse
 
@@ -19,18 +20,16 @@ def create_feature_tree(hierarchy: nx.DiGraph, column_names: list[str]) -> nx.Di
     return hierarchy
 
 
-def get_paths(graph: nx.DiGraph):
-    leafs = [
-        node
-        for node in graph
-        if graph.in_degree(node) > 0 and graph.out_degree(node) == 0
-    ]
-
-    paths = all_simple_paths(graph, "ROOT", leafs)
+def get_paths(graph: nx.DiGraph, reverse=False):
+    leaves = get_leaves(graph)
+    paths = all_simple_paths(graph, "ROOT", leaves)
+    if reverse:
+        for path in paths:
+            path.reverse()
     return paths
 
 
-def lift(data: np.ndarray, labels: np.ndarray):
+def lift(data, labels):
     """returns list including lift value for each feature"""
     lift_values = []
     num_samples, num_features = data.shape
@@ -60,3 +59,19 @@ def lift(data: np.ndarray, labels: np.ndarray):
 
         lift_values.append(prob_event_conditional / prob_feature)
     return lift_values
+
+
+def information_gain(data, labels):
+    ig_values = []
+    for column_index in range(data.shape[1]):
+        ig = info_gain(labels, data[:, column_index])
+        ig_values.append(ig)
+    return ig_values
+
+
+def get_leaves(graph: nx.DiGraph):
+    return [
+        node
+        for node in graph
+        if graph.in_degree(node) > 0 and graph.out_degree(node) == 0
+    ]
