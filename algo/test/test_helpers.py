@@ -3,12 +3,14 @@ sys.path.append('/home/kathrin/hfs/algo/')
 
 from go import open_dag
 import numpy as np
+import networkx as nx
 
-from helpers import shrink_dag
+from helpers import connect_dag, shrink_dag
+from test_fixtures import *
+import matplotlib.pyplot as plt
 
 def test_shrink_dag():
-    x_identifiers = ""
-    
+
     nodes = np.load("./algo/data/nodes_go.npy")
     graph = open_dag("./algo/data/go_digraph")
 
@@ -30,4 +32,17 @@ def test_shrink_dag():
     for node in ['GO:2001092', 'GO:2001094', 'GO:2001106', 'GO:2001107']:
         assert(not (node in graph.nodes()))
 
+def test_connect_dag():
+    graph = nx.DiGraph(getFixedDag())
+    x_identifiers = [0, 1, 2, 5, 6, 7, 8]
+    graph = connect_dag(digraph=graph, x_identifiers=x_identifiers)
+    new_graph = nx.DiGraph([(0,1),(0,2),(1,6),(1,5),(1,7),(0,7),(5,8)])
+    assert(nx.is_isomorphic(graph, new_graph))
+
+
+    #nx.draw_networkx(graph)
+    #plt.show()
+
+
+test_connect_dag()
 test_shrink_dag()

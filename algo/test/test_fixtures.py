@@ -1,10 +1,10 @@
 import numpy as np
 import networkx as nx
-from fixtures import getFixedData
+from fixtures import getFixedData, getFixedDag
 
 
 #Fixtures
-bigDAG = getFixedData()
+bigDAG = getFixedDag()
 data = getFixedData(20)
 
 small_DAG = nx.to_numpy_array(nx.DiGraph([(0,1),(0,2),(1,2),(1,3)]))
