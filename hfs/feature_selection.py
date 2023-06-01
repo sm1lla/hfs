@@ -4,14 +4,14 @@ Sklearn compatible estimators for feature selection
 import networkx as nx
 import numpy as np
 from networkx.algorithms.dag import descendants
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator
+from sklearn.feature_selection import SelectorMixin
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 from .helpers import create_feature_tree, get_paths, lift
 
 
-# TODO : Use SelectorMixin
-class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
+class TreeBasedFeatureSelector(SelectorMixin, BaseEstimator):
     """A tree-based feature selection method for hierarchical features"""
 
     def __init__(
@@ -66,21 +66,13 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
         self.is_fitted_ = True
         return self
 
-    def transform(self, X: np.ndarray):
-        # Only allow transform after estimator was fitted
-        check_is_fitted(self, "representatives_")
-
-        # Input validation
-        X = check_array(X, accept_sparse=True)
-        if X.shape[1] != len(self._columns):
-            raise ValueError(
-                "Shape of input is different from what was seen" "in `fit`"
-            )
-
-        # Keep selected columns
-        column_indices = [self._columns.index(node) for node in self.representatives_]
-        columns = [X[:, index] for index in column_indices]
-        return np.column_stack(columns)
+    def _get_support_mask(self):
+        return np.asarray(
+            [
+                True if index in self.representatives_ else False
+                for index in range(len(self._columns))
+            ]
+        )
 
     def _find_representatives(self, paths: list[list[str]]):
         representatives = set()

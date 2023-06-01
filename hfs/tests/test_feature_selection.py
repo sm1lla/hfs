@@ -24,7 +24,8 @@ def data1():
     y = np.array([0, 0, 0, 0, 1])
     X = df.to_numpy()
     result = np.array([[0], [0], [0], [0], [1]])
-    return (X, y, hierarchy, result)
+    support = np.array([True, False, False, False, False])
+    return (X, y, hierarchy, result, support)
 
 
 def data2():
@@ -49,8 +50,8 @@ def data2():
             [1, 0],
         ]
     )
-
-    return (X, y, hierarchy, result)
+    support = np.array([False, True, False, False, True])
+    return (X, y, hierarchy, result, support)
 
 
 def data3():
@@ -67,7 +68,8 @@ def data3():
     hierarchy = None
     y = np.array([1, 0, 0, 1, 1])
     result = X
-    return (X, y, hierarchy, result)
+    support = np.array([True, True, True, True, True])
+    return (X, y, hierarchy, result, support)
 
 
 @pytest.fixture
@@ -77,8 +79,11 @@ def data():
 
 def test_tree_based_selection(data):
     for example in data:
-        X, y, hierarchy, result = example
+        X, y, hierarchy, result, support = example
         selector = TreeBasedFeatureSelector(hierarchy)
         selector.fit(X, y)
         X = selector.transform(X)
         assert np.array_equal(X, result)
+
+        support_mask = selector.get_support()
+        assert np.array_equal(support_mask, support)
