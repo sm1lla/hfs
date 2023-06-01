@@ -10,13 +10,18 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from .helpers import create_feature_tree, get_paths, lift
 
 
+# TODO : Use SelectorMixin
 class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
     """A tree-based feature selection method for hierarchical features"""
 
-    def __init__(self, hierarchy: nx.DiGraph = None):
+    def __init__(
+        self, hierarchy: np.ndarray = None, use_original_implementation: bool = True
+    ):
         self.hierarchy = hierarchy
+        self.use_original_implementation = use_original_implementation
 
-    def fit(self, X: np.ndarray, y: np.ndarray, columns: list[str] = []):
+    # TODO : check if columns parameter is really needed and think about how input should look like
+    def fit(self, X, y, columns: list[str] = []):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -37,12 +42,14 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
 
         self._columns = columns
         if not self._columns:
-            self._set_columns(X.shape[1])
+            self._columns = range(X.shape[1])
 
-        if not self.hierarchy:
+        if self.hierarchy is None:
             self._feature_tree = nx.DiGraph()
         else:
-            self._feature_tree = self.hierarchy
+            self._feature_tree = nx.from_numpy_array(
+                self.hierarchy, create_using=nx.DiGraph
+            )
 
         # Build feature tree
         self._feature_tree = create_feature_tree(self._feature_tree, self._columns)
@@ -54,7 +61,7 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
             self._columns[index]: lift_values[index]
             for index, _ in enumerate(self._columns)
         }
-        self.representatives_ = self.find_representatives(paths)
+        self.representatives_ = self._find_representatives(paths)
 
         self.is_fitted_ = True
         return self
@@ -75,13 +82,30 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
         columns = [X[:, index] for index in column_indices]
         return np.column_stack(columns)
 
-    def find_representatives(self, paths: list[list[str]]):
+    def _find_representatives(self, paths: list[list[str]]):
         representatives = set()
         for path in paths:
             path.remove("ROOT")
-            max_node = max(path, key=lambda x: self._node_to_lift[x])
+            max_node = (
+                self._select_from_path1(path)
+                if self.use_original_implementation
+                else self._select_from_path2(path)
+            )
             representatives.add(max_node)
         return self._filter_representatives(representatives)
+
+    def _select_from_path1(self, path: list[str]):
+        # implementation used in paper by Jeong and Myaeng
+        for index, node in enumerate(path):
+            if index == len(path) - 1:
+                return node
+            elif self._node_to_lift[node] >= self._node_to_lift[path[index + 1]]:
+                return node
+
+    def _select_from_path2(self, path: list[str]):
+        # if multiple nodes are maximum the node closest to the root is returned
+        max_node = max(path, key=lambda x: self._node_to_lift[x])
+        return max_node
 
     def _filter_representatives(self, representatives: list[str]):
         updated_representatives = []
@@ -94,6 +118,3 @@ class TreeBasedFeatureSelector(TransformerMixin, BaseEstimator):
             if not selected_decendents:
                 updated_representatives.append(node)
         return updated_representatives
-
-    def _set_columns(self, num_columns):
-        self._columns = [str(index) for index in range(num_columns)]
