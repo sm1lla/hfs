@@ -6,5 +6,6 @@ __all__ = [
     "TemplateEstimator",
     "TemplateClassifier",
     "TemplateTransformer",
-    "TreeBasedFeatureSelector" "__version__",
+    "TSELSelector",
+    "__version__",
 ]

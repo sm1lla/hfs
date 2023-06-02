@@ -1,4 +1,4 @@
-"""ee
+"""
 Sklearn compatible estimators for feature selection
 """
 import statistics
@@ -10,12 +10,13 @@ from sklearn.base import BaseEstimator
 from sklearn.feature_selection import SelectorMixin
 from sklearn.utils.validation import check_X_y
 
-from .helpers import create_feature_tree, get_leaves, get_paths, information_gain, lift
+from .base import HierarchicalEstimator
+from .helpers import get_paths, information_gain, lift
 
 
-class HierarchicalFeatureSelector(BaseEstimator):
+class HierarchicalFeatureSelector(HierarchicalEstimator, SelectorMixin):
     def __init__(self, hierarchy: np.ndarray = None):
-        self.hierarchy = hierarchy
+        super().__init__(hierarchy)
 
     def fit(self, X, y, columns: list[str] = []):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
@@ -33,20 +34,7 @@ class HierarchicalFeatureSelector(BaseEstimator):
             Returns self.
         """
 
-        self._columns = columns
-        self._num_features = X.shape[1]
-        if not self._columns:
-            self._columns = range(self._num_features)
-
-        if self.hierarchy is None:
-            self._feature_tree = nx.DiGraph()
-        else:
-            self._feature_tree = nx.from_numpy_array(
-                self.hierarchy, create_using=nx.DiGraph
-            )
-
-        # Build feature tree
-        self._feature_tree = create_feature_tree(self._feature_tree, self._columns)
+        super().fit(X, y, columns)
 
         self.representatives_ = []
 
@@ -61,7 +49,7 @@ class HierarchicalFeatureSelector(BaseEstimator):
         )
 
 
-class TSELSelector(HierarchicalFeatureSelector, SelectorMixin):
+class TSELSelector(HierarchicalFeatureSelector):
     """A tree-based feature selection method for hierarchical features proposed by Jeong and Myaeng"""
 
     def __init__(
@@ -140,7 +128,7 @@ class TSELSelector(HierarchicalFeatureSelector, SelectorMixin):
         return updated_representatives
 
 
-class SHSELSelector(HierarchicalFeatureSelector, SelectorMixin):
+class SHSELSelector(HierarchicalFeatureSelector):
     """SHSEL feature selection method for hierarchical features proposed by Ristoski and Paulheim"""
 
     def __init__(
