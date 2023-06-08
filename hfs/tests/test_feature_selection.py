@@ -2,7 +2,6 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 import pytest
-from scipy import sparse
 
 from ..feature_selection import TSELSelector
 
@@ -72,18 +71,20 @@ def data3():
     return (X, y, hierarchy, result, support)
 
 
-@pytest.fixture
-def data():
-    return [data1(), data2(), data3()]
-
-
+@pytest.mark.parametrize(
+    "data",
+    [
+        data1(),
+        data2(),
+        data2(),
+    ],
+)
 def test_TSEL_selection(data):
-    for example in data:
-        X, y, hierarchy, result, support = example
-        selector = TSELSelector(hierarchy)
-        selector.fit(X, y)
-        X = selector.transform(X)
-        assert np.array_equal(X, result)
+    X, y, hierarchy, result, support = data
+    selector = TSELSelector(hierarchy)
+    selector.fit(X, y)
+    X = selector.transform(X)
+    assert np.array_equal(X, result)
 
-        support_mask = selector.get_support()
-        assert np.array_equal(support_mask, support)
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support)

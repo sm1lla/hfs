@@ -6,7 +6,6 @@ import statistics
 import networkx as nx
 import numpy as np
 from networkx.algorithms.dag import descendants
-from sklearn.base import BaseEstimator
 from sklearn.feature_selection import SelectorMixin
 from sklearn.utils.validation import check_X_y
 
@@ -18,7 +17,7 @@ class HierarchicalFeatureSelector(HierarchicalEstimator, SelectorMixin):
     def __init__(self, hierarchy: np.ndarray = None):
         super().__init__(hierarchy)
 
-    def fit(self, X, y, columns: list[str] = []):
+    def fit(self, X, y):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -34,7 +33,7 @@ class HierarchicalFeatureSelector(HierarchicalEstimator, SelectorMixin):
             Returns self.
         """
 
-        super().fit(X, y, columns)
+        super().fit(X, y)
 
         self.representatives_ = []
 
@@ -59,7 +58,7 @@ class TSELSelector(HierarchicalFeatureSelector):
         self.use_original_implementation = use_original_implementation
 
     # TODO : check if columns parameter is really needed and think about how input should look like
-    def fit(self, X, y, columns: list[str] = []):
+    def fit(self, X, y):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -76,7 +75,7 @@ class TSELSelector(HierarchicalFeatureSelector):
         """
         X, y = check_X_y(X, y, accept_sparse=True)
 
-        super().fit(X, y, columns)
+        super().fit(X, y)
 
         # Feature Selection Algorithm
         paths = get_paths(self._feature_tree)
@@ -141,7 +140,7 @@ class SHSELSelector(HierarchicalFeatureSelector):
         self.relevance_metric = relevance_metric
         self.similarity_threshold = similarity_threshold
 
-    def fit(self, X, y, columns: list[str] = []):
+    def fit(self, X, y):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -159,7 +158,7 @@ class SHSELSelector(HierarchicalFeatureSelector):
         # Input validation
         X, y = check_X_y(X, y, accept_sparse=True)
 
-        super().fit(X, y, columns)
+        super().fit(X, y)
 
         # Feature Selection Algorithm
         self._calculate_relevance(X, y)

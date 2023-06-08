@@ -4,17 +4,16 @@ Sklearn compatible estimators for preprocessing hierarchical data
 import numpy as np
 from networkx.algorithms.dag import ancestors
 from networkx.algorithms.traversal import bfs_successors
-from sklearn.base import BaseEstimator, TransformerMixin, check_array, check_is_fitted
+from sklearn.utils.validation import check_array, check_is_fitted
 
 from .base import HierarchicalEstimator
-from .helpers import get_leaves
 
 
 class HierarchicalPreprocessor(HierarchicalEstimator):
     def __init__(self, hierarchy: np.ndarray = None):
         self.hierarchy = hierarchy
 
-    def fit(self, X, y, columns: list[str] = []):
+    def fit(self, X, y=None):
         """Fitting function that sets parameters used to transform the data
 
         Parameters
@@ -32,7 +31,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
             Returns self.
         """
         X = check_array(X, accept_sparse=True)
-        super().fit(X, y, columns)
+        super().fit(X, y)
         self.n_features_ = X.shape[1]
 
     def transform(self, X):
@@ -62,22 +61,37 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
             raise ValueError(
                 "Shape of input is different from what was seen" "in `fit`"
             )
-        return self._propagate_ones(X)
+
+        self.X_ = self._add_columns(X)
+        self.X_ = self._propagate_ones(self.X_)
+
+        return self.X_
+
+    def _add_columns(self, X):
+        X_ = X
+        num_rows = X.shape[0]
+        num_nodes = len(self._feature_tree.nodes) - 1
+        num_columns = len(self._columns)
+        if num_nodes > num_columns:
+            missing_nodes = list(range(num_columns, num_nodes))
+            self._columns.extend(missing_nodes)
+            for _ in missing_nodes:
+                X_ = np.concatenate([X_, np.zeros((num_rows, 1), dtype=int)], axis=1)
+
+        return X_
 
     def _propagate_ones(self, X):
-        nodes = bfs_successors(self._feature_tree, "ROOT").reverse()
-        visited = []
+        nodes = list(self._feature_tree.nodes)
+        nodes.remove("ROOT")
+
         for node in nodes:
-            if node in visited:
-                continue
             column_index = self._columns.index(node)
-            ancestor_nodes = ancestors(self._feature_tree, "ROOT")
-            ancestor_nodes = [node for node in ancestor_nodes if node not in visited]
+            ancestor_nodes = ancestors(self._feature_tree, node)
+            ancestor_nodes.remove("ROOT")
             for row_index, entry in enumerate(X[:, column_index]):
-                if entry == 1:
+                if entry == 1.0:
                     for ancestor in ancestor_nodes:
                         index = self._columns.index(ancestor)
-                        X[row_index, index] = 1
-                        visited.append(ancestor)
+                        X[row_index, index] = 1.0
 
         return X
