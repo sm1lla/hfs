@@ -179,7 +179,7 @@ class SHSELSelector(HierarchicalFeatureSelector):
             for index, node in enumerate(path):
                 parent_node = path[index + 1]
                 if parent_node == "ROOT":
-                    return
+                    break
                 relevance_similarity = 1 - abs(
                     self._relevance_values[parent_node] - self._relevance_values[node]
                 )
@@ -195,18 +195,18 @@ class SHSELSelector(HierarchicalFeatureSelector):
         updated_representatives = []
 
         for path in paths:
+            path.remove("ROOT")
             average_relevance = statistics.mean(
-                {
+                [
                     self._relevance_values[node]
                     for node in path
                     if node in self.representatives_
-                }
+                ]
             )
             for node in path:
-                if (
-                    node in self.representatives_
-                    and self._relevance_values[node] >= average_relevance
-                ):
+                if node in self.representatives_ and round(
+                    self._relevance_values[node], 6
+                ) >= round(average_relevance, 6):
                     updated_representatives.append(node)
 
         self.representatives_ = updated_representatives

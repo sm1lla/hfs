@@ -1,6 +1,6 @@
 import networkx as nx
 import numpy as np
-from info_gain import info_gain
+from info_gain.info_gain import info_gain
 from networkx.algorithms.simple_paths import all_simple_paths
 from scipy import sparse
 
@@ -22,7 +22,7 @@ def create_feature_tree(hierarchy: nx.DiGraph, column_names: list[str]) -> nx.Di
 
 def get_paths(graph: nx.DiGraph, reverse=False):
     leaves = get_leaves(graph)
-    paths = all_simple_paths(graph, "ROOT", leaves)
+    paths = list(all_simple_paths(graph, "ROOT", leaves))
     if reverse:
         for path in paths:
             path.reverse()
