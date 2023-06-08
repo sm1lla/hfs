@@ -1,90 +1,76 @@
-import networkx as nx
 import numpy as np
-import pandas as pd
 import pytest
 
-from ..feature_selection import TSELSelector
-
-
-def data1():
-    columns = ["A", "B", "C", "D", "E"]
-    df = pd.DataFrame(
-        [
-            [0, 0, 0, 0, 1],
-            [0, 0, 0, 1, 1],
-            [0, 0, 1, 1, 1],
-            [0, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1],
-        ],
-        columns=columns,
-    )
-    edges = [(0, 1), (1, 2), (0, 3), (0, 4)]
-    hierarchy = nx.to_numpy_array(nx.DiGraph(edges))
-    y = np.array([0, 0, 0, 0, 1])
-    X = df.to_numpy()
-    result = np.array([[0], [0], [0], [0], [1]])
-    support = np.array([True, False, False, False, False])
-    return (X, y, hierarchy, result, support)
-
-
-def data2():
-    X = np.array(
-        [
-            [1, 1, 0, 0, 1],
-            [1, 1, 1, 1, 0],
-            [1, 1, 1, 0, 0],
-            [1, 0, 0, 0, 1],
-            [1, 1, 0, 0, 0],
-        ],
-    )
-    edges = [(0, 1), (1, 2), (2, 3), (0, 4)]
-    hierarchy = nx.to_numpy_array(nx.DiGraph(edges))
-    y = np.array([1, 0, 0, 1, 1])
-    result = np.array(
-        [
-            [1, 1],
-            [1, 0],
-            [1, 0],
-            [0, 1],
-            [1, 0],
-        ]
-    )
-    support = np.array([False, True, False, False, True])
-    return (X, y, hierarchy, result, support)
-
-
-def data3():
-    X = np.array(
-        [
-            [1, 1, 0, 0, 1],
-            [1, 1, 1, 1, 0],
-            [1, 1, 1, 0, 0],
-            [1, 0, 0, 0, 1],
-            [1, 1, 0, 0, 0],
-        ],
-    )
-
-    hierarchy = None
-    y = np.array([1, 0, 0, 1, 1])
-    result = X
-    support = np.array([True, True, True, True, True])
-    return (X, y, hierarchy, result, support)
+from ..feature_selection import SHSELSelector, TSELSelector
+from .fixtures.fixtures import (
+    data1,
+    data2,
+    data3,
+    data_shsel_selection,
+    result_shsel1,
+    result_shsel2,
+    result_shsel3,
+    result_shsel_selection,
+    result_tsel1,
+    result_tsel2,
+    result_tsel3,
+)
 
 
 @pytest.mark.parametrize(
-    "data",
+    "data, result",
     [
-        data1(),
-        data2(),
-        data2(),
+        (data1(), result_tsel1()),
+        (data2(), result_tsel2()),
+        (data3(), result_tsel3()),
     ],
 )
-def test_TSEL_selection(data):
-    X, y, hierarchy, result, support = data
+def test_TSEL_selection(data, result):
+    X, y, hierarchy = data
+    expected, support = result
     selector = TSELSelector(hierarchy)
     selector.fit(X, y)
     X = selector.transform(X)
-    assert np.array_equal(X, result)
+    assert np.array_equal(X, expected)
+
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support)
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
+        (data1(), result_shsel1()),
+        (data2(), result_shsel2()),
+        (data3(), result_shsel3()),
+    ],
+)
+def test_SHSEL_selection(data, result):
+    X, y, hierarchy = data
+    expected, support = result
+    selector = SHSELSelector(hierarchy)
+    selector.fit(X, y)
+    X = selector.transform(X)
+    assert np.array_equal(X, expected)
+
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support)
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
+        (data_shsel_selection(), result_shsel_selection()),
+        (data1(), result_shsel1()),
+    ],
+)
+def test_SHSEL_selection_with_initial_selection(data, result):
+    X, y, hierarchy = data
+    expected, support = result
+    selector = SHSELSelector(hierarchy, similarity_threshold=0.8)
+    selector.fit(X, y)
+    X = selector.transform(X)
+    assert np.array_equal(X, expected)
 
     support_mask = selector.get_support()
     assert np.array_equal(support_mask, support)
