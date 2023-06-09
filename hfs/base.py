@@ -1,6 +1,7 @@
 import networkx as nx
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_array, check_X_y
 
 from .helpers import create_feature_tree
 
@@ -24,8 +25,10 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
             Returns self.
         """
 
-        self._num_features = X.shape[1]
-        self._columns = list(range(self._num_features))
+        X = check_array(X, accept_sparse=True)
+
+        self.n_features_ = X.shape[1]
+        self._columns = list(range(self.n_features_))
 
         if self.hierarchy is None:
             self._feature_tree = nx.DiGraph()
@@ -38,3 +41,23 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
         self._feature_tree = create_feature_tree(self._feature_tree, self._columns)
 
         return self
+
+    def transform(self, X):
+        """Reduce X to the selected features.
+
+        Parameters
+        ----------
+        X : array of shape [n_samples, n_features]
+            The input samples.
+
+        Returns
+        -------
+        X_r : array of shape [n_samples, n_selected_features]
+            The input samples with only the selected features.
+        """
+        X = check_array(X, dtype=None, accept_sparse="csr")
+
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("X has a different shape than during fitting.")
+
+        return X

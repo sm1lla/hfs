@@ -32,7 +32,9 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         """
         X = check_array(X, accept_sparse=True)
         super().fit(X, y)
-        self.n_features_ = X.shape[1]
+        self._find_missing_columns()
+
+        return self
 
     def transform(self, X):
         """A transform function that updates the dataset so that it conforms to the hierarchy constrictions.
@@ -62,22 +64,25 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
                 "Shape of input is different from what was seen" "in `fit`"
             )
 
-        self.X_ = self._add_columns(X)
-        self.X_ = self._propagate_ones(self.X_)
+        X_ = self._add_columns(X)
+        X_ = self._propagate_ones(X_)
 
-        return self.X_
+        return X_
 
-    def _add_columns(self, X):
-        X_ = X
-        num_rows = X.shape[0]
+    def _find_missing_columns(self):
         num_nodes = len(self._feature_tree.nodes) - 1
         num_columns = len(self._columns)
         if num_nodes > num_columns:
             missing_nodes = list(range(num_columns, num_nodes))
             self._columns.extend(missing_nodes)
+
+    def _add_columns(self, X):
+        X_ = X
+        num_rows, num_columns = X.shape
+        if num_columns != len(self._columns):
+            missing_nodes = list(range(num_columns, len(self._columns)))
             for _ in missing_nodes:
                 X_ = np.concatenate([X_, np.zeros((num_rows, 1), dtype=int)], axis=1)
-
         return X_
 
     def _propagate_ones(self, X):
