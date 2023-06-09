@@ -1,12 +1,13 @@
 import numpy as np
 import pytest
 
-from ..feature_selection import SHSELSelector, TSELSelector
+from ..feature_selection import HillClimbingSelector, SHSELSelector, TSELSelector
 from .fixtures.fixtures import (
     data1,
     data2,
     data3,
     data_shsel_selection,
+    result_hill_selection,
     result_shsel1,
     result_shsel2,
     result_shsel3,
@@ -68,6 +69,24 @@ def test_SHSEL_selection_with_initial_selection(data, result):
     X, y, hierarchy = data
     expected, support = result
     selector = SHSELSelector(hierarchy, similarity_threshold=0.8)
+    selector.fit(X, y)
+    X = selector.transform(X)
+    assert np.array_equal(X, expected)
+
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support)
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
+        (data1(), result_hill_selection()),
+    ],
+)
+def test_HillClimbing_selection(data, result):
+    X, y, hierarchy = data
+    expected, support = result
+    selector = HillClimbingSelector(hierarchy)
     selector.fit(X, y)
     X = selector.transform(X)
     assert np.array_equal(X, expected)

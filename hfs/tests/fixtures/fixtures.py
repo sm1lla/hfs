@@ -122,3 +122,17 @@ def result_shsel_selection():
     )
     support = np.array([False, False, True, False, False])
     return (result, support)
+
+
+def result_hill_selection():
+    result = pd.DataFrame(
+        [
+            [0, 0, 1],
+            [0, 1, 1],
+            [0, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1],
+        ],
+    )
+    support = np.array([False, True, False, True, True])
+    return (result, support)
