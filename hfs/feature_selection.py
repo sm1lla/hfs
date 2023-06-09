@@ -1,19 +1,19 @@
 """
 Sklearn compatible estimators for feature selection
 """
+import math
 import statistics
 
-import networkx as nx
 import numpy as np
 from networkx.algorithms.dag import descendants
 from sklearn.feature_selection import SelectorMixin
-from sklearn.utils.validation import check_X_y
+from sklearn.utils.validation import check_array, check_X_y
 
 from .base import HierarchicalEstimator
 from .helpers import get_paths, information_gain, lift
 
 
-class HierarchicalFeatureSelector(HierarchicalEstimator, SelectorMixin):
+class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
     def __init__(self, hierarchy: np.ndarray = None):
         super().__init__(hierarchy)
 
@@ -43,9 +43,15 @@ class HierarchicalFeatureSelector(HierarchicalEstimator, SelectorMixin):
         return np.asarray(
             [
                 True if index in self.representatives_ else False
-                for index in range(self._num_features)
+                for index in range(self.n_features_)
             ]
         )
+
+    def transform(self, X):
+        X = check_array(X, dtype=None, accept_sparse="csr")
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("X has a different shape than during fitting.")
+        return super().transform(X)
 
 
 class TSELSelector(HierarchicalFeatureSelector):
@@ -215,3 +221,113 @@ class SHSELSelector(HierarchicalFeatureSelector):
         if self.relevance_metric == "IG":
             values = information_gain(X, y)
             self._relevance_values = dict(zip(self._columns, values))
+
+
+class HillClimbingSelector(HierarchicalFeatureSelector):
+    """Hill climbing feature selection method for hierarchical features proposed by Wang et al."""
+
+    def __init__(self, hierarchy: np.ndarray = None, alpha: float = 0.99):
+        super().__init__(hierarchy)
+        self.alpha = alpha
+
+    def fit(self, X, y):
+        """Fitting function that sets self.representatives_ to include the columns that are kept.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            The training input samples.
+        y : array-like, shape (n_samples,)
+            The target values. An array of int, that should either be 1 or 0.
+
+        Returns
+        -------
+        self : object
+            Returns self.
+        """
+        # Input validation
+        X, y = check_X_y(X, y, accept_sparse=True)
+
+        super().fit(X, y)
+
+        # Feature Selection Algorithm
+        self.y_ = y
+        self._calculate_distances(X)
+        self.representatives_ = self._hill_climb_top_down()
+
+        return self
+
+    def _calculate_normalized_frequencies(self, X):
+        self.frequency_matrix_ = X
+        num_rows, num_columns = X.shape
+        for row in range(num_rows):
+            max_frequency = max(self.frequency_matrix_[row, :])
+            for column in range(num_columns):
+                frequency = self.frequency_matrix_[row, column]
+                if frequency != 0:
+                    self.frequency_matrix_[row, column] = (
+                        math.log(1 + (frequency / max_frequency)) + 1
+                    )
+
+    def _calculate_distance(self, sample_i, sample_j):
+        distance = 0
+        for column in range(self.frequency_matrix_.shape[1]):
+            difference = (
+                self.frequency_matrix_[sample_i, column]
+                - self.frequency_matrix_[sample_j, column]
+            )
+            distance += math.pow(difference, 2)
+        return math.sqrt(distance)
+
+    def _calculate_distances(self, X):
+        self._calculate_normalized_frequencies(X)
+        num_rows = X.shape[0]
+        self.distances_ = np.zeros((num_rows, num_rows), dtype=int)
+        for row in range(num_rows):
+            for column in range(num_rows):
+                if self.distances_[row, column] == 0:
+                    self.distances_[row, column] = self._calculate_distance(row, column)
+                    self.distances_[column, row] = self.distances_[row, column]
+
+    def _fitness_function(self, features: set[int]) -> float:
+        result = 0
+        for feature in features:
+            same_class = [
+                sample for sample in features if self.y_[sample] == self.y_[feature]
+            ]
+            other_class = [sample for sample in features if sample not in same_class]
+
+            nominator = sum(
+                [self.distances_[sample, feature] for sample in other_class]
+            )
+            denominator = 1 + self.alpha * sum(
+                [self.distances_[sample, feature] for sample in same_class]
+            )
+            result += nominator / denominator
+
+        return result
+
+    def _hill_climb_top_down(self) -> list[int]:
+        optimal_feature_set = set(self._feature_tree.successors("ROOT"))
+        fitness = 0
+        best_fitness = 0
+        best_feature_set = None
+
+        while True:
+            for node in optimal_feature_set:
+                children = list(self._feature_tree[node])
+                if children:
+                    temporary_feature_set = optimal_feature_set
+                    temporary_feature_set.remove(node)
+                    temporary_feature_set.update(children)
+                    temporary_fitness = self._fitness_function(temporary_feature_set)
+                    if (temporary_fitness) > best_fitness:
+                        best_fitness = temporary_fitness
+                        best_feature_set = temporary_feature_set
+
+            if best_fitness > fitness:
+                optimal_feature_set = best_feature_set
+                fitness = best_fitness
+            else:
+                break
+        return list[optimal_feature_set]
