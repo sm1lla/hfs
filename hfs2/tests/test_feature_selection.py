@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/kathrin/hfs/hfs/')
+sys.path.append('/home/kathrin/hfs/hfs2/')
 
 
 from sklearn.utils.estimator_checks import check_estimator

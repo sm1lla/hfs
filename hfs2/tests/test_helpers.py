@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/kathrin/hfs/hfs/')
+sys.path.append('/home/kathrin/hfs/hfs2/')
 
 from go import open_dag
 import numpy as np
