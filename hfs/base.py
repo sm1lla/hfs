@@ -10,7 +10,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
     def __init__(self, hierarchy: np.ndarray = None):
         self.hierarchy = hierarchy
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, columns=None):
         """Fitting function that creates a DiGraph with a new root node for the hierarchy and initializes the _columns parameter.
 
         Parameters
@@ -28,8 +28,17 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
         X = check_array(X, accept_sparse=True)
 
         self.n_features_ = X.shape[1]
-        self._columns = list(range(self.n_features_))
+        # TODO: add real columns parameter
+        if columns:
+            self._colums = columns
+        else:
+            self._columns = list(range(self.n_features_))
 
+        self._set_feature_tree()
+
+        return self
+
+    def _set_feature_tree(self):
         if self.hierarchy is None:
             self._feature_tree = nx.DiGraph()
         else:
@@ -38,9 +47,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
             )
 
         # Build feature tree
-        self._feature_tree = create_feature_tree(self._feature_tree, self._columns)
-
-        return self
+        self._feature_tree = create_feature_tree(self._feature_tree)
 
     def transform(self, X):
         """Reduce X to the selected features.

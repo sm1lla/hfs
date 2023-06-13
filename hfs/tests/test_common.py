@@ -13,6 +13,12 @@ from hfs import (
     TSELSelector,
 )
 
+from ..hip import HIP
+from ..hnb import HNB
+from ..hnbs import HNBs
+from ..mrt import MRT
+from ..rnb import RNB
+
 
 @pytest.mark.parametrize(
     "estimator",
@@ -26,6 +32,11 @@ from hfs import (
         TemplateEstimator(),
         TemplateTransformer(),
         TemplateClassifier(),
+        HNB(),
+        HNBs(),
+        RNB(),
+        MRT(),
+        HIP(),
     ],
 )
 def test_all_estimators(estimator):

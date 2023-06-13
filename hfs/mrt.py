@@ -1,17 +1,24 @@
-"HNB-select feature selection"
+"MRT-select feature selection"
 
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
-from filter import Filter
+
+from .filter import Filter
 
 
-class HNBs(Filter):
+class MRT(Filter):
 
     """
-    Select non-redundant features following the algorithm proposed by Wan and Freitas 
+    Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas
     """
 
-    def select_and_predict(self, predict = True, saveFeatures = False, estimator = BernoulliNB()):
+    def __init__(self, hierarchy=None, k=0):
+        super(MRT, self).__init__(hierarchy)
+        self.k = k
+
+    def select_and_predict(
+        self, predict=True, saveFeatures=False, estimator=BernoulliNB()
+    ):
         """
         Select features lazy for each test instance amd optionally predict target value of test instances.
 
@@ -20,10 +27,10 @@ class HNBs(Filter):
         predict :   {bool}
             true if predictions shall be obtained
         saveFeatures: {bool}
-            true if features selected for each test instance shall be saved
+            true if features selected for each test instance shall be saved.
         estimator
-            Estimator to use for predictions.
-        
+                    Estimator to use for predictions
+
 
         Returns
         -------
@@ -31,11 +38,11 @@ class HNBs(Filter):
         """
         predictions = np.array([])
         for idx in range(len(self._xtest)):
-            self._get_nonredundant_features_relevance(idx)
+            self._get_nonredundant_features(idx)
             if predict:
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
-                # self._features = np.vstack((np.array(list(self._instance_status.values())), self._features)) (but appending to np is very inefficient)
+            for node in self._feature_tree:
+                self._instance_status[node] = 1
         return predictions
-    

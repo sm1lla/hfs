@@ -2,7 +2,8 @@
 
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
-from filter import Filter
+
+from .filter import Filter
 
 
 class RNB(Filter):
@@ -12,12 +13,13 @@ class RNB(Filter):
 
     """
 
-    def __init__(self, graph_data=None, k=0):
-
-        super(RNB, self).__init__(graph_data)
+    def __init__(self, hierarchy=None, k=0):
+        super(RNB, self).__init__(hierarchy)
         self.k = k
 
-    def select_and_predict(self, predict = True, saveFeatures = False, estimator = BernoulliNB()):
+    def select_and_predict(
+        self, predict=True, saveFeatures=False, estimator=BernoulliNB()
+    ):
         """
         Select features lazy for each test instance amd optionally predict target value of test instances.
 
@@ -36,15 +38,10 @@ class RNB(Filter):
         """
         predictions = np.array([])
         for idx in range(len(self._xtest)):
-            self._get_top_k() #change as equal for each test instance
+            self._get_top_k()  # change as equal for each test instance
             if predict:
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
                 # self._features = np.vstack((np.array(list(self._instance_status.values())), self._features)) (but appending to np is very inefficient)
         return predictions
-    
-
-    
-
-

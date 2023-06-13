@@ -1,19 +1,21 @@
 """
 Sklearn compatible estimators for preprocessing hierarchical data
 """
+import networkx
 import numpy as np
 from networkx.algorithms.dag import ancestors
 from networkx.algorithms.traversal import bfs_successors
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from .base import HierarchicalEstimator
+from .helpers import get_irrelevant_leaves
 
 
 class HierarchicalPreprocessor(HierarchicalEstimator):
     def __init__(self, hierarchy: np.ndarray = None):
         self.hierarchy = hierarchy
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, column_names=None):
         """Fitting function that sets parameters used to transform the data
 
         Parameters
@@ -33,7 +35,8 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         X = check_array(X, accept_sparse=True)
         super().fit(X, y)
         self._find_missing_columns()
-
+        self._shrink_dag(column_names)
+        self.is_fitted_ = True
         return self
 
     def transform(self, X):
@@ -52,6 +55,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
             in ``X``.
         """
         # Check is fit had been called
+
         check_is_fitted(self, "n_features_")
 
         # Input validation
@@ -64,14 +68,20 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
                 "Shape of input is different from what was seen" "in `fit`"
             )
 
-        # TODO: call shrink data method
         X_ = self._add_columns(X)
         X_ = self._propagate_ones(X_)
-
         return X_
 
-    # TODO: Add shrink data method
-    # TODO: Add method to get updated hierarchy
+    def _shrink_dag(self, x_identifier):
+        leaves = get_irrelevant_leaves(
+            x_identifier=x_identifier, digraph=self._feature_tree
+        )
+        while leaves:
+            for x in leaves:
+                self._feature_tree.remove_node(x)
+            leaves = get_irrelevant_leaves(
+                x_identifier=x_identifier, digraph=self._feature_tree
+            )
 
     def _find_missing_columns(self):
         num_nodes = len(self._feature_tree.nodes) - 1
@@ -104,3 +114,9 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
                         X[row_index, index] = 1.0
 
         return X
+
+    def get_hierarchy(self):
+        if self.is_fitted_:
+            return networkx.to_numpy_array(self._feature_tree)
+        else:
+            raise RuntimeError(f"Instance has not been fitted.")
