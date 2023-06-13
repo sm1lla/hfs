@@ -64,10 +64,14 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
                 "Shape of input is different from what was seen" "in `fit`"
             )
 
+        # TODO: call shrink data method
         X_ = self._add_columns(X)
         X_ = self._propagate_ones(X_)
 
         return X_
+
+    # TODO: Add shrink data method
+    # TODO: Add method to get updated hierarchy
 
     def _find_missing_columns(self):
         num_nodes = len(self._feature_tree.nodes) - 1

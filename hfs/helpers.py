@@ -7,6 +7,7 @@ from scipy import sparse
 
 def create_feature_tree(hierarchy: nx.DiGraph, column_names: list[str]) -> nx.DiGraph:
     # add missing nodes to hierarchy
+    # TODO: remove adding nodes
     for column in column_names:
         if column not in hierarchy.nodes():
             hierarchy.add_node(column)
@@ -29,6 +30,7 @@ def get_paths(graph: nx.DiGraph, reverse=False):
     return paths
 
 
+# TODO: add file for metrics
 def lift(data, labels):
     """returns list including lift value for each feature"""
     lift_values = []
