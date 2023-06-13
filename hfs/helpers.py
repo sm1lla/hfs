@@ -3,9 +3,6 @@ from fractions import Fraction
 import numpy as np
 import networkx as nx
 
-from fixtures import getFixedDag, getFixedData
-
-    
 
 def getRelevance(xdata, ydata, node):
     """
@@ -49,6 +46,7 @@ def get_leaves(x_identifier, digraph):
     return [x for x in digraph.nodes() if digraph.out_degree(x)==0 and digraph.in_degree(x)==1 and x not in x_identifier]
 
 def shrink_dag(x_identifier, digraph):
+    reversed_digraph = digraph.reverse()
     leaves = get_leaves(x_identifier=x_identifier, digraph=digraph)
     while(leaves):
         for x in leaves:
