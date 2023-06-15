@@ -165,6 +165,20 @@ def result_hill_selection():
     return (result, support)
 
 
+def wrong_hierarchy_X():
+    X = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+    hierarchy = nx.to_numpy_array(nx.DiGraph([(0, 1)]))
+    columns = [0, 1, 2]
+    return (X, hierarchy, columns)
+
+
+def wrong_hierarchy_X1():
+    X = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+    hierarchy = nx.to_numpy_array(nx.DiGraph([(0, 1), (1, 2), (3, 4), (0, 5)]))
+    columns = [0, 1, 2]
+    return (X, hierarchy, columns)
+
+
 _feature_number = 9
 
 

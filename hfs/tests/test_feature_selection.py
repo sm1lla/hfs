@@ -1,7 +1,12 @@
 import numpy as np
 import pytest
 
-from ..feature_selection import HillClimbingSelector, SHSELSelector, TSELSelector
+from ..feature_selection import (
+    HierarchicalFeatureSelector,
+    HillClimbingSelector,
+    SHSELSelector,
+    TSELSelector,
+)
 from .fixtures.fixtures import (
     data1,
     data1_2,
@@ -16,6 +21,8 @@ from .fixtures.fixtures import (
     result_tsel1,
     result_tsel2,
     result_tsel3,
+    wrong_hierarchy_X,
+    wrong_hierarchy_X1,
 )
 
 
@@ -98,3 +105,14 @@ def test_HillClimbing_selection(data, result):
 
     support_mask = selector.get_support()
     assert np.array_equal(support_mask, support)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [wrong_hierarchy_X(), wrong_hierarchy_X1()],
+)
+def test_HierarchicalFeatureSelector(data):
+    X, hierarchy, columns = data
+    selector = HierarchicalFeatureSelector(hierarchy)
+    with pytest.raises(AssertionError):
+        selector.fit(X, columns=columns)

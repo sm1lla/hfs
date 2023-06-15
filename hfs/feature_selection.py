@@ -17,7 +17,7 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
     def __init__(self, hierarchy: np.ndarray = None):
         super().__init__(hierarchy)
 
-    def fit(self, X, y, columns=None):
+    def fit(self, X, y=None, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -65,18 +65,17 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
             if feature_index not in self._columns
         ]
         assert (
-            not_in_hierarchy == [],
-            """All columns in X need to be mapped to a node in self.feature_tree. 
+            not_in_hierarchy == []
+        ), """All columns in X need to be mapped to a node in self.feature_tree. 
             If columns=None the corresponding node's name is the same as the columns index in the dataset. Otherwise it is the node's is in self.columns
-            at the index of the column's index""",
-        )
+            at the index of the column's index"""
+
         not_in_dataset = [
             node for node in self._feature_tree.nodes() if node not in self._columns
         ]
         assert (
-            not_in_dataset == [],
-            """The hierarchy should not include any nodes that are not mapped to a column in the dataset by the columns parameter""",
-        )
+            not_in_dataset == []
+        ), """The hierarchy should not include any nodes that are not mapped to a column in the dataset by the columns parameter"""
 
 
 class TSELSelector(HierarchicalFeatureSelector):
