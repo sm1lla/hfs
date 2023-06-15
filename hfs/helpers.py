@@ -1,3 +1,4 @@
+import math
 from fractions import Fraction
 
 import networkx as nx
@@ -193,3 +194,9 @@ def get_columns_for_numpy_hierarchy(hierarchy: nx.DiGraph, num_columns: int):
     and back
     """
     return [list(hierarchy.nodes()).index(node) for node in range(num_columns)]
+
+
+def normalize_score(score, max_value):
+    if score != 0:
+        score = math.log(1 + (score / max_value)) + 1
+    return score
