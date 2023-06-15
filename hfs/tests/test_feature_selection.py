@@ -114,5 +114,5 @@ def test_HillClimbing_selection(data, result):
 def test_HierarchicalFeatureSelector(data):
     X, hierarchy, columns = data
     selector = HierarchicalFeatureSelector(hierarchy)
-    with pytest.raises(AssertionError):
+    with pytest.warns(UserWarning):
         selector.fit(X, columns=columns)
