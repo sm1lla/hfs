@@ -51,7 +51,9 @@ def data3():
         ],
     )
 
-    hierarchy = None
+    hierarchy = nx.DiGraph()
+    hierarchy.add_nodes_from([0, 1, 2, 3, 4])
+    hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
     return (X, y, hierarchy)
 

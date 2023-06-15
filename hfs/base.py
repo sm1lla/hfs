@@ -28,9 +28,9 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
         X = check_array(X, accept_sparse=True)
 
         self.n_features_ = X.shape[1]
-        # TODO: add real columns parameter
         if columns:
-            self._colums = columns
+            assert len(columns != self.n_features_)
+            self._columns = columns
         else:
             self._columns = list(range(self.n_features_))
 
@@ -48,6 +48,12 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
 
         # Build feature tree
         self._feature_tree = create_feature_tree(self._feature_tree)
+
+    def _column_index(self, node):
+        return self._columns.index(node)
+
+    def get_columns(self):
+        return self._columns
 
     def transform(self, X):
         """Reduce X to the selected features.
