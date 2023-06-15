@@ -34,6 +34,7 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
         """
 
         super().fit(X, y, columns)
+        self._check_hierarchy_X()
 
         # representatives_ includes all node names for selected nodes, columns maps them to the respective column in X
         self.representatives_ = []
@@ -56,6 +57,26 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
         if self.n_features_ != X.shape[1]:
             raise ValueError("X has a different shape than during fitting.")
         return super().transform(X)
+
+    def _check_hierarchy_X(self):
+        not_in_hierarchy = [
+            feature_index
+            for feature_index in range(self.n_features_)
+            if feature_index not in self._columns
+        ]
+        assert (
+            not_in_hierarchy == [],
+            """All columns in X need to be mapped to a node in self.feature_tree. 
+            If columns=None the corresponding node's name is the same as the columns index in the dataset. Otherwise it is the node's is in self.columns
+            at the index of the column's index""",
+        )
+        not_in_dataset = [
+            node for node in self._feature_tree.nodes() if node not in self._columns
+        ]
+        assert (
+            not_in_dataset == [],
+            """The hierarchy should not include any nodes that are not mapped to a column in the dataset by the columns parameter""",
+        )
 
 
 class TSELSelector(HierarchicalFeatureSelector):

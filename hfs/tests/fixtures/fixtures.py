@@ -4,46 +4,42 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
+from hfs.helpers import get_columns_for_numpy_hierarchy
+
 
 def data1():
-    columns = ["A", "B", "C", "D", "E"]
-    df = pd.DataFrame(
+    X = np.array(
         [
             [0, 0, 0, 0, 1],
             [0, 0, 0, 1, 1],
             [0, 0, 1, 1, 1],
             [0, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
-        ],
-        columns=columns,
+        ]
     )
     edges = [(0, 1), (1, 2), (0, 3), (0, 4)]
     hierarchy = nx.DiGraph(edges)
-    columns = list(hierarchy.nodes())
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([0, 0, 0, 0, 1])
-    X = df.to_numpy()
     return (X, y, hierarchy, columns)
 
 
 def data1_2():
-    columns = ["A", "B", "C", "D", "E"]
-    df = pd.DataFrame(
+    X = np.array(
         [
             [0, 0, 0, 0, 1],
             [0, 0, 0, 1, 1],
             [0, 0, 1, 1, 1],
             [0, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
-        ],
-        columns=columns,
+        ]
     )
     edges = [(0, 4), (0, 3), (0, 1), (1, 2)]
     hierarchy = nx.DiGraph(edges)
-    columns = list(hierarchy.nodes())
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([0, 0, 0, 0, 1])
-    X = df.to_numpy()
     return (X, y, hierarchy, columns)
 
 
@@ -59,7 +55,7 @@ def data2():
     )
     edges = [(0, 1), (1, 2), (2, 3), (0, 4)]
     hierarchy = nx.DiGraph(edges)
-    columns = list(hierarchy.nodes())
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
     return (X, y, hierarchy, columns)
@@ -78,7 +74,7 @@ def data3():
 
     hierarchy = nx.DiGraph()
     hierarchy.add_nodes_from([0, 1, 2, 3, 4])
-    columns = list(hierarchy.nodes())
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
     return (X, y, hierarchy, columns)
