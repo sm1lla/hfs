@@ -7,6 +7,7 @@ import warnings
 
 import numpy as np
 from networkx.algorithms.dag import descendants
+from scipy import sparse
 from sklearn.feature_selection import SelectorMixin
 from sklearn.utils.validation import check_array, check_X_y
 
@@ -191,7 +192,8 @@ class SHSELSelector(HierarchicalFeatureSelector):
         """
         # Input validation
         X, y = check_X_y(X, y, accept_sparse=True)
-
+        if sparse.issparse(X):
+            X = X.tocsr()
         super().fit(X, y, columns)
 
         # Feature Selection Algorithm
@@ -366,4 +368,4 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
                 fitness = best_fitness
             else:
                 break
-        return list[optimal_feature_set]
+        return list(optimal_feature_set)
