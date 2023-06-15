@@ -18,10 +18,33 @@ def data1():
         columns=columns,
     )
     edges = [(0, 1), (1, 2), (0, 3), (0, 4)]
-    hierarchy = nx.to_numpy_array(nx.DiGraph(edges))
+    hierarchy = nx.DiGraph(edges)
+    columns = list(hierarchy.nodes())
+    hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([0, 0, 0, 0, 1])
     X = df.to_numpy()
-    return (X, y, hierarchy)
+    return (X, y, hierarchy, columns)
+
+
+def data1_2():
+    columns = ["A", "B", "C", "D", "E"]
+    df = pd.DataFrame(
+        [
+            [0, 0, 0, 0, 1],
+            [0, 0, 0, 1, 1],
+            [0, 0, 1, 1, 1],
+            [0, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1],
+        ],
+        columns=columns,
+    )
+    edges = [(0, 4), (0, 3), (0, 1), (1, 2)]
+    hierarchy = nx.DiGraph(edges)
+    columns = list(hierarchy.nodes())
+    hierarchy = nx.to_numpy_array(hierarchy)
+    y = np.array([0, 0, 0, 0, 1])
+    X = df.to_numpy()
+    return (X, y, hierarchy, columns)
 
 
 def data2():
@@ -35,9 +58,11 @@ def data2():
         ],
     )
     edges = [(0, 1), (1, 2), (2, 3), (0, 4)]
-    hierarchy = nx.to_numpy_array(nx.DiGraph(edges))
+    hierarchy = nx.DiGraph(edges)
+    columns = list(hierarchy.nodes())
+    hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
-    return (X, y, hierarchy)
+    return (X, y, hierarchy, columns)
 
 
 def data3():
@@ -53,9 +78,10 @@ def data3():
 
     hierarchy = nx.DiGraph()
     hierarchy.add_nodes_from([0, 1, 2, 3, 4])
+    columns = list(hierarchy.nodes())
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
-    return (X, y, hierarchy)
+    return (X, y, hierarchy, columns)
 
 
 def result_tsel1():
@@ -111,7 +137,8 @@ def data_shsel_selection():
     y = data2()[1]
     edges = [(0, 1), (1, 2), (2, 3), (3, 4)]
     hierarchy = nx.to_numpy_array(nx.DiGraph(edges))
-    return (X, y, hierarchy)
+    columns = None
+    return (X, y, hierarchy, columns)
 
 
 def result_shsel_selection():

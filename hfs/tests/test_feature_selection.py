@@ -4,6 +4,7 @@ import pytest
 from ..feature_selection import HillClimbingSelector, SHSELSelector, TSELSelector
 from .fixtures.fixtures import (
     data1,
+    data1_2,
     data2,
     data3,
     data_shsel_selection,
@@ -24,13 +25,14 @@ from .fixtures.fixtures import (
         (data1(), result_tsel1()),
         (data2(), result_tsel2()),
         (data3(), result_tsel3()),
+        (data1_2(), result_tsel1()),
     ],
 )
 def test_TSEL_selection(data, result):
-    X, y, hierarchy = data
+    X, y, hierarchy, columns = data
     expected, support = result
     selector = TSELSelector(hierarchy)
-    selector.fit(X, y)
+    selector.fit(X, y, columns)
     X = selector.transform(X)
     assert np.array_equal(X, expected)
 
@@ -44,13 +46,14 @@ def test_TSEL_selection(data, result):
         (data1(), result_shsel1()),
         (data2(), result_shsel2()),
         (data3(), result_shsel3()),
+        (data1_2(), result_shsel1()),
     ],
 )
 def test_SHSEL_selection(data, result):
-    X, y, hierarchy = data
+    X, y, hierarchy, columns = data
     expected, support = result
     selector = SHSELSelector(hierarchy)
-    selector.fit(X, y)
+    selector.fit(X, y, columns)
     X = selector.transform(X)
     assert np.array_equal(X, expected)
 
@@ -63,13 +66,14 @@ def test_SHSEL_selection(data, result):
     [
         (data_shsel_selection(), result_shsel_selection()),
         (data1(), result_shsel1()),
+        (data1_2(), result_shsel1()),
     ],
 )
 def test_SHSEL_selection_with_initial_selection(data, result):
-    X, y, hierarchy = data
+    X, y, hierarchy, columns = data
     expected, support = result
     selector = SHSELSelector(hierarchy, similarity_threshold=0.8)
-    selector.fit(X, y)
+    selector.fit(X, y, columns)
     X = selector.transform(X)
     assert np.array_equal(X, expected)
 
@@ -81,13 +85,14 @@ def test_SHSEL_selection_with_initial_selection(data, result):
     "data, result",
     [
         (data1(), result_hill_selection()),
+        (data1_2(), result_hill_selection()),
     ],
 )
 def test_HillClimbing_selection(data, result):
-    X, y, hierarchy = data
+    X, y, hierarchy, columns = data
     expected, support = result
     selector = HillClimbingSelector(hierarchy)
-    selector.fit(X, y)
+    selector.fit(X, y, columns)
     X = selector.transform(X)
     assert np.array_equal(X, expected)
 

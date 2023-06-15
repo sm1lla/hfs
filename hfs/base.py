@@ -29,7 +29,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
 
         self.n_features_ = X.shape[1]
         if columns:
-            assert len(columns != self.n_features_)
+            assert len(columns) == self.n_features_
             self._columns = columns
         else:
             self._columns = list(range(self.n_features_))
