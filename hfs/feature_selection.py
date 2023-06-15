@@ -17,7 +17,7 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
     def __init__(self, hierarchy: np.ndarray = None):
         super().__init__(hierarchy)
 
-    def fit(self, X, y):
+    def fit(self, X, y, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -33,16 +33,20 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
             Returns self.
         """
 
-        super().fit(X, y)
+        super().fit(X, y, columns)
 
+        # representatives_ includes all node names for selected nodes, columns maps them to the respective column in X
         self.representatives_ = []
 
         return self
 
     def _get_support_mask(self):
+        representatives_indices = [
+            self._column_index(node) for node in self.representatives_
+        ]
         return np.asarray(
             [
-                True if index in self.representatives_ else False
+                True if index in representatives_indices else False
                 for index in range(self.n_features_)
             ]
         )
@@ -64,7 +68,7 @@ class TSELSelector(HierarchicalFeatureSelector):
         self.use_original_implementation = use_original_implementation
 
     # TODO : check if columns parameter is really needed and think about how input should look like
-    def fit(self, X, y):
+    def fit(self, X, y, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -81,14 +85,14 @@ class TSELSelector(HierarchicalFeatureSelector):
         """
         X, y = check_X_y(X, y, accept_sparse=True)
 
-        super().fit(X, y)
+        super().fit(X, y, columns)
 
         # Feature Selection Algorithm
         paths = get_paths(self._feature_tree)
         lift_values = lift(X, y)
         self._node_to_lift = {
-            self._columns[index]: lift_values[index]
-            for index, _ in enumerate(self._columns)
+            column_name: lift_values[index]
+            for index, column_name in enumerate(self._columns)
         }
         self.representatives_ = self._find_representatives(paths)
 
@@ -146,7 +150,7 @@ class SHSELSelector(HierarchicalFeatureSelector):
         self.relevance_metric = relevance_metric
         self.similarity_threshold = similarity_threshold
 
-    def fit(self, X, y):
+    def fit(self, X, y, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -164,7 +168,7 @@ class SHSELSelector(HierarchicalFeatureSelector):
         # Input validation
         X, y = check_X_y(X, y, accept_sparse=True)
 
-        super().fit(X, y)
+        super().fit(X, y, columns)
 
         # Feature Selection Algorithm
         self._calculate_relevance(X, y)
@@ -230,7 +234,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         super().__init__(hierarchy)
         self.alpha = alpha
 
-    def fit(self, X, y):
+    def fit(self, X, y, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -248,66 +252,73 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         # Input validation
         X, y = check_X_y(X, y, accept_sparse=True)
 
-        super().fit(X, y)
+        super().fit(X, y, columns)
 
         # Feature Selection Algorithm
         self.y_ = y
-        self._calculate_distances(X)
-        self.representatives_ = self._hill_climb_top_down()
+        self._num_rows = X.shape[0]
+        self.representatives_ = self._hill_climb_top_down(X)
 
         return self
 
     def _calculate_normalized_frequencies(self, X):
-        self.frequency_matrix_ = X
-        num_rows, num_columns = X.shape
-        for row in range(num_rows):
-            max_frequency = max(self.frequency_matrix_[row, :])
-            for column in range(num_columns):
-                frequency = self.frequency_matrix_[row, column]
+        # TODO: check this method in paper (sum of children not implemented)
+        frequency_matrix = X
+        for row in range(self._num_rows):
+            max_frequency = max(frequency_matrix[row, :])
+            for feature in self._columns:
+                column_index = self._column_index(feature)
+                frequency = frequency_matrix[row, column_index]
                 if frequency != 0:
-                    self.frequency_matrix_[row, column] = (
+                    frequency_matrix[row, column_index] = (
                         math.log(1 + (frequency / max_frequency)) + 1
                     )
+        return frequency_matrix
 
-    def _calculate_distance(self, sample_i, sample_j):
+    def _calculate_distance(
+        self, sample_i: int, sample_j: int, frequency_matrix: np.ndarray
+    ):
         distance = 0
-        for column in range(self.frequency_matrix_.shape[1]):
+        for column_index in range(self.n_features_):
             difference = (
-                self.frequency_matrix_[sample_i, column]
-                - self.frequency_matrix_[sample_j, column]
+                frequency_matrix[sample_i, column_index]
+                - frequency_matrix[sample_j, column_index]
             )
             distance += math.pow(difference, 2)
         return math.sqrt(distance)
 
-    def _calculate_distances(self, X):
-        self._calculate_normalized_frequencies(X)
-        num_rows = X.shape[0]
-        self.distances_ = np.zeros((num_rows, num_rows), dtype=int)
-        for row in range(num_rows):
-            for column in range(num_rows):
-                if self.distances_[row, column] == 0:
-                    self.distances_[row, column] = self._calculate_distance(row, column)
-                    self.distances_[column, row] = self.distances_[row, column]
+    def _calculate_distances(self, X, feature_set: list[int]):
+        frequency_matrix = self._calculate_normalized_frequencies(X, feature_set)
+        distances = np.zeros((self._num_rows, self._num_rows), dtype=int)
+        for row in range(self._num_rows):
+            for column in range(self._num_rows):
+                if distances[row, column] == 0:
+                    distances[row, column] = self._calculate_distance(
+                        row, column, frequency_matrix
+                    )
+                    distances[column, row] = distances[row, column]
+        return distances
 
-    def _fitness_function(self, features: set[int]) -> float:
+    def _fitness_function(self, distances: np.ndarray) -> float:
         result = 0
-        for feature in features:
+        row_indices = range(self._num_rows)
+        for row_index in row_indices:
             same_class = [
-                sample for sample in features if self.y_[sample] == self.y_[feature]
+                sample
+                for sample in row_indices
+                if self.y_[sample] == self.y_[row_index]
             ]
-            other_class = [sample for sample in features if sample not in same_class]
+            other_class = [sample for sample in row_indices if sample not in same_class]
 
-            nominator = sum(
-                [self.distances_[sample, feature] for sample in other_class]
-            )
+            nominator = sum([distances[sample, row_index] for sample in other_class])
             denominator = 1 + self.alpha * sum(
-                [self.distances_[sample, feature] for sample in same_class]
+                [distances[sample, row_index] for sample in same_class]
             )
             result += nominator / denominator
 
         return result
 
-    def _hill_climb_top_down(self) -> list[int]:
+    def _hill_climb_top_down(self, X) -> list[int]:
         optimal_feature_set = set(self._feature_tree.successors("ROOT"))
         fitness = 0
         best_fitness = 0
@@ -315,12 +326,13 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
 
         while True:
             for node in optimal_feature_set:
-                children = list(self._feature_tree[node])
+                children = list(self._feature_tree.successors(node))
                 if children:
                     temporary_feature_set = optimal_feature_set
                     temporary_feature_set.remove(node)
                     temporary_feature_set.update(children)
-                    temporary_fitness = self._fitness_function(temporary_feature_set)
+                    distances = self._calculate_distances(X, temporary_feature_set)
+                    temporary_fitness = self._fitness_function(distances)
                     if (temporary_fitness) > best_fitness:
                         best_fitness = temporary_fitness
                         best_feature_set = temporary_feature_set

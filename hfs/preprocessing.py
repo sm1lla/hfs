@@ -15,7 +15,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
     def __init__(self, hierarchy: np.ndarray = None):
         self.hierarchy = hierarchy
 
-    def fit(self, X, y=None, column_names=None):
+    def fit(self, X, y=None, columns=None):
         """Fitting function that sets parameters used to transform the data
 
         Parameters
@@ -33,9 +33,9 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
             Returns self.
         """
         X = check_array(X, accept_sparse=True)
-        super().fit(X, y)
+        super().fit(X, y, columns)
         self._find_missing_columns()
-        self._shrink_dag(column_names)
+        self._shrink_dag(self._columns)
         self.is_fitted_ = True
         return self
 
@@ -84,18 +84,19 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
             )
 
     def _find_missing_columns(self):
-        num_nodes = len(self._feature_tree.nodes) - 1
-        num_columns = len(self._columns)
-        if num_nodes > num_columns:
-            missing_nodes = list(range(num_columns, num_nodes))
-            self._columns.extend(missing_nodes)
+        missing_nodes = [
+            node
+            for node in self._feature_tree.nodes
+            if node not in self._columns and node != "ROOT"
+        ]
+        self._columns.extend(missing_nodes)
 
     def _add_columns(self, X):
         X_ = X
         num_rows, num_columns = X.shape
         if num_columns != len(self._columns):
-            missing_nodes = list(range(num_columns, len(self._columns)))
-            for _ in missing_nodes:
+            missing_nodes_indices = list(range(num_columns, len(self._columns)))
+            for _ in missing_nodes_indices:
                 X_ = np.concatenate([X_, np.zeros((num_rows, 1), dtype=int)], axis=1)
         return X_
 
@@ -104,13 +105,13 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         nodes.remove("ROOT")
 
         for node in nodes:
-            column_index = self._columns.index(node)
+            column_index = self._column_index(node)
             ancestor_nodes = ancestors(self._feature_tree, node)
             ancestor_nodes.remove("ROOT")
             for row_index, entry in enumerate(X[:, column_index]):
                 if entry == 1.0:
                     for ancestor in ancestor_nodes:
-                        index = self._columns.index(ancestor)
+                        index = self._column_index(ancestor)
                         X[row_index, index] = 1.0
 
         return X
