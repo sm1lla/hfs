@@ -111,6 +111,7 @@ class Filter(HierarchicalEstimator, ABC):
         """
         # Create DAG
         self._set_feature_tree()
+        self._feature_tree.remove_node("ROOT")
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
@@ -125,8 +126,7 @@ class Filter(HierarchicalEstimator, ABC):
         self._descendants = {}
         self._ancestors = {}
         for node in self._feature_tree:
-            if node != "ROOT":
-                self._relevance[node] = self._get_relevance(node)
+            self._relevance[node] = self._get_relevance(node)
             self._ancestors[node] = self._get_ancestors(node)
             self._descendants[node] = self._get_descendants(node)
         self._get_sorted_relevance()
@@ -151,8 +151,6 @@ class Filter(HierarchicalEstimator, ABC):
             Index of test instance for which the features shall be selected.
         """
         for node in self._feature_tree:
-            if node == "ROOT":
-                continue
             if self._xtest[idx][node] == 1:
                 for anc in self._ancestors[node]:
                     self._instance_status[anc] = 0
