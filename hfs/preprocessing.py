@@ -34,8 +34,8 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         """
         X = check_array(X, accept_sparse=True)
         super().fit(X, y, columns)
-        self._find_missing_columns()
         self._shrink_dag(self._columns)
+        self._find_missing_columns()
         self.is_fitted_ = True
         return self
 
@@ -118,6 +118,8 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
 
     def get_hierarchy(self):
         if self.is_fitted_:
+            output_hierarchy = self._feature_tree
+            output_hierarchy.remove_node("ROOT")
             return networkx.to_numpy_array(self._feature_tree)
         else:
             raise RuntimeError(f"Instance has not been fitted.")

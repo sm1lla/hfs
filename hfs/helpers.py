@@ -1,3 +1,4 @@
+import math
 from fractions import Fraction
 
 import networkx as nx
@@ -67,6 +68,7 @@ def get_irrelevant_leaves(x_identifier, digraph):
         if digraph.out_degree(x) == 0
         and digraph.in_degree(x) == 1
         and x not in x_identifier
+        and x != "ROOT"
     ]
 
 
@@ -184,3 +186,17 @@ def information_gain(data, labels):
         ig = info_gain(labels, data[:, column_index])
         ig_values.append(ig)
     return ig_values
+
+
+def get_columns_for_numpy_hierarchy(hierarchy: nx.DiGraph, num_columns: int):
+    """If each node in the hierarchy is named after a column's index this methods will give you
+    the mapping from column index to node name of the node after the graph was transformed to a numpy array
+    and back
+    """
+    return [list(hierarchy.nodes()).index(node) for node in range(num_columns)]
+
+
+def normalize_score(score, max_value):
+    if score != 0:
+        score = math.log(1 + (score / max_value)) + 1
+    return score

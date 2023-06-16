@@ -1,49 +1,46 @@
+import math
 import random
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 
+from hfs.helpers import get_columns_for_numpy_hierarchy
+
 
 def data1():
-    columns = ["A", "B", "C", "D", "E"]
-    df = pd.DataFrame(
+    X = np.array(
         [
             [0, 0, 0, 0, 1],
             [0, 0, 0, 1, 1],
             [0, 0, 1, 1, 1],
             [0, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
-        ],
-        columns=columns,
+        ]
     )
     edges = [(0, 1), (1, 2), (0, 3), (0, 4)]
     hierarchy = nx.DiGraph(edges)
-    columns = list(hierarchy.nodes())
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([0, 0, 0, 0, 1])
-    X = df.to_numpy()
     return (X, y, hierarchy, columns)
 
 
 def data1_2():
-    columns = ["A", "B", "C", "D", "E"]
-    df = pd.DataFrame(
+    X = np.array(
         [
             [0, 0, 0, 0, 1],
             [0, 0, 0, 1, 1],
             [0, 0, 1, 1, 1],
             [0, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
-        ],
-        columns=columns,
+        ]
     )
     edges = [(0, 4), (0, 3), (0, 1), (1, 2)]
     hierarchy = nx.DiGraph(edges)
-    columns = list(hierarchy.nodes())
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([0, 0, 0, 0, 1])
-    X = df.to_numpy()
     return (X, y, hierarchy, columns)
 
 
@@ -59,7 +56,7 @@ def data2():
     )
     edges = [(0, 1), (1, 2), (2, 3), (0, 4)]
     hierarchy = nx.DiGraph(edges)
-    columns = list(hierarchy.nodes())
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
     return (X, y, hierarchy, columns)
@@ -78,7 +75,7 @@ def data3():
 
     hierarchy = nx.DiGraph()
     hierarchy.add_nodes_from([0, 1, 2, 3, 4])
-    columns = list(hierarchy.nodes())
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
     return (X, y, hierarchy, columns)
@@ -167,6 +164,79 @@ def result_hill_selection():
     )
     support = np.array([False, True, False, True, True])
     return (result, support)
+
+
+def wrong_hierarchy_X():
+    X = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+    hierarchy = nx.to_numpy_array(nx.DiGraph([(0, 1)]))
+    columns = [0, 1, 2]
+    return (X, hierarchy, columns)
+
+
+def wrong_hierarchy_X1():
+    X = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+    hierarchy = nx.to_numpy_array(nx.DiGraph([(0, 1), (1, 2), (3, 4), (0, 5)]))
+    columns = [0, 1, 2]
+    return (X, hierarchy, columns)
+
+
+def result_score_matrix1():
+    return np.array(
+        [
+            [1, 0, 0, 0, 1],
+            [2, 0, 0, 1, 1],
+            [3, 1, 1, 1, 1],
+            [4, 2, 1, 1, 1],
+            [5, 2, 1, 1, 1],
+        ]
+    )
+
+
+def result_distance_matrix1():
+    return np.array(
+        [
+            [0.0, math.sqrt(2), math.sqrt(7), math.sqrt(15), math.sqrt(22)],
+            [math.sqrt(2), 0.0, math.sqrt(3), math.sqrt(9), math.sqrt(14)],
+            [math.sqrt(7), math.sqrt(3), 0.0, math.sqrt(2), math.sqrt(5)],
+            [math.sqrt(15), math.sqrt(9), math.sqrt(2), 0.0, 1.0],
+            [math.sqrt(22), math.sqrt(14), math.sqrt(5), 1.0, 0.0],
+        ]
+    )
+
+
+def result_fitness_funtion1():
+    alpha = 0.99
+    doc1 = math.sqrt(22) / (1 + alpha * (math.sqrt(2) + math.sqrt(7) + math.sqrt(15)))
+    doc2 = math.sqrt(14) / (1 + alpha * (math.sqrt(2) + math.sqrt(3) + math.sqrt(9)))
+    doc3 = math.sqrt(5) / (1 + alpha * (math.sqrt(7) + math.sqrt(3) + math.sqrt(2)))
+    doc4 = 1.0 / (1 + alpha * (math.sqrt(15) + math.sqrt(9) + math.sqrt(2)))
+    doc5 = (math.sqrt(22) + math.sqrt(14) + math.sqrt(5) + 1.0) / 1.0
+
+    return doc1 + doc2 + doc3 + doc4 + doc5
+
+
+def result_score_matrix2():
+    return np.array(
+        [
+            [3, 1, 0, 0, 1],
+            [4, 3, 2, 1, 0],
+            [3, 2, 1, 0, 0],
+            [2, 0, 0, 0, 1],
+            [2, 1, 0, 0, 0],
+        ]
+    )
+
+
+def result_score_matrix3():
+    return np.array(
+        [
+            [1, 1, 0, 0, 1],
+            [1, 1, 1, 1, 0],
+            [1, 1, 1, 0, 0],
+            [1, 0, 0, 0, 1],
+            [1, 1, 0, 0, 0],
+        ],
+    )
 
 
 _feature_number = 9
