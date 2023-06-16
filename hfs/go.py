@@ -17,7 +17,8 @@ def load_dag(url, file_name):
     go_digraph_sparse = nx.to_scipy_sparse_array(go_digraph)
     nx.write_gml(go_digraph, file_name+".gml")
     l = go_digraph.nodes()
-    np.save("./algo/data/nodes_go.npy", l)
+    print(l)
+    #np.save("./algo/data/nodes_go.npy", l)
 
 
 def open_dag(file_name):
@@ -28,6 +29,6 @@ def open_dag(file_name):
 
 def main():
     url = "http://release.geneontology.org/2023-05-10/ontology/go-basic.json.gz"
-    file_name = "./algo/data/go_digraph"
+    file_name = "./go_digraph"
     load_dag(url=url, file_name=file_name)
-    open_dag(file_name=file_name)
+    #open_dag(file_name=file_name)
