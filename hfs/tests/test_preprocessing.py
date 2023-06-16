@@ -32,11 +32,16 @@ def data2():
     #3    4
     #5
     hierarchy = nx.to_numpy_array(nx.DiGraph(edges))
-    X_identifiers = list(["GO:2001090", "GO:2001091", "GO:2001092", "GO:2001094"])
-    X = np.ones([len(X_identifiers),2])
+    X_identifiers = list([0,1,2,4])
+    X = np.ones((2,len(X_identifiers)))
+    # in X there is 0,1,2,4
     edges_transformed = [("GO:2001090", "GO:2001091"),("GO:2001090", "GO:2001092"),
                 ("GO:2001091", "GO:2001094")]
-    hierarchy_transformed = nx.to_numpy_array(nx.DiGraph(edges_transformed))
+    h = nx.DiGraph(edges_transformed)
+
+    h.add_edge("ROOT", "GO:2001090")
+    
+    hierarchy_transformed = nx.to_numpy_array(h)
 
     return (X,  hierarchy, hierarchy_transformed, X_identifiers)
 
@@ -53,7 +58,7 @@ def test_HP(data1):
 def test_shrink_dag(data2):
     X, hierarchy, hierarchy_transformed, X_identifiers = data2
     preprocessor = HierarchicalPreprocessor(hierarchy)
-    preprocessor.fit(X, column_names=X_identifiers)
+    preprocessor.fit(X, columns=X_identifiers)
     hierarchy = preprocessor.get_hierarchy()
-    assert np.equal(hierarchy, hierarchy_transformed)
+    assert np.equal(hierarchy.all(), hierarchy_transformed.all())
     

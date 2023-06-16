@@ -37,8 +37,8 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         """
         X = check_array(X, accept_sparse=True)
         super().fit(X, y, columns)
+        self._shrink_dag()
         self._find_missing_columns()
-        self._shrink_dag(self._columns)
         self.is_fitted_ = True
         return self
 
@@ -75,15 +75,15 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         X_ = self._propagate_ones(X_)
         return X_
 
-    def _shrink_dag(self, x_identifier):
+    def _shrink_dag(self):
         leaves = get_irrelevant_leaves(
-            x_identifier=x_identifier, digraph=self._feature_tree
+            x_identifier=self._columns, digraph=self._feature_tree
         )
         while leaves:
             for x in leaves:
                 self._feature_tree.remove_node(x)
             leaves = get_irrelevant_leaves(
-                x_identifier=x_identifier, digraph=self._feature_tree
+                x_identifier=self._columns, digraph=self._feature_tree
             )
 
     def _find_missing_columns(self):
