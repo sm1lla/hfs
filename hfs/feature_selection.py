@@ -260,7 +260,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         self,
         hierarchy: np.ndarray = None,
         alpha: float = 0.99,
-        dataset_type: str = "numerical",
+        dataset_type: str = "binary",
     ):
         super().__init__(hierarchy)
         self.alpha = alpha
@@ -285,6 +285,8 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         X, y = check_X_y(X, y, accept_sparse=True)
 
         super().fit(X, y, columns)
+        if sparse.issparse(X):
+            X = X.tocsr()
 
         # Feature Selection Algorithm
         self.y_ = y
@@ -294,12 +296,14 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         return self
 
     def _calculate_scores(self, X):
-        score_matrix = np.zeros_like(X)
+        score_matrix = np.zeros((self._num_rows, self.n_features_))
         for row in range(self._num_rows):
             for column_index in range(self.n_features_):
-                children = list(
-                    descendants(self._feature_tree, self._columns[column_index])
-                )
+                children = []
+                if self._columns[column_index in self._feature_tree.nodes]:
+                    children = list(
+                        descendants(self._feature_tree, self._columns[column_index])
+                    )
                 scores_children = [X[row, child] for child in children]
                 score = sum(scores_children, start=X[row, column_index])
 
@@ -319,8 +323,8 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         for column in feature_set:
             column_index = self._column_index(column)
             difference = (
-                self.score_matrix[sample_i, column_index]
-                - self.score_matrix[sample_j, column_index]
+                self._score_matrix[sample_i, column_index]
+                - self._score_matrix[sample_j, column_index]
             )
             distance += math.pow(difference, 2)
         return math.sqrt(distance)
@@ -356,7 +360,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         return result
 
     def _hill_climb_top_down(self, X) -> list[int]:
-        self.score_matrix = self._calculate_scores(X)
+        self._score_matrix = self._calculate_scores(X)
         optimal_feature_set = set(self._feature_tree.successors("ROOT"))
         fitness = 0
         best_fitness = 0
