@@ -1,3 +1,4 @@
+import math
 import random
 
 import networkx as nx
@@ -177,6 +178,65 @@ def wrong_hierarchy_X1():
     hierarchy = nx.to_numpy_array(nx.DiGraph([(0, 1), (1, 2), (3, 4), (0, 5)]))
     columns = [0, 1, 2]
     return (X, hierarchy, columns)
+
+
+def result_score_matrix1():
+    return np.array(
+        [
+            [1, 0, 0, 0, 1],
+            [2, 0, 0, 1, 1],
+            [3, 1, 1, 1, 1],
+            [4, 2, 1, 1, 1],
+            [5, 2, 1, 1, 1],
+        ]
+    )
+
+
+def result_distance_matrix1():
+    return np.array(
+        [
+            [0.0, math.sqrt(2), math.sqrt(7), math.sqrt(15), math.sqrt(22)],
+            [math.sqrt(2), 0.0, math.sqrt(3), math.sqrt(9), math.sqrt(14)],
+            [math.sqrt(7), math.sqrt(3), 0.0, math.sqrt(2), math.sqrt(5)],
+            [math.sqrt(15), math.sqrt(9), math.sqrt(2), 0.0, 1.0],
+            [math.sqrt(22), math.sqrt(14), math.sqrt(5), 1.0, 0.0],
+        ]
+    )
+
+
+def result_fitness_funtion1():
+    alpha = 0.99
+    doc1 = math.sqrt(22) / (1 + alpha * (math.sqrt(2) + math.sqrt(7) + math.sqrt(15)))
+    doc2 = math.sqrt(14) / (1 + alpha * (math.sqrt(2) + math.sqrt(3) + math.sqrt(9)))
+    doc3 = math.sqrt(5) / (1 + alpha * (math.sqrt(7) + math.sqrt(3) + math.sqrt(2)))
+    doc4 = 1.0 / (1 + alpha * (math.sqrt(15) + math.sqrt(9) + math.sqrt(2)))
+    doc5 = (math.sqrt(22) + math.sqrt(14) + math.sqrt(5) + 1.0) / 1.0
+
+    return doc1 + doc2 + doc3 + doc4 + doc5
+
+
+def result_score_matrix2():
+    return np.array(
+        [
+            [3, 1, 0, 0, 1],
+            [4, 3, 2, 1, 0],
+            [3, 2, 1, 0, 0],
+            [2, 0, 0, 0, 1],
+            [2, 1, 0, 0, 0],
+        ]
+    )
+
+
+def result_score_matrix3():
+    return np.array(
+        [
+            [1, 1, 0, 0, 1],
+            [1, 1, 1, 1, 0],
+            [1, 1, 1, 0, 0],
+            [1, 0, 0, 0, 1],
+            [1, 1, 0, 0, 0],
+        ],
+    )
 
 
 _feature_number = 9

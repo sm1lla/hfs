@@ -293,36 +293,19 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
 
         return self
 
-    def _calculate_normalized_frequencies(self, X):
-        # TODO: check this method in paper (sum of children not implemented)
-        frequency_matrix = X
-
+    def _calculate_scores(self, X):
+        score_matrix = np.zeros_like(X)
         for row in range(self._num_rows):
-            max_frequency = max(frequency_matrix[row, :])
-            for feature in self._columns:
-                column_index = self._column_index(feature)
-                frequency = frequency_matrix[row, column_index]
-                if frequency != 0:
-                    frequency_matrix[row, column_index] = (
-                        math.log(1 + (frequency / max_frequency)) + 1
-                    )
-        return frequency_matrix
-
-    def _calculate_scores(self, X, feature_set: set[int]):
-        score_matrix = X
-        for row in range(self._num_rows):
-            for column in feature_set:
-                column_index = self._column_index(column)
-                children = list(self._feature_tree.successors(column))
-                children = [
-                    self._column_index(child)
-                    for child in children
-                    if child in feature_set
-                ]
+            for column_index in range(self.n_features_):
+                children = list(
+                    descendants(self._feature_tree, self._columns[column_index])
+                )
                 scores_children = [X[row, child] for child in children]
                 score = sum(scores_children, start=X[row, column_index])
+
                 if self.dataset_type == "numerical":
                     normalize_score(score, max(X[row, :]))
+
                 score_matrix[row, column_index] = score
         return score_matrix
 
@@ -330,27 +313,25 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         self,
         sample_i: int,
         sample_j: int,
-        frequency_matrix: np.ndarray,
         feature_set: list[int],
     ):
         distance = 0
         for column in feature_set:
             column_index = self._column_index(column)
             difference = (
-                frequency_matrix[sample_i, column_index]
-                - frequency_matrix[sample_j, column_index]
+                self.score_matrix[sample_i, column_index]
+                - self.score_matrix[sample_j, column_index]
             )
             distance += math.pow(difference, 2)
         return math.sqrt(distance)
 
-    def _calculate_distances(self, X, feature_set: list[int]):
-        score_matrix = self._calculate_scores(X, feature_set)
-        distances = np.zeros((self._num_rows, self._num_rows), dtype=int)
+    def _calculate_distances(self, feature_set: list[int]):
+        distances = np.zeros((self._num_rows, self._num_rows), dtype=float)
         for row in range(self._num_rows):
             for column in range(self._num_rows):
                 if distances[row, column] == 0:
                     distances[row, column] = self._calculate_distance(
-                        row, column, score_matrix, feature_set
+                        row, column, feature_set
                     )
                     distances[column, row] = distances[row, column]
         return distances
@@ -375,6 +356,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         return result
 
     def _hill_climb_top_down(self, X) -> list[int]:
+        self.score_matrix = self._calculate_scores(X)
         optimal_feature_set = set(self._feature_tree.successors("ROOT"))
         fitness = 0
         best_fitness = 0
@@ -387,7 +369,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
                     temporary_feature_set = optimal_feature_set.copy()
                     temporary_feature_set.remove(node)
                     temporary_feature_set.update(children)
-                    distances = self._calculate_distances(X, temporary_feature_set)
+                    distances = self._calculate_distances(temporary_feature_set)
                     temporary_fitness = self._fitness_function(distances)
                     if (temporary_fitness) > best_fitness:
                         best_fitness = temporary_fitness
