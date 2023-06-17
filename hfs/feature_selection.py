@@ -3,21 +3,23 @@ Sklearn compatible estimators for feature selection
 """
 import math
 import statistics
+import warnings
 
 import numpy as np
 from networkx.algorithms.dag import descendants
+from scipy import sparse
 from sklearn.feature_selection import SelectorMixin
 from sklearn.utils.validation import check_array, check_X_y
 
 from .base import HierarchicalEstimator
-from .helpers import get_paths, information_gain, lift
+from .helpers import get_paths, information_gain, lift, normalize_score
 
 
 class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
     def __init__(self, hierarchy: np.ndarray = None):
         super().__init__(hierarchy)
 
-    def fit(self, X, y, columns=None):
+    def fit(self, X, y=None, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
 
         Parameters
@@ -34,6 +36,7 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
         """
 
         super().fit(X, y, columns)
+        self._check_hierarchy_X()
 
         # representatives_ includes all node names for selected nodes, columns maps them to the respective column in X
         self.representatives_ = []
@@ -56,6 +59,28 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
         if self.n_features_ != X.shape[1]:
             raise ValueError("X has a different shape than during fitting.")
         return super().transform(X)
+
+    def _check_hierarchy_X(self):
+        not_in_hierarchy = [
+            feature_index
+            for feature_index in range(self.n_features_)
+            if feature_index not in self._columns
+        ]
+        if not_in_hierarchy:
+            warnings.warn(
+                """All columns in X need to be mapped to a node in self.feature_tree. 
+            If columns=None the corresponding node's name is the same as the columns index in the dataset. Otherwise it is the node's is in self.columns
+            at the index of the column's index"""
+            )
+
+        not_in_dataset = [
+            node for node in self._feature_tree.nodes() if node not in self._columns
+        ]
+        if not_in_dataset:
+            warnings.warn(
+                """The hierarchy should not include any nodes
+            that are not mapped to a column in the dataset by the columns parameter"""
+            )
 
 
 class TSELSelector(HierarchicalFeatureSelector):
@@ -167,7 +192,8 @@ class SHSELSelector(HierarchicalFeatureSelector):
         """
         # Input validation
         X, y = check_X_y(X, y, accept_sparse=True)
-
+        if sparse.issparse(X):
+            X = X.tocsr()
         super().fit(X, y, columns)
 
         # Feature Selection Algorithm
@@ -230,9 +256,15 @@ class SHSELSelector(HierarchicalFeatureSelector):
 class HillClimbingSelector(HierarchicalFeatureSelector):
     """Hill climbing feature selection method for hierarchical features proposed by Wang et al."""
 
-    def __init__(self, hierarchy: np.ndarray = None, alpha: float = 0.99):
+    def __init__(
+        self,
+        hierarchy: np.ndarray = None,
+        alpha: float = 0.99,
+        dataset_type: str = "binary",
+    ):
         super().__init__(hierarchy)
         self.alpha = alpha
+        self.dataset_type = dataset_type
 
     def fit(self, X, y, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
@@ -253,6 +285,8 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         X, y = check_X_y(X, y, accept_sparse=True)
 
         super().fit(X, y, columns)
+        if sparse.issparse(X):
+            X = X.tocsr()
 
         # Feature Selection Algorithm
         self.y_ = y
@@ -261,40 +295,47 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
 
         return self
 
-    def _calculate_normalized_frequencies(self, X):
-        # TODO: check this method in paper (sum of children not implemented)
-        frequency_matrix = X
+    def _calculate_scores(self, X):
+        score_matrix = np.zeros((self._num_rows, self.n_features_))
         for row in range(self._num_rows):
-            max_frequency = max(frequency_matrix[row, :])
-            for feature in self._columns:
-                column_index = self._column_index(feature)
-                frequency = frequency_matrix[row, column_index]
-                if frequency != 0:
-                    frequency_matrix[row, column_index] = (
-                        math.log(1 + (frequency / max_frequency)) + 1
+            for column_index in range(self.n_features_):
+                children = []
+                if self._columns[column_index in self._feature_tree.nodes]:
+                    children = list(
+                        descendants(self._feature_tree, self._columns[column_index])
                     )
-        return frequency_matrix
+                scores_children = [X[row, child] for child in children]
+                score = sum(scores_children, start=X[row, column_index])
+
+                if self.dataset_type == "numerical":
+                    normalize_score(score, max(X[row, :]))
+
+                score_matrix[row, column_index] = score
+        return score_matrix
 
     def _calculate_distance(
-        self, sample_i: int, sample_j: int, frequency_matrix: np.ndarray
+        self,
+        sample_i: int,
+        sample_j: int,
+        feature_set: list[int],
     ):
         distance = 0
-        for column_index in range(self.n_features_):
+        for column in feature_set:
+            column_index = self._column_index(column)
             difference = (
-                frequency_matrix[sample_i, column_index]
-                - frequency_matrix[sample_j, column_index]
+                self._score_matrix[sample_i, column_index]
+                - self._score_matrix[sample_j, column_index]
             )
             distance += math.pow(difference, 2)
         return math.sqrt(distance)
 
-    def _calculate_distances(self, X, feature_set: list[int]):
-        frequency_matrix = self._calculate_normalized_frequencies(X, feature_set)
-        distances = np.zeros((self._num_rows, self._num_rows), dtype=int)
+    def _calculate_distances(self, feature_set: list[int]):
+        distances = np.zeros((self._num_rows, self._num_rows), dtype=float)
         for row in range(self._num_rows):
             for column in range(self._num_rows):
                 if distances[row, column] == 0:
                     distances[row, column] = self._calculate_distance(
-                        row, column, frequency_matrix
+                        row, column, feature_set
                     )
                     distances[column, row] = distances[row, column]
         return distances
@@ -319,6 +360,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         return result
 
     def _hill_climb_top_down(self, X) -> list[int]:
+        self._score_matrix = self._calculate_scores(X)
         optimal_feature_set = set(self._feature_tree.successors("ROOT"))
         fitness = 0
         best_fitness = 0
@@ -328,10 +370,10 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
             for node in optimal_feature_set:
                 children = list(self._feature_tree.successors(node))
                 if children:
-                    temporary_feature_set = optimal_feature_set
+                    temporary_feature_set = optimal_feature_set.copy()
                     temporary_feature_set.remove(node)
                     temporary_feature_set.update(children)
-                    distances = self._calculate_distances(X, temporary_feature_set)
+                    distances = self._calculate_distances(temporary_feature_set)
                     temporary_fitness = self._fitness_function(distances)
                     if (temporary_fitness) > best_fitness:
                         best_fitness = temporary_fitness
@@ -342,4 +384,4 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
                 fitness = best_fitness
             else:
                 break
-        return list[optimal_feature_set]
+        return list(optimal_feature_set)

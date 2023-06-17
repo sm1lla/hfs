@@ -119,6 +119,8 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
 
     def get_hierarchy(self):
         if self.is_fitted_:
+            output_hierarchy = self._feature_tree
+            output_hierarchy.remove_node("ROOT")
             return networkx.to_numpy_array(self._feature_tree)
         else:
             raise RuntimeError(f"Instance has not been fitted.")
