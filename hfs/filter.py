@@ -154,10 +154,10 @@ class Filter(HierarchicalEstimator, ABC):
         """
         for node in self._feature_tree:
             if self._xtest[idx][node] == 1:
-                for anc in self._ancestors[node]:
+                for anc in self._feature_tree.predecessors(node): #TODO: save it first to make it more efficient?
                     self._instance_status[anc] = 0
             else:
-                for desc in self._descendants[node]:
+                for desc in self._feature_tree.successors(node):
                     self._instance_status[desc] = 0
 
     def _get_nonredundant_features_relevance(self, idx):
@@ -217,29 +217,41 @@ class Filter(HierarchicalEstimator, ABC):
             # Then the condition is never met on this path
             # so self._instance_status[mrt[node]] = 0 never executed.
             #
+            mrt[node] = []
+            more_rel_nodes = [node]
             if self._xtest[idx][node]:
-                mrt[node] = node
                 # preds are 1 because of 0-1-propagation
                 for pred in self._feature_tree.predecessors(node):
-                    # get most relevant node seen on path until current node
-                    if mrt[pred] and self._relevance[mrt[pred]] > self._relevance[mrt[node]]:
-                        # each node not selected will removed
-                        self._instance_status[mrt[node]] = 0
-                        #mrt[node] = mrt[pred]
-                    else:
-                        self._instance_status[mrt[pred]] = 0
+                    # get most relevant nodes seen on the paths until current node
+                    for _mrt in mrt[pred]:
+                        # if their is a node on the path more important then current node
+                        if self._relevance[_mrt] > self._relevance[node]:
+                            self._instance_status[node] = 0
+                            # save this node for next iterations (steps on path)
+                            more_rel_nodes.append(_mrt)
+                        else:
+                            # save current node as most important.
+                            # there can be several paths, in this case, several nodes are saved
+                            self._instance_status[_mrt] = 0
+                            more_rel_nodes.append(node)
+            mrt[node] = more_rel_nodes
 
         for node in reverse_top_sort:
+            mrt[node] = []
+            more_rel_nodes = [node]
             if not self._xtest[idx][node]:
                 mrt[node] = node
                 for suc in self._feature_tree.successors(node):
-                    # get most relevant node seen on path until current node
-                    if mrt[pred] and self._relevance[mrt[suc]] > self._relevance[mrt[node]]:
+                    # get most relevant nodes seen on paths until current node
+                    for _mrt in mrt[suc]:
+                        if self._relevance[_mrt] > self._relevance[node]:
                         # each node not selected will removed
-                        self._instance_status[mrt[node]] = 0
-                        #mrt[node] = mrt[suc] #b wirft 6 raus
-                    else:
-                        self._instance_status[mrt[suc]] = 0
+                            self._instance_status[node] = 0
+                            more_rel_nodes.append(_mrt)
+                        else:
+                            self._instance_status[_mrt] = 0
+                            more_rel_nodes.append(node)
+            mrt[node] = more_rel_nodes
 
     def _get_top_k(self):
         """
