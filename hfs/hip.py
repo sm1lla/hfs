@@ -36,7 +36,7 @@ class HIP(Filter):
         """
         predictions = np.array([])
         for idx in range(len(self._xtest)):
-            self._get_nonredundant_features_mrt(idx)
+            self._get_nonredundant_features(idx)
             if predict:
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
