@@ -6,8 +6,10 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics import accuracy_score
 from sklearn.naive_bayes import BernoulliNB
 
-from .base import HierarchicalEstimator
-from .helpers import checkData, getRelevance
+import sys
+sys.path.append('/home/kathrin/hfs/hfs/')
+from base import HierarchicalEstimator
+from helpers import checkData, getRelevance
 
 
 class Filter(HierarchicalEstimator, ABC):
@@ -180,7 +182,7 @@ class Filter(HierarchicalEstimator, ABC):
                     if self._relevance[desc] <= self._relevance[node]:
                         self._instance_status[desc] = 0
 
-    def get_nonredundant_features_mrt(self, idx):
+    def _get_nonredundant_features_mrt(self, idx):
         """
         Get nonredundant features based on the MRT considering all pathes.
         Basic functionality of the HIP algorithm proposed by Wan & Freitas.
@@ -191,15 +193,11 @@ class Filter(HierarchicalEstimator, ABC):
             Index of test instance for which the features shall be selected.
         """
 
-        top_sort = nx.topological_sort(self._feature_tree)
+        top_sort = list(nx.topological_sort(self._feature_tree))
+        reverse_top_sort = reversed(top_sort)
         mrt = {}
 
         for node in top_sort:
-            if node == "ROOT":
-                continue
-            # for each node save highest seen node in path to node
-            mrt[node] = node
-
             # correctness: as each predecessor lies on the same path as the current node
             # one can be removed.
             #
@@ -220,22 +218,26 @@ class Filter(HierarchicalEstimator, ABC):
             # so self._instance_status[mrt[node]] = 0 never executed.
             #
             if self._xtest[idx][node]:
+                mrt[node] = node
+                # preds are 1 because of 0-1-propagation
                 for pred in self._feature_tree.predecessors(node):
                     # get most relevant node seen on path until current node
-                    if self._relevance[mrt[pred]] > self._relevance[mrt[node]]:
+                    if mrt[pred] and self._relevance[mrt[pred]] > self._relevance[mrt[node]]:
                         # each node not selected will removed
                         self._instance_status[mrt[node]] = 0
-                        mrt[node] = mrt[pred]
+                        #mrt[node] = mrt[pred]
                     else:
                         self._instance_status[mrt[pred]] = 0
 
+        for node in reverse_top_sort:
             if not self._xtest[idx][node]:
+                mrt[node] = node
                 for suc in self._feature_tree.successors(node):
                     # get most relevant node seen on path until current node
-                    if self._relevance[mrt[suc]] > self._relevance[mrt[node]]:
+                    if mrt[pred] and self._relevance[mrt[suc]] > self._relevance[mrt[node]]:
                         # each node not selected will removed
                         self._instance_status[mrt[node]] = 0
-                        mrt[node] = mrt[suc]
+                        #mrt[node] = mrt[suc] #b wirft 6 raus
                     else:
                         self._instance_status[mrt[suc]] = 0
 
