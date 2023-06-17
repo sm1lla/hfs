@@ -6,10 +6,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics import accuracy_score
 from sklearn.naive_bayes import BernoulliNB
 
-import sys
-sys.path.append('/home/kathrin/hfs/hfs/')
-from base import HierarchicalEstimator
-from helpers import checkData, getRelevance
+from .base import HierarchicalEstimator
+from .helpers import checkData, getRelevance
 
 
 class Filter(HierarchicalEstimator, ABC):

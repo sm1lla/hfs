@@ -3,13 +3,8 @@ import networkx as nx
 import numpy as np
 import pytest
 
-import sys
-sys.path.append('/home/kathrin/hfs/hfs/')
-from base import HierarchicalEstimator
 
-from go import open_dag
-
-from preprocessing import HierarchicalPreprocessor
+from ..preprocessing import HierarchicalPreprocessor
 
 @pytest.fixture
 def data1():

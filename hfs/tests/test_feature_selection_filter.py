@@ -3,11 +3,9 @@ import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
 
-import sys
-sys.path.append('/home/kathrin/hfs/hfs/')
-from mrt import MRT
-from hip import HIP
-from filter import Filter
+from ..mrt import MRT
+from ..hip import HIP
+from ..filter import Filter
 from ..hnb import HNB
 from ..hnbs import HNBs
 from ..rnb import RNB

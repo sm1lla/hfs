@@ -1,10 +1,7 @@
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 
-import sys
-sys.path.append('/home/kathrin/hfs/hfs/')
-
-from filter import Filter
+from .filter import Filter
 
 
 class HIP(Filter):

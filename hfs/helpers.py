@@ -61,7 +61,6 @@ def expand_data(x_data, x_identifier, hierarchy, graph_identifier):
 
 
 def get_irrelevant_leaves(x_identifier, digraph):
-    #map x_identifier to nodes
     return [
         x
         for x in digraph.nodes()

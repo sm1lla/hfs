@@ -2,9 +2,8 @@ import networkx as nx
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_array, check_X_y
-import sys
-sys.path.append('/home/kathrin/hfs/hfs/')
-from helpers import create_feature_tree
+
+from .helpers import create_feature_tree
 
 
 class HierarchicalEstimator(BaseEstimator, TransformerMixin):
