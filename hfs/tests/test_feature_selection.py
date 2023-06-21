@@ -1,12 +1,10 @@
 import numpy as np
 import pytest
 
-from ..feature_selection import (
-    HierarchicalFeatureSelector,
-    HillClimbingSelector,
-    SHSELSelector,
-    TSELSelector,
-)
+from ..feature_selection import HierarchicalFeatureSelector
+from ..hill_climbing import TopDownSelector
+from ..shsel import SHSELSelector
+from ..tsel import TSELSelector
 from .fixtures.fixtures import (
     data1,
     data1_2,
@@ -103,7 +101,7 @@ def test_SHSEL_selection_with_initial_selection(data, result):
 def test_HillClimbing_selection(data, result):
     X, y, hierarchy, columns = data
     expected, support = result
-    selector = HillClimbingSelector(hierarchy, dataset_type="binary")
+    selector = TopDownSelector(hierarchy, dataset_type="binary")
     selector.fit(X, y, columns)
     X = selector.transform(X)
     assert np.array_equal(X, expected)
@@ -124,7 +122,7 @@ def test_calculate_scores(data, result):
     X, y, hierarchy, columns = data
     score_matrix_expected = result
 
-    selector = HillClimbingSelector(hierarchy, dataset_type="binary")
+    selector = TopDownSelector(hierarchy, dataset_type="binary")
     selector.fit(X, y, columns)
     score_matrix = selector._calculate_scores(X)
 
@@ -139,7 +137,7 @@ def test_calculate_distances(data, result):
     X, y, hierarchy, columns = data
     distance_matrix_expected = result
 
-    selector = HillClimbingSelector(hierarchy)
+    selector = TopDownSelector(hierarchy)
     selector.fit(X, y, columns)
     distance_matrix = selector._calculate_distances(columns)
 
@@ -155,7 +153,7 @@ def test_calculate__fitness_function(data, distance_matrix, result):
 
     fitness_expected = result
 
-    selector = HillClimbingSelector(hierarchy)
+    selector = TopDownSelector(hierarchy)
     selector.fit(X, y, columns)
     fitness = selector._fitness_function(distance_matrix)
 

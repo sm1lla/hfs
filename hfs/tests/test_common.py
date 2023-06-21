@@ -5,19 +5,19 @@ from hfs import (
     HierarchicalEstimator,
     HierarchicalFeatureSelector,
     HierarchicalPreprocessor,
-    HillClimbingSelector,
-    SHSELSelector,
     TemplateClassifier,
     TemplateEstimator,
     TemplateTransformer,
-    TSELSelector,
 )
 
+from ..hill_climbing import TopDownSelector
 from ..hip import HIP
 from ..hnb import HNB
 from ..hnbs import HNBs
 from ..mrt import MRT
 from ..rnb import RNB
+from ..shsel import SHSELSelector
+from ..tsel import TSELSelector
 
 
 @pytest.mark.parametrize(
@@ -27,7 +27,7 @@ from ..rnb import RNB
         HierarchicalEstimator(),
         HierarchicalFeatureSelector(),
         HierarchicalPreprocessor(),
-        HillClimbingSelector(),
+        TopDownSelector(),
         SHSELSelector(),
         TemplateEstimator(),
         TemplateTransformer(),

@@ -1,13 +1,10 @@
 from ._template import TemplateClassifier, TemplateEstimator, TemplateTransformer
 from ._version import __version__
-from .feature_selection import (
-    HierarchicalEstimator,
-    HierarchicalFeatureSelector,
-    HillClimbingSelector,
-    SHSELSelector,
-    TSELSelector,
-)
+from .feature_selection import HierarchicalEstimator, HierarchicalFeatureSelector
+from .hill_climbing import TopDownSelector
 from .preprocessing import HierarchicalPreprocessor
+from .shsel import SHSELSelector
+from .tsel import TSELSelector
 
 __all__ = [
     "TemplateEstimator",
@@ -15,7 +12,7 @@ __all__ = [
     "TemplateTransformer",
     "TSELSelector",
     "SHSELSelector",
-    "HillClimbingSelector",
+    "TopDownSelector",
     "HierarchicalEstimator",
     "HierarchicalFeatureSelector",
     "HierarchicalPreprocessor",
