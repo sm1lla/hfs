@@ -6,7 +6,7 @@ from scipy import sparse
 from sklearn.utils.validation import check_X_y
 
 from hfs.feature_selection import HierarchicalFeatureSelector
-from hfs.helpers import normalize_score
+from hfs.helpers import cosine_similarity, get_leaves, normalize_score
 
 
 class HillClimbingSelector(HierarchicalFeatureSelector):
@@ -171,16 +171,41 @@ class BottomUpSelector(HillClimbingSelector):
     def __init__(
         self,
         hierarchy: np.ndarray = None,
-        alpha: float = 0.99,
+        alpha: float = 0.01,
+        k: int = 5,
         dataset_type: str = "binary",
     ):
+        # alpha is beta from algorithm in the paper by Wang et al.
         super().__init__(hierarchy, alpha=alpha, dataset_type=dataset_type)
+        self.k = k
 
     def _hill_climb(self, X) -> list[int]:
-        pass
+        self._score_matrix = self._calculate_scores(X)
 
     def _calculate_distance(self, sample_i: int, sample_j: int, feature_set: list[int]):
-        pass
+        row_i = self._score_matrix[sample_i, feature_set]
+        row_j = self._score_matrix[sample_j, feature_set]
+        return cosine_similarity(row_i, row_j)
 
     def _fitness_function(self, distances: np.ndarray) -> float:
-        pass
+        number_of_leaf_nodes = len(get_leaves(self._feature_tree))  # alpha from paper
+
+        threshold_index = self.n_features_ - self.k - 1
+        k_nearest_neigbors = [
+            list(np.argpartition(distances[row, :], threshold_index)[threshold_index:])
+            for row in range(self._num_rows)
+        ]
+
+        count = 0
+        for row in range(self._num_rows):
+            for neighbor in k_nearest_neigbors[row]:
+                if self.y_[neighbor] == self.y_[row] and neighbor != row:
+                    count += 1
+
+        result = count * (
+            1
+            + self.alpha
+            * (number_of_leaf_nodes - self.n_features_)
+            / number_of_leaf_nodes
+        )
+        return result

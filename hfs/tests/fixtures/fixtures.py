@@ -167,7 +167,18 @@ def result_hill_selection_td():
 
 
 def result_hill_selection_bu():
-    return None
+    k = 3
+    result = np.array(
+        [
+            [0, 0, 1],
+            [0, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1],
+        ]
+    )
+    support = np.array([False, False, True, True, True])
+    return (result, support, k)
 
 
 def wrong_hierarchy_X():
@@ -240,7 +251,7 @@ def result_fitness_funtion_bu1():
     selected_nearest_neighbors = [[1, 2], [2, 0], [3, 1], [1, 2], []]
     result = sum([len(x) for x in selected_nearest_neighbors])
     result = result * (1 + beta * (alpha - n) / alpha)
-    return result
+    return (result, k)
 
 
 def result_score_matrix2():
