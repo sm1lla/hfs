@@ -5,7 +5,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from hfs.helpers import get_columns_for_numpy_hierarchy
+from hfs.helpers import cosine_similarity, get_columns_for_numpy_hierarchy
 
 
 def data1():
@@ -152,7 +152,7 @@ def result_shsel_selection():
     return (result, support)
 
 
-def result_hill_selection():
+def result_hill_selection_td():
     result = pd.DataFrame(
         [
             [0, 0, 1],
@@ -164,6 +164,10 @@ def result_hill_selection():
     )
     support = np.array([False, True, False, True, True])
     return (result, support)
+
+
+def result_hill_selection_bu():
+    return None
 
 
 def wrong_hierarchy_X():
@@ -192,7 +196,7 @@ def result_score_matrix1():
     )
 
 
-def result_distance_matrix1():
+def result_distance_matrix_td1():
     return np.array(
         [
             [0.0, math.sqrt(2), math.sqrt(7), math.sqrt(15), math.sqrt(22)],
@@ -204,7 +208,20 @@ def result_distance_matrix1():
     )
 
 
-def result_fitness_funtion1():
+def result_distance_matrix_bu(matrix: np.ndarray):
+    result = np.zeros((5, 5))
+    for x in range(5):
+        for y in range(5):
+            result[x, y] = cosine_similarity(matrix[x, :], matrix[y, :])
+    return result
+
+
+def result_distance_matrix_bu1():
+    matrix = result_score_matrix1()
+    return result_distance_matrix_bu(matrix)
+
+
+def result_fitness_funtion_td1():
     alpha = 0.99
     doc1 = math.sqrt(22) / (1 + alpha * (math.sqrt(2) + math.sqrt(7) + math.sqrt(15)))
     doc2 = math.sqrt(14) / (1 + alpha * (math.sqrt(2) + math.sqrt(3) + math.sqrt(9)))
@@ -213,6 +230,17 @@ def result_fitness_funtion1():
     doc5 = (math.sqrt(22) + math.sqrt(14) + math.sqrt(5) + 1.0) / 1.0
 
     return doc1 + doc2 + doc3 + doc4 + doc5
+
+
+def result_fitness_funtion_bu1():
+    alpha = 3
+    n = 5
+    beta = 0.01
+    k = 3
+    selected_nearest_neighbors = [[1, 2], [2, 0], [3, 1], [1, 2], []]
+    result = sum([len(x) for x in selected_nearest_neighbors])
+    result = result * (1 + beta * (alpha - n) / alpha)
+    return result
 
 
 def result_score_matrix2():
@@ -227,6 +255,11 @@ def result_score_matrix2():
     )
 
 
+def result_distance_matrix_bu2():
+    matrix = result_score_matrix2()
+    return result_distance_matrix_bu(matrix)
+
+
 def result_score_matrix3():
     return np.array(
         [
@@ -237,6 +270,11 @@ def result_score_matrix3():
             [1, 1, 0, 0, 0],
         ],
     )
+
+
+def result_distance_matrix_bu3():
+    matrix = result_score_matrix3()
+    return result_distance_matrix_bu(matrix)
 
 
 _feature_number = 9

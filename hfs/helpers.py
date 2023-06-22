@@ -5,6 +5,7 @@ import networkx as nx
 import numpy as np
 from info_gain.info_gain import info_gain
 from networkx.algorithms.simple_paths import all_simple_paths
+from numpy.linalg import norm
 from scipy import sparse
 
 
@@ -200,3 +201,7 @@ def normalize_score(score, max_value):
     if score != 0:
         score = math.log(1 + (score / max_value)) + 1
     return score
+
+
+def cosine_similarity(i: np.ndarray, j: np.ndarray):
+    return np.dot(i, j) / (norm(i) * norm(j))

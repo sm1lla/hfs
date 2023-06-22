@@ -47,7 +47,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
 
         return self
 
-    def _hill_climb(X):
+    def _hill_climb(self, X):
         raise NotImplementedError
 
     def _calculate_scores(self, X):
@@ -163,3 +163,24 @@ class TopDownSelector(HillClimbingSelector):
             result += nominator / denominator
 
         return result
+
+
+class BottomUpSelector(HillClimbingSelector):
+    """Hill climbing feature selection method for hierarchical features proposed by Wang et al.2003"""
+
+    def __init__(
+        self,
+        hierarchy: np.ndarray = None,
+        alpha: float = 0.99,
+        dataset_type: str = "binary",
+    ):
+        super().__init__(hierarchy, alpha=alpha, dataset_type=dataset_type)
+
+    def _hill_climb(self, X) -> list[int]:
+        pass
+
+    def _calculate_distance(self, sample_i: int, sample_j: int, feature_set: list[int]):
+        pass
+
+    def _fitness_function(self, distances: np.ndarray) -> float:
+        pass

@@ -11,9 +11,14 @@ from .fixtures.fixtures import (
     data2,
     data3,
     data_shsel_selection,
-    result_distance_matrix1,
-    result_fitness_funtion1,
-    result_hill_selection,
+    result_distance_matrix_bu1,
+    result_distance_matrix_bu2,
+    result_distance_matrix_bu3,
+    result_distance_matrix_td1,
+    result_fitness_funtion_bu1,
+    result_fitness_funtion_td1,
+    result_hill_selection_bu,
+    result_hill_selection_td,
     result_score_matrix1,
     result_score_matrix2,
     result_score_matrix3,
@@ -92,16 +97,17 @@ def test_SHSEL_selection_with_initial_selection(data, result):
 
 
 @pytest.mark.parametrize(
-    "data, result",
+    "data, result, Selector",
     [
-        (data1(), result_hill_selection()),
-        (data1_2(), result_hill_selection()),
+        (data1(), result_hill_selection_td(), TopDownSelector),
+        (data1(), result_hill_selection_bu(), TopDownSelector),
+        (data1_2(), result_hill_selection_td(), TopDownSelector),
     ],
 )
-def test_HillClimbing_selection(data, result):
+def test_top_down_selection(data, result, Selector):
     X, y, hierarchy, columns = data
     expected, support = result
-    selector = TopDownSelector(hierarchy, dataset_type="binary")
+    selector = Selector(hierarchy, dataset_type="binary")
     selector.fit(X, y, columns)
     X = selector.transform(X)
     assert np.array_equal(X, expected)
@@ -130,14 +136,17 @@ def test_calculate_scores(data, result):
 
 
 @pytest.mark.parametrize(
-    "data, result",
-    [(data1(), result_distance_matrix1())],
+    "data, result, Selector",
+    [
+        (data1(), result_distance_matrix_td1(), TopDownSelector),
+        (data1(), result_distance_matrix_bu1(), TopDownSelector),
+    ],
 )
-def test_calculate_distances(data, result):
+def test_calculate_distances(data, result, Selector):
     X, y, hierarchy, columns = data
     distance_matrix_expected = result
 
-    selector = TopDownSelector(hierarchy)
+    selector = Selector(hierarchy)
     selector.fit(X, y, columns)
     distance_matrix = selector._calculate_distances(columns)
 
@@ -145,15 +154,28 @@ def test_calculate_distances(data, result):
 
 
 @pytest.mark.parametrize(
-    "data, distance_matrix, result",
-    [(data1(), result_distance_matrix1(), result_fitness_funtion1())],
+    "data, distance_matrix, result, Selector",
+    [
+        (
+            data1(),
+            result_distance_matrix_td1(),
+            result_fitness_funtion_td1(),
+            TopDownSelector,
+        ),
+        (
+            data1(),
+            result_distance_matrix_bu1(),
+            result_fitness_funtion_bu1(),
+            TopDownSelector,
+        ),
+    ],
 )
-def test_calculate__fitness_function(data, distance_matrix, result):
+def test_calculate__fitness_function(data, distance_matrix, result, Selector):
     X, y, hierarchy, columns = data
 
     fitness_expected = result
 
-    selector = TopDownSelector(hierarchy)
+    selector = Selector(hierarchy)
     selector.fit(X, y, columns)
     fitness = selector._fitness_function(distance_matrix)
 
