@@ -182,7 +182,37 @@ class BottomUpSelector(HillClimbingSelector):
     def _hill_climb(self, X) -> list[int]:
         self._score_matrix = self._calculate_scores(X)
 
+        current_feature_set = get_leaves(self._feature_tree)
+        if current_feature_set == ["ROOT"]:
+            return []
+        current_fitness = self._fitness_function(
+            self._calculate_distances(current_feature_set)
+        )
+
+        unvisited = set(current_feature_set)
+
+        while unvisited:
+            temporary_feature_set = current_feature_set.copy()
+            node = unvisited.pop()
+            parent = list(self._feature_tree.predecessors(node))[0]
+            temporary_feature_set.append(parent)
+            children = list(self._feature_tree.successors(parent))
+            updated_feature_set = [
+                node for node in temporary_feature_set if node not in children
+            ]
+            temporary_fitness = self._fitness_function(
+                self._calculate_distances(updated_feature_set)
+            )
+            if temporary_fitness < current_fitness:
+                current_feature_set = temporary_feature_set
+                current_fitness = temporary_fitness
+                unvisited = set(current_feature_set)
+
+        return current_feature_set
+
     def _calculate_distance(self, sample_i: int, sample_j: int, feature_set: list[int]):
+        if "ROOT" in feature_set:
+            feature_set.remove("ROOT")
         row_i = self._score_matrix[sample_i, feature_set]
         row_j = self._score_matrix[sample_j, feature_set]
         return cosine_similarity(row_i, row_j)
