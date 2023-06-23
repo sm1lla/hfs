@@ -7,7 +7,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.naive_bayes import BernoulliNB
 
 from .base import HierarchicalEstimator
-from .helpers import checkData, getRelevance
+from .helpers import checkData, conditional_mutual_information, getRelevance
 
 
 class Filter(HierarchicalEstimator, ABC):
@@ -115,6 +115,7 @@ class Filter(HierarchicalEstimator, ABC):
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
+        self.n_features_ = X_train.shape[1]
         self._features = np.zeros(shape=X_test.shape)
 
         # Validate data
@@ -264,6 +265,95 @@ class Filter(HierarchicalEstimator, ABC):
                 counter += 1
             else:
                 self._instance_status[node] = 0
+
+    def _build_mst(self):
+        edges = self._feature_tree.edges
+        self._edge_status = np.zeros((self.n_features_,self.n_features_))
+        self._cmi = np.zeros((self.n_features_,self.n_features_))
+        self._sorted_edges = []
+        for node1 in self._feature_tree.nodes:
+            for node2 in self._feature_tree.nodes:
+                if node1 == node2:
+                    continue
+                self._cmi[node1][node2] = conditional_mutual_information(self._xtrain[:,node1], self._xtrain[:,node2], self._ytrain)
+                self._edge_status[node1][node2] = 1
+        sorted_indices = np.argsort(self._cmi, axis = None)
+        for index in sorted_indices:
+            coordinates = divmod(index, self.n_features_)
+
+            if coordinates[0] < coordinates[1]:
+                self._sorted_edges.append(coordinates)
+            
+
+        
+
+    def _get_nonredundant_features_from_mst(self, idx):
+        """
+        Get nonredundant features from MST.
+        Basic functionality of the algorithm TAN proposed by Wan & Freitas.
+
+        Parameters
+        ----------
+        idx
+            Index of test instance for which the features shall be selected.
+        """
+        UDAG = nx.Graph()
+
+        for node1 in self._feature_tree:
+            self._instance_status[node1] = 0
+            for node2 in self._feature_tree:
+                    self._edge_status[node1][node2] = 1
+
+        representants = [i for i in range(self.n_features_)]
+        members = {}
+        for i in range(self.n_features_):
+            members[i]=[i]
+
+        # get paths 
+        reachable_nodes = {}
+        for node in self._feature_tree:
+            reachable_nodes[node] = []
+            for des in nx.descendants(self._feature_tree, node):
+                reachable_nodes[node].append(des)
+        # select edges
+        for edge in self._sorted_edges:
+            if (self._edge_status[edge[0]][edge[1]]
+                 # check redundancy: same path and same value
+                and (self._xtest[idx][edge[0]] != self._xtest[idx][edge[1]] or 
+                     (edge[0] not in reachable_nodes[edge[1]] and edge[1] not in reachable_nodes[edge[1]]))
+                # check if circle in UDAG using the property, that edge (a,b) infers circle iff a und b
+                # are members of the same component
+                and representants[edge[0]] != representants[edge[1]]):
+                
+                UDAG.add_edge(edge[0], edge[1])
+                self._edge_status[edge[0]][edge[1]] = 0
+
+                # merge: change the representatives of the smaller component
+                if len(members[representants[edge[0]]]) <= len(members[representants[edge[1]]]):
+                    for m in members[edge[0]]:
+                        representants[m] = representants[edge[1]]
+                        members[representants[edge[1]]].append(m)
+                else:
+                    for m in members[edge[1]]:
+                        representants[m] = representants[edge[0]]
+                        members[representants[edge[0]]].append(m)
+
+                # remove all edges with redundant ancestors or descendants of e0 and e1
+                for selected_node in [edge[0], edge[1]]:
+                    for neighbor_node in nx.ancestors(self._feature_tree, selected_node):
+                        if self._xtest[idx][selected_node] == self._xtest[idx][neighbor_node]:
+                            # alternative: collect all and then delete in sorted_edges
+                            self._edge_status[:,neighbor_node] = 0
+                            self._edge_status[neighbor_node][:] = 0
+                    for neighbor_node in nx.descendants(self._feature_tree, selected_node):
+                        if self._xtest[idx][selected_node] == self._xtest[idx][neighbor_node]:
+                            self._edge_status[:,neighbor_node] = 0
+                            self._edge_status[neighbor_node][:] = 0
+
+                self._instance_status[edge[0]] = 1
+                self._instance_status[edge[1]] = 1
+                
+            
 
     def _predict(self, idx, estimator):
         """
