@@ -207,7 +207,7 @@ def result_score_matrix1():
     )
 
 
-def result_distance_matrix_td1():
+def result_comparison_matrix_td1():
     return np.array(
         [
             [0.0, math.sqrt(2), math.sqrt(7), math.sqrt(15), math.sqrt(22)],
@@ -219,7 +219,7 @@ def result_distance_matrix_td1():
     )
 
 
-def result_distance_matrix_bu(matrix: np.ndarray):
+def result_comparison_matrix_bu(matrix: np.ndarray):
     result = np.zeros((5, 5))
     for x in range(5):
         for y in range(5):
@@ -227,9 +227,9 @@ def result_distance_matrix_bu(matrix: np.ndarray):
     return result
 
 
-def result_distance_matrix_bu1():
+def result_comparison_matrix_bu1():
     matrix = result_score_matrix1()
-    return result_distance_matrix_bu(matrix)
+    return result_comparison_matrix_bu(matrix)
 
 
 def result_fitness_funtion_td1():
@@ -266,9 +266,9 @@ def result_score_matrix2():
     )
 
 
-def result_distance_matrix_bu2():
+def result_comparison_matrix_bu2():
     matrix = result_score_matrix2()
-    return result_distance_matrix_bu(matrix)
+    return result_comparison_matrix_bu(matrix)
 
 
 def result_score_matrix3():
@@ -283,9 +283,9 @@ def result_score_matrix3():
     )
 
 
-def result_distance_matrix_bu3():
+def result_comparison_matrix_bu3():
     matrix = result_score_matrix3()
-    return result_distance_matrix_bu(matrix)
+    return result_comparison_matrix_bu(matrix)
 
 
 _feature_number = 9

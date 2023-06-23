@@ -68,7 +68,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
                 score_matrix[row, column_index] = score
         return score_matrix
 
-    def _calculate_distance(
+    def _compare(
         self,
         sample_i: int,
         sample_j: int,
@@ -76,18 +76,16 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
     ):
         raise NotImplementedError
 
-    def _calculate_distances(self, feature_set: list[int]):
+    def _comparison_matrix(self, feature_set: list[int]):
         distances = np.zeros((self._num_rows, self._num_rows), dtype=float)
         for row in range(self._num_rows):
             for column in range(self._num_rows):
                 if distances[row, column] == 0:
-                    distances[row, column] = self._calculate_distance(
-                        row, column, feature_set
-                    )
+                    distances[row, column] = self._compare(row, column, feature_set)
                     distances[column, row] = distances[row, column]
         return distances
 
-    def _fitness_function(self, distances: np.ndarray) -> float:
+    def _fitness_function(self, comparison_matrix: np.ndarray) -> float:
         raise NotImplementedError
 
 
@@ -116,7 +114,7 @@ class TopDownSelector(HillClimbingSelector):
                     temporary_feature_set = optimal_feature_set.copy()
                     temporary_feature_set.remove(node)
                     temporary_feature_set.update(children)
-                    distances = self._calculate_distances(temporary_feature_set)
+                    distances = self._comparison_matrix(temporary_feature_set)
                     temporary_fitness = self._fitness_function(distances)
                     if (temporary_fitness) > best_fitness:
                         best_fitness = temporary_fitness
@@ -128,6 +126,14 @@ class TopDownSelector(HillClimbingSelector):
             else:
                 break
         return list(optimal_feature_set)
+
+    def _compare(
+        self,
+        sample_i: int,
+        sample_j: int,
+        feature_set: list[int],
+    ):
+        return self._calculate_distance(sample_i, sample_j, feature_set)
 
     def _calculate_distance(
         self,
@@ -145,7 +151,7 @@ class TopDownSelector(HillClimbingSelector):
             distance += math.pow(difference, 2)
         return math.sqrt(distance)
 
-    def _fitness_function(self, distances: np.ndarray) -> float:
+    def _fitness_function(self, comparison_matrix: np.ndarray) -> float:
         result = 0
         row_indices = range(self._num_rows)
         for row_index in row_indices:
@@ -156,9 +162,11 @@ class TopDownSelector(HillClimbingSelector):
             ]
             other_class = [sample for sample in row_indices if sample not in same_class]
 
-            nominator = sum([distances[sample, row_index] for sample in other_class])
+            nominator = sum(
+                [comparison_matrix[sample, row_index] for sample in other_class]
+            )
             denominator = 1 + self.alpha * sum(
-                [distances[sample, row_index] for sample in same_class]
+                [comparison_matrix[sample, row_index] for sample in same_class]
             )
             result += nominator / denominator
 
@@ -166,7 +174,7 @@ class TopDownSelector(HillClimbingSelector):
 
 
 class BottomUpSelector(HillClimbingSelector):
-    """Hill climbing feature selection method for hierarchical features proposed by Wang et al.2003"""
+    """Hill climbing feature selection method for hierarchical features proposed by Wang et al. 2003"""
 
     def __init__(
         self,
@@ -186,7 +194,7 @@ class BottomUpSelector(HillClimbingSelector):
         if current_feature_set == ["ROOT"]:
             return []
         current_fitness = self._fitness_function(
-            self._calculate_distances(current_feature_set)
+            self._comparison_matrix(current_feature_set)
         )
 
         unvisited = set(current_feature_set)
@@ -201,7 +209,7 @@ class BottomUpSelector(HillClimbingSelector):
                 node for node in temporary_feature_set if node not in children
             ]
             temporary_fitness = self._fitness_function(
-                self._calculate_distances(updated_feature_set)
+                self._comparison_matrix(updated_feature_set)
             )
             if temporary_fitness < current_fitness:
                 current_feature_set = temporary_feature_set
@@ -210,19 +218,33 @@ class BottomUpSelector(HillClimbingSelector):
 
         return current_feature_set
 
-    def _calculate_distance(self, sample_i: int, sample_j: int, feature_set: list[int]):
+    def _compare(
+        self,
+        sample_i: int,
+        sample_j: int,
+        feature_set: list[int],
+    ):
+        return self._calculate_similarity(sample_i, sample_j, feature_set)
+
+    def _calculate_similarity(
+        self, sample_i: int, sample_j: int, feature_set: list[int]
+    ):
         if "ROOT" in feature_set:
             feature_set.remove("ROOT")
         row_i = self._score_matrix[sample_i, feature_set]
         row_j = self._score_matrix[sample_j, feature_set]
         return cosine_similarity(row_i, row_j)
 
-    def _fitness_function(self, distances: np.ndarray) -> float:
+    def _fitness_function(self, comparison_matrix: np.ndarray) -> float:
         number_of_leaf_nodes = len(get_leaves(self._feature_tree))  # alpha from paper
 
         threshold_index = self.n_features_ - self.k - 1
         k_nearest_neigbors = [
-            list(np.argpartition(distances[row, :], threshold_index)[threshold_index:])
+            list(
+                np.argpartition(comparison_matrix[row, :], threshold_index)[
+                    threshold_index:
+                ]
+            )
             for row in range(self._num_rows)
         ]
 
