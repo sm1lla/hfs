@@ -5,7 +5,7 @@ from sklearn.utils.estimator_checks import check_estimator
 from hfs.tan import Tan
 
 
-from ..mrt import MRT
+from ..mr import MRT
 from ..hip import HIP
 from ..filter import Filter
 from ..hnb import HNB

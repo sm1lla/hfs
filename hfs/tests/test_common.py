@@ -16,7 +16,7 @@ from hfs import (
 from ..hip import HIP
 from ..hnb import HNB
 from ..hnbs import HNBs
-from ..mrt import MRT
+from ..mr import MRT
 from ..rnb import RNB
 
 
