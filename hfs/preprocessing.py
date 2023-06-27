@@ -80,10 +80,16 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         columns: only the columns that are represented in hierarchy. Each position at column represents the position in X, the value is the number of the node.
         If a position in X is not represented in the hierarchy the value should be set to -1.
         """
+        max = len(self._feature_tree.nodes)
         for x in range(len(X)):
             if self._columns[x] == -1:
-                self._feature_tree.add_edge("ROOT", x)
-                self._columns[x] = x
+                if x in self._feature_tree.nodes:
+                    self._feature_tree.add_edge("ROOT", max)
+                    self._columns[x] = max
+                    max += 1
+                else:
+                    self._feature_tree.add_edge("ROOT", x)
+                    self._columns[x] = x
 
     def _shrink_dag(self):
         leaves = get_irrelevant_leaves(

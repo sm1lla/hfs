@@ -6,10 +6,6 @@ import numpy as np
 from info_gain.info_gain import info_gain
 from networkx.algorithms.simple_paths import all_simple_paths
 from scipy import sparse
-from pyitlib import discrete_random_variable as drv
-
-
-import pandas as pd
 
 
 def getRelevance(xdata, ydata, node):
@@ -191,62 +187,18 @@ def information_gain(data, labels):
         ig_values.append(ig)
     return ig_values
 
-
 def get_columns_for_numpy_hierarchy(hierarchy: nx.DiGraph, num_columns: int):
     """If each node in the hierarchy is named after a column's index this methods will give you
     the mapping from column index to node name of the node after the graph was transformed to a numpy array
     and back
     Value represents new node (numpy) while index is the name of node in Digraph before transformation.
     """
-    return [list(hierarchy.nodes()).index(node) for node in range(num_columns)]
-
+    columns = []
+    for node in range(num_columns):
+        columns.append(list(hierarchy.nodes()).index(node) if node in hierarchy.nodes else -1)
+    return columns
 
 def normalize_score(score, max_value):
     if score != 0:
         score = math.log(1 + (score / max_value)) + 1
     return score
-
-def conditional_mutual_information(node1, node2, y):
-    return drv.information_mutual_conditional(node1, node2, y)
-
-# based on https://colab.research.google.com/drive/1n-62Din_vq5TY9zFrjxnXvK4iM2XQw9j?usp=share_link
-def conditional_mutual_information2(node1, node2, y):
-        data = pd.DataFrame() 
-        data["X"] = node1
-        data["Y"] = node2
-        data["Z"] = y
-        X = {"X"}
-        Y = {"Y"}
-        Z = {"Z"}
-        X = list(X); Y = list(Y); Z = list(Z)
-        cmi = 0
-
-        P_Z = data.groupby(Z).size()
-        P_Z = P_Z/P_Z.sum()
-
-        P_XZ = data.groupby(X + Z).size()
-        P_XZ = P_XZ/P_XZ.sum()
-
-        P_YZ = data.groupby(Y + Z).size()
-        P_YZ = P_YZ/P_YZ.sum()
-
-        P_XYZ = data.groupby(X + Y + Z).size()
-        P_XYZ = P_XYZ/P_XYZ.sum()
-
-        for ind in P_XYZ.index:
-            x_ind = ind[:len(X)]
-            y_ind = ind[len(X):len(X + Y)]
-            z_ind = ind[len(X + Y):]
-
-            xz_ind = x_ind + z_ind
-            yz_ind = y_ind + z_ind
-            xyz_ind = ind
-
-            z_ind =  pd.MultiIndex.from_tuples([z_ind], names = Z) if len(Z) != 1 else pd.Index(z_ind, name = Z[0])
-            xz_ind = pd.MultiIndex.from_tuples([xz_ind], names = X + Z)
-            yz_ind = pd.MultiIndex.from_tuples([yz_ind], names = Y + Z)
-            xyz_ind = pd.MultiIndex.from_tuples([xyz_ind], names = X + Y + Z)
-
-            cmi += P_XYZ[xyz_ind].item() * np.log2(P_Z[z_ind].item() * P_XYZ[xyz_ind].item() / (P_XZ[xz_ind].item() * P_YZ[yz_ind].item()))
-
-        return cmi
