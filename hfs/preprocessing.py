@@ -25,6 +25,8 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         y : None
             There is no need of a target in a transformer, yet the pipeline API
             requires this parameter.
+        columns:
+            need to map features from X to nodes on graph
 
 
         Returns
