@@ -35,6 +35,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         """
         X = check_array(X, accept_sparse=True)
         super().fit(X, y, columns)
+        self._extend_dag(X)
         self._shrink_dag()
         self._find_missing_columns()
         self.is_fitted_ = True
@@ -72,6 +73,17 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         X_ = self._add_columns(X)
         X_ = self._propagate_ones(X_)
         return X_
+    
+    def _extend_dag(self, X):
+        """Add features that are not represented yet as nodes to the root
+        X: dataset with more features than hierarchy
+        columns: only the columns that are represented in hierarchy. Each position at column represents the position in X, the value is the number of the node.
+        If a position in X is not represented in the hierarchy the value should be set to -1.
+        """
+        for x in range(len(X)):
+            if self._columns[x] == -1:
+                self._feature_tree.add_edge("ROOT", x)
+                self._columns[x] = x
 
     def _shrink_dag(self):
         leaves = get_irrelevant_leaves(
