@@ -233,7 +233,7 @@ def test_HierarchicalFeatureSelector(data):
 
 @pytest.mark.parametrize(
     "data, result",
-    [(data2(), result_gtd_selection2()), (data2(), result_gtd_selection2_1())],
+    [(data2(), result_gtd_selection2()), (data2_1(), result_gtd_selection2_1())],
 )
 def test_greedy_top_down_selection(data, result):
     X, y, hierarchy, columns = data

@@ -175,14 +175,14 @@ def result_shsel_selection():
 def result_gtd_selection2():
     result = np.array(
         [
-            [0],
-            [1],
-            [1],
-            [0],
-            [1],
+            [0, 1],
+            [1, 0],
+            [1, 0],
+            [0, 1],
+            [0, 0],
         ],
     )
-    support = np.array([False, False, True, False, False])
+    support = np.array([False, False, True, False, True])
     return (result, support)
 
 
@@ -193,7 +193,7 @@ def result_gtd_selection2_1():
             [1, 1, 0],
             [1, 0, 0],
             [0, 0, 1],
-            [1, 0, 0],
+            [0, 0, 0],
         ],
     )
     support = np.array([False, False, True, True, True])
