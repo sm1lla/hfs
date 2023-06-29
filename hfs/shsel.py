@@ -4,8 +4,8 @@ import numpy as np
 from scipy import sparse
 from sklearn.utils.validation import check_X_y
 
-from hfs.feature_selection import HierarchicalFeatureSelector
-from hfs.helpers import get_paths, information_gain
+from .feature_selection import HierarchicalFeatureSelector
+from .helpers import get_paths, information_gain
 
 
 class SHSELSelector(HierarchicalFeatureSelector):

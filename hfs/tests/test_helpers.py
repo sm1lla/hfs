@@ -8,8 +8,22 @@ import numpy as np
 import pytest
 
 from ..go import open_dag
-from ..helpers import connect_dag, getRelevance, shrink_dag
-from .fixtures.fixtures import *
+from ..helpers import (
+    connect_dag,
+    gain_ratio,
+    getRelevance,
+    information_gain,
+    shrink_dag,
+)
+from .fixtures.fixtures import (
+    big_DAG,
+    data2,
+    result_gr_values2,
+    result_ig_values2,
+    small_DAG,
+    train_x_data,
+    train_y_data,
+)
 
 # sys.path.append("/home/kathrin/hfs/hfs2/")
 
@@ -77,3 +91,27 @@ def test_relevance():
     for node_idx in range(len(small_DAG)):
         value = getRelevance(train_x_data, train_y_data, node_idx)
         assert value == results[node_idx]
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
+        (data2(), result_ig_values2()),
+    ],
+)
+def test_information_gain(data, result):
+    X, y, _, _ = data
+    ig = information_gain(X, y)
+    assert ig == result
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
+        (data2(), result_gr_values2()),
+    ],
+)
+def test_gain_ratio(data, result):
+    X, y, _, _ = data
+    gr = gain_ratio(X, y)
+    assert result == gr

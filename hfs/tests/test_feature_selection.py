@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from ..feature_selection import HierarchicalFeatureSelector
+from ..gtd import GreedyTopDownSelector
 from ..hill_climbing import BottomUpSelector, TopDownSelector
 from ..shsel import SHSELSelector
 from ..tsel import TSELSelector
@@ -9,6 +10,7 @@ from .fixtures.fixtures import (
     data1,
     data1_2,
     data2,
+    data2_1,
     data3,
     data_shsel_selection,
     result_comparison_matrix_bu1,
@@ -17,6 +19,8 @@ from .fixtures.fixtures import (
     result_comparison_matrix_td1,
     result_fitness_funtion_bu1,
     result_fitness_funtion_td1,
+    result_gtd_selection2,
+    result_gtd_selection2_1,
     result_hill_selection_bu,
     result_hill_selection_td,
     result_score_matrix1,
@@ -225,3 +229,19 @@ def test_HierarchicalFeatureSelector(data):
     selector = HierarchicalFeatureSelector(hierarchy)
     with pytest.warns(UserWarning):
         selector.fit(X, columns=columns)
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [(data2(), result_gtd_selection2()), (data2(), result_gtd_selection2_1())],
+)
+def test_greedy_top_down_selection(data, result):
+    X, y, hierarchy, columns = data
+    expected, support = result
+    selector = GreedyTopDownSelector(hierarchy)
+    selector.fit(X, y, columns)
+    X = selector.transform(X)
+    assert np.array_equal(X, expected)
+
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support)

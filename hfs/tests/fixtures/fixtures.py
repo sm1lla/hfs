@@ -4,6 +4,7 @@ import random
 import networkx as nx
 import numpy as np
 import pandas as pd
+from info_gain.info_gain import info_gain, info_gain_ratio
 
 from hfs.helpers import cosine_similarity, get_columns_for_numpy_hierarchy
 
@@ -56,6 +57,25 @@ def data2():
     )
     edges = [(0, 1), (1, 2), (2, 3), (0, 4)]
     hierarchy = nx.DiGraph(edges)
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
+    hierarchy = nx.to_numpy_array(hierarchy)
+    y = np.array([1, 0, 0, 1, 1])
+    return (X, y, hierarchy, columns)
+
+
+def data2_1():
+    X = np.array(
+        [
+            [1, 1, 0, 0, 1],
+            [1, 1, 1, 1, 0],
+            [1, 1, 1, 0, 0],
+            [1, 0, 0, 0, 1],
+            [1, 1, 0, 0, 0],
+        ],
+    )
+    edges = [(0, 1), (1, 2), (1, 3)]
+    hierarchy = nx.DiGraph(edges)
+    hierarchy.add_node(4)
     columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
@@ -149,6 +169,34 @@ def result_shsel_selection():
         ],
     )
     support = np.array([False, False, True, False, False])
+    return (result, support)
+
+
+def result_gtd_selection2():
+    result = np.array(
+        [
+            [0],
+            [1],
+            [1],
+            [0],
+            [1],
+        ],
+    )
+    support = np.array([False, False, True, False, False])
+    return (result, support)
+
+
+def result_gtd_selection2_1():
+    result = np.array(
+        [
+            [0, 0, 1],
+            [1, 1, 0],
+            [1, 0, 0],
+            [0, 0, 1],
+            [1, 0, 0],
+        ],
+    )
+    support = np.array([False, False, True, True, True])
     return (result, support)
 
 
@@ -286,6 +334,28 @@ def result_score_matrix3():
 def result_comparison_matrix_bu3():
     matrix = result_score_matrix3()
     return result_comparison_matrix_bu(matrix)
+
+
+def result_gr_values2():
+    y = np.array([1, 0, 0, 1, 1])
+    return [
+        info_gain_ratio(np.array([1, 1, 1, 1, 1]), y),
+        info_gain_ratio(np.array([1, 1, 1, 0, 1]), y),
+        info_gain_ratio(np.array([0, 1, 1, 0, 0]), y),
+        info_gain_ratio(np.array([0, 1, 0, 0, 0]), y),
+        info_gain_ratio(np.array([1, 0, 0, 1, 0]), y),
+    ]
+
+
+def result_ig_values2():
+    y = np.array([1, 0, 0, 1, 1])
+    return [
+        info_gain(np.array([1, 1, 1, 1, 1]), y),
+        info_gain(np.array([1, 1, 1, 0, 1]), y),
+        info_gain(np.array([0, 1, 1, 0, 0]), y),
+        info_gain(np.array([0, 1, 0, 0, 0]), y),
+        info_gain(np.array([1, 0, 0, 1, 0]), y),
+    ]
 
 
 _feature_number = 9
