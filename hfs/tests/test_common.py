@@ -10,7 +10,8 @@ from hfs import (
     TemplateTransformer,
 )
 
-from ..hill_climbing import TopDownSelector
+from ..gtd import GreedyTopDownSelector
+from ..hill_climbing import BottomUpSelector, TopDownSelector
 from ..hip import HIP
 from ..hnb import HNB
 from ..hnbs import HNBs
@@ -37,6 +38,8 @@ from ..tsel import TSELSelector
         RNB(),
         MRT(),
         HIP(),
+        BottomUpSelector(),
+        GreedyTopDownSelector(),
     ],
 )
 def test_all_estimators(estimator):

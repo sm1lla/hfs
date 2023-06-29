@@ -191,7 +191,7 @@ class BottomUpSelector(HillClimbingSelector):
         self._score_matrix = self._calculate_scores(X)
 
         current_feature_set = get_leaves(self._feature_tree)
-        if current_feature_set == ["ROOT"]:
+        if current_feature_set == ["ROOT"] or current_feature_set == []:
             return []
         current_fitness = self._fitness_function(
             self._comparison_matrix(current_feature_set)
@@ -237,6 +237,8 @@ class BottomUpSelector(HillClimbingSelector):
 
     def _fitness_function(self, comparison_matrix: np.ndarray) -> float:
         number_of_leaf_nodes = len(get_leaves(self._feature_tree))  # alpha from paper
+        if number_of_leaf_nodes == 0:
+            number_of_leaf_nodes = 1
 
         threshold_index = self.n_features_ - self.k - 1
         k_nearest_neigbors = [
