@@ -10,11 +10,9 @@ from .helpers import gain_ratio
 class GreedyTopDownSelector(HierarchicalFeatureSelector):
     """Greedy Top Down feature selection method for hierarchical features proposed by Lu et al 2013"""
 
-    def __init__(
-        self,
-        hierarchy: np.ndarray = None,
-    ):
+    def __init__(self, hierarchy: np.ndarray = None, iterate_first_level=True):
         super().__init__(hierarchy)
+        self.iterate_first_level = iterate_first_level
 
     def fit(self, X, y, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
@@ -48,10 +46,14 @@ class GreedyTopDownSelector(HierarchicalFeatureSelector):
 
     def _fit(self):
         self.representatives_ = []
-        top_level_nodes = self._feature_tree.successors("ROOT")
+        if self.iterate_first_level:
+            top_level_nodes = self._feature_tree.successors("ROOT")
+        else:
+            top_level_nodes = ["ROOT"]
         for node in top_level_nodes:
             branch_nodes = list(descendants(self._feature_tree, node))
-            branch_nodes.append(node)
+            if node != "ROOT":
+                branch_nodes.append(node)
             branch_nodes.sort(
                 reverse=True, key=lambda x: self.heuristic_function_values_[x]
             )

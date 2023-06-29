@@ -82,6 +82,26 @@ def data2_1():
     return (X, y, hierarchy, columns)
 
 
+def data2_2():
+    X = np.array(
+        [
+            [1, 1, 0, 0, 1],
+            [1, 1, 1, 1, 0],
+            [1, 1, 1, 0, 0],
+            [1, 0, 0, 0, 1],
+            [1, 1, 0, 0, 0],
+        ],
+    )
+    edges = [(0, 1), (1, 2), (1, 3)]
+    hierarchy = nx.DiGraph(edges)
+    hierarchy.add_node(4)
+    hierarchy.add_edge(4, 3)
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
+    hierarchy = nx.to_numpy_array(hierarchy)
+    y = np.array([1, 0, 0, 1, 1])
+    return (X, y, hierarchy, columns)
+
+
 def data3():
     X = np.array(
         [
@@ -197,6 +217,20 @@ def result_gtd_selection2_1():
         ],
     )
     support = np.array([False, False, True, True, True])
+    return (result, support)
+
+
+def result_gtd_selection2_2():
+    result = np.array(
+        [
+            [0, 1],
+            [1, 0],
+            [1, 0],
+            [0, 1],
+            [0, 0],
+        ],
+    )
+    support = np.array([False, False, True, False, True])
     return (result, support)
 
 
