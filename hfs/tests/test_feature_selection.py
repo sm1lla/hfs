@@ -1,21 +1,30 @@
 import numpy as np
 import pytest
 
-from ..feature_selection import (
-    HierarchicalFeatureSelector,
-    HillClimbingSelector,
-    SHSELSelector,
-    TSELSelector,
-)
+from ..feature_selection import HierarchicalFeatureSelector
+from ..gtd import GreedyTopDownSelector
+from ..hill_climbing import BottomUpSelector, TopDownSelector
+from ..shsel import SHSELSelector
+from ..tsel import TSELSelector
 from .fixtures.fixtures import (
     data1,
     data1_2,
     data2,
+    data2_1,
+    data2_2,
     data3,
     data_shsel_selection,
-    result_distance_matrix1,
-    result_fitness_funtion1,
-    result_hill_selection,
+    result_comparison_matrix_bu1,
+    result_comparison_matrix_bu2,
+    result_comparison_matrix_bu3,
+    result_comparison_matrix_td1,
+    result_fitness_funtion_bu1,
+    result_fitness_funtion_td1,
+    result_gtd_selection2,
+    result_gtd_selection2_1,
+    result_gtd_selection2_2,
+    result_hill_selection_bu,
+    result_hill_selection_td,
     result_score_matrix1,
     result_score_matrix2,
     result_score_matrix3,
@@ -96,14 +105,32 @@ def test_SHSEL_selection_with_initial_selection(data, result):
 @pytest.mark.parametrize(
     "data, result",
     [
-        (data1(), result_hill_selection()),
-        (data1_2(), result_hill_selection()),
+        (data1(), result_hill_selection_td()),
+        (data1_2(), result_hill_selection_td()),
     ],
 )
-def test_HillClimbing_selection(data, result):
+def test_top_down_selection(data, result):
     X, y, hierarchy, columns = data
     expected, support = result
-    selector = HillClimbingSelector(hierarchy, dataset_type="binary")
+    selector = TopDownSelector(hierarchy, dataset_type="binary")
+    selector.fit(X, y, columns)
+    X = selector.transform(X)
+    assert np.array_equal(X, expected)
+
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support)
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
+        (data1(), result_hill_selection_bu()),
+    ],
+)
+def test_bottom_up_selection(data, result):
+    X, y, hierarchy, columns = data
+    expected, support, k = result
+    selector = BottomUpSelector(hierarchy, k=k, dataset_type="binary")
     selector.fit(X, y, columns)
     X = selector.transform(X)
     assert np.array_equal(X, expected)
@@ -124,7 +151,7 @@ def test_calculate_scores(data, result):
     X, y, hierarchy, columns = data
     score_matrix_expected = result
 
-    selector = HillClimbingSelector(hierarchy, dataset_type="binary")
+    selector = TopDownSelector(hierarchy, dataset_type="binary")
     selector.fit(X, y, columns)
     score_matrix = selector._calculate_scores(X)
 
@@ -132,32 +159,65 @@ def test_calculate_scores(data, result):
 
 
 @pytest.mark.parametrize(
-    "data, result",
-    [(data1(), result_distance_matrix1())],
+    "data, result, Selector",
+    [
+        (data1(), result_comparison_matrix_td1(), TopDownSelector),
+        (data1(), result_comparison_matrix_bu1(), BottomUpSelector),
+        (data2(), result_comparison_matrix_bu2(), BottomUpSelector),
+        (data3(), result_comparison_matrix_bu3(), BottomUpSelector),
+    ],
 )
-def test_calculate_distances(data, result):
+def test_comparison_matrix(data, result, Selector):
     X, y, hierarchy, columns = data
-    distance_matrix_expected = result
+    comparison_matrix_expected = result
 
-    selector = HillClimbingSelector(hierarchy)
+    selector = Selector(hierarchy)
     selector.fit(X, y, columns)
-    distance_matrix = selector._calculate_distances(columns)
+    comparison_matrix = selector._comparison_matrix(columns)
 
-    assert np.array_equal(distance_matrix, distance_matrix_expected)
+    assert np.array_equal(comparison_matrix, comparison_matrix_expected)
 
 
 @pytest.mark.parametrize(
-    "data, distance_matrix, result",
-    [(data1(), result_distance_matrix1(), result_fitness_funtion1())],
+    "data, comparison_matrix, result",
+    [
+        (
+            data1(),
+            result_comparison_matrix_bu1(),
+            result_fitness_funtion_bu1(),
+        ),
+    ],
 )
-def test_calculate__fitness_function(data, distance_matrix, result):
+def test_calculate_fitness_function_bu(data, comparison_matrix, result):
+    X, y, hierarchy, columns = data
+
+    fitness_expected, k = result
+
+    selector = BottomUpSelector(hierarchy, k=k)
+    selector.fit(X, y, columns)
+    fitness = selector._fitness_function(comparison_matrix)
+
+    assert np.array_equal(fitness, fitness_expected)
+
+
+@pytest.mark.parametrize(
+    "data, comparison_matrix, result",
+    [
+        (
+            data1(),
+            result_comparison_matrix_td1(),
+            result_fitness_funtion_td1(),
+        )
+    ],
+)
+def test_calculate_fitness_function_td(data, comparison_matrix, result):
     X, y, hierarchy, columns = data
 
     fitness_expected = result
 
-    selector = HillClimbingSelector(hierarchy)
+    selector = TopDownSelector(hierarchy)
     selector.fit(X, y, columns)
-    fitness = selector._fitness_function(distance_matrix)
+    fitness = selector._fitness_function(comparison_matrix)
 
     assert np.array_equal(fitness, fitness_expected)
 
@@ -171,3 +231,44 @@ def test_HierarchicalFeatureSelector(data):
     selector = HierarchicalFeatureSelector(hierarchy)
     with pytest.warns(UserWarning):
         selector.fit(X, columns=columns)
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [(data2(), result_gtd_selection2()), (data2_1(), result_gtd_selection2_1())],
+)
+def test_greedy_top_down_selection(data, result):
+    X, y, hierarchy, columns = data
+    expected, support = result
+    selector = GreedyTopDownSelector(hierarchy)
+    selector.fit(X, y, columns)
+    X = selector.transform(X)
+    assert np.array_equal(X, expected)
+
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support)
+
+
+@pytest.mark.parametrize(
+    "data, result_redundant, result_not_redundant",
+    [(data2_2(), result_gtd_selection2_1(), result_gtd_selection2_2())],
+)
+def test_greedy_top_down_selection_dag(data, result_redundant, result_not_redundant):
+    X, y, hierarchy, columns = data
+    expected_redundant, support_redundant = result_redundant
+    selector = GreedyTopDownSelector(hierarchy)
+    selector.fit(X, y, columns)
+    X_transformed = selector.transform(X)
+    assert np.array_equal(X_transformed, expected_redundant)
+
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support_redundant)
+
+    expected_not_redundant, support_not_redundant = result_not_redundant
+    selector2 = GreedyTopDownSelector(hierarchy, iterate_first_level=False)
+    selector2.fit(X, y, columns)
+    X_transformed2 = selector2.transform(X)
+    assert np.array_equal(X_transformed2, expected_not_redundant)
+
+    support_mask2 = selector2.get_support()
+    assert np.array_equal(support_mask2, support_not_redundant)

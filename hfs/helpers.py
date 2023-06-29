@@ -3,8 +3,9 @@ from fractions import Fraction
 
 import networkx as nx
 import numpy as np
-from info_gain.info_gain import info_gain
+from info_gain.info_gain import info_gain, info_gain_ratio
 from networkx.algorithms.simple_paths import all_simple_paths
+from numpy.linalg import norm
 from scipy import sparse
 
 
@@ -183,7 +184,7 @@ def lift(data, labels):
 def information_gain(data, labels):
     ig_values = []
     for column_index in range(data.shape[1]):
-        ig = info_gain(labels, data[:, column_index])
+        ig = info_gain(data[:, column_index], labels)
         ig_values.append(ig)
     return ig_values
 
@@ -202,3 +203,15 @@ def normalize_score(score, max_value):
     if score != 0:
         score = math.log(1 + (score / max_value)) + 1
     return score
+
+
+def cosine_similarity(i: np.ndarray, j: np.ndarray):
+    return np.dot(i, j) / (norm(i) * norm(j))
+
+
+def gain_ratio(data, labels):
+    gr_values = []
+    for column_index in range(data.shape[1]):
+        gr = info_gain_ratio(data[:, column_index], labels)
+        gr_values.append(gr)
+    return gr_values

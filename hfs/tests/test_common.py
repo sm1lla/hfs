@@ -5,19 +5,20 @@ from hfs import (
     HierarchicalEstimator,
     HierarchicalFeatureSelector,
     HierarchicalPreprocessor,
-    HillClimbingSelector,
-    SHSELSelector,
     TemplateClassifier,
     TemplateEstimator,
     TemplateTransformer,
-    TSELSelector,
 )
 
+from ..gtd import GreedyTopDownSelector
+from ..hill_climbing import BottomUpSelector, TopDownSelector
 from ..hip import HIP
 from ..hnb import HNB
 from ..hnbs import HNBs
 from ..mr import MRT
 from ..rnb import RNB
+from ..shsel import SHSELSelector
+from ..tsel import TSELSelector
 
 
 @pytest.mark.parametrize(
@@ -27,7 +28,7 @@ from ..rnb import RNB
         HierarchicalEstimator(),
         HierarchicalFeatureSelector(),
         HierarchicalPreprocessor(),
-        HillClimbingSelector(),
+        TopDownSelector(),
         SHSELSelector(),
         TemplateEstimator(),
         TemplateTransformer(),
@@ -37,6 +38,8 @@ from ..rnb import RNB
         RNB(),
         MRT(),
         HIP(),
+        BottomUpSelector(),
+        GreedyTopDownSelector(),
     ],
 )
 def test_all_estimators(estimator):
