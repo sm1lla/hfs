@@ -6,6 +6,7 @@ import numpy as np
 from info_gain.info_gain import info_gain, info_gain_ratio
 from networkx.algorithms.simple_paths import all_simple_paths
 from numpy.linalg import norm
+from pyitlib import discrete_random_variable as drv
 from scipy import sparse
 
 
@@ -188,6 +189,7 @@ def information_gain(data, labels):
         ig_values.append(ig)
     return ig_values
 
+
 def get_columns_for_numpy_hierarchy(hierarchy: nx.DiGraph, num_columns: int):
     """If each node in the hierarchy is named after a column's index this methods will give you
     the mapping from column index to node name of the node after the graph was transformed to a numpy array
@@ -196,13 +198,20 @@ def get_columns_for_numpy_hierarchy(hierarchy: nx.DiGraph, num_columns: int):
     """
     columns = []
     for node in range(num_columns):
-        columns.append(list(hierarchy.nodes()).index(node) if node in hierarchy.nodes else -1)
+        columns.append(
+            list(hierarchy.nodes()).index(node) if node in hierarchy.nodes else -1
+        )
     return columns
+
 
 def normalize_score(score, max_value):
     if score != 0:
         score = math.log(1 + (score / max_value)) + 1
     return score
+
+
+def conditional_mutual_information(node1, node2, y):
+    return drv.information_mutual_conditional(node1, node2, y)
 
 
 def cosine_similarity(i: np.ndarray, j: np.ndarray):
@@ -215,3 +224,22 @@ def gain_ratio(data, labels):
         gr = info_gain_ratio(data[:, column_index], labels)
         gr_values.append(gr)
     return gr_values
+
+
+def pearson_correlation(x: np.array, y: np.array):
+    return np.corrcoef(x, y)[0, 1]
+
+
+def compute_aggregated_values(node: int, X, hierarchy: nx.DiGraph, columns: list[int]):
+    if hierarchy.out_degree(node) == 0:
+        return X
+    else:
+        children = hierarchy.successors(node)
+        aggregated = np.zeros((X.shape[0], 1))
+        for child in children:
+            X = compute_aggregated_values(child)
+            aggregated = np.add(aggregated, X[:, columns.index(child)])
+    if node != "ROOT":
+        column_index = columns.index(node)
+        X[:, column_index] = aggregated
+    return X

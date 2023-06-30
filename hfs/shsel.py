@@ -5,7 +5,13 @@ from scipy import sparse
 from sklearn.utils.validation import check_X_y
 
 from .feature_selection import HierarchicalFeatureSelector
-from .helpers import get_paths, information_gain
+from .helpers import (
+    compute_aggregated_values,
+    get_leaves,
+    get_paths,
+    information_gain,
+    pearson_correlation,
+)
 
 
 class SHSELSelector(HierarchicalFeatureSelector):
@@ -16,10 +22,14 @@ class SHSELSelector(HierarchicalFeatureSelector):
         hierarchy: np.ndarray = None,
         relevance_metric: str = "IG",
         similarity_threshold=0.99,
+        use_hfe_extension=False,
+        preprocess_numerical_data=False,
     ):
         super().__init__(hierarchy)
         self.relevance_metric = relevance_metric
         self.similarity_threshold = similarity_threshold
+        self.use_hfe_extension = use_hfe_extension
+        self.preprocess_numerical_data = preprocess_numerical_data
 
     def fit(self, X, y, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
@@ -42,17 +52,21 @@ class SHSELSelector(HierarchicalFeatureSelector):
 
         # Feature Selection Algorithm
         self._calculate_relevance(X, y)
-        self._fit()
+        self._fit(X)
 
         self.is_fitted_ = True
         return self
 
-    def _fit(self):
+    def _fit(self, X):
+        if self.preprocess_numerical_data:
+            X = self._preprocess(X)
         paths = get_paths(self._feature_tree, reverse=True)
-        self._inital_selection(paths)
+        self._inital_selection(paths, X)
         self._pruning(paths)
+        if self.use_hfe_extension:
+            self._leaf_filtering()
 
-    def _inital_selection(self, paths):
+    def _inital_selection(self, paths, X):
         remove_nodes = set()
 
         for path in paths:
@@ -60,10 +74,17 @@ class SHSELSelector(HierarchicalFeatureSelector):
                 parent_node = path[index + 1]
                 if parent_node == "ROOT":
                     break
-                relevance_similarity = 1 - abs(
-                    self._relevance_values[parent_node] - self._relevance_values[node]
-                )
-                if relevance_similarity >= self.similarity_threshold:
+                if self.relevance_metric == "IG":
+                    similarity = 1 - abs(
+                        self._relevance_values[parent_node]
+                        - self._relevance_values[node]
+                    )
+                else:
+                    similarity = pearson_correlation(
+                        X[:, self._columns.index(parent_node)],
+                        X[:, self._columns.index[node]],
+                    )
+                if similarity >= self.similarity_threshold:
                     remove_nodes.add(node)
 
         self.representatives_ = [
@@ -92,6 +113,25 @@ class SHSELSelector(HierarchicalFeatureSelector):
         self.representatives_ = updated_representatives
 
     def _calculate_relevance(self, X, y):
-        if self.relevance_metric == "IG":
-            values = information_gain(X, y)
-            self._relevance_values = dict(zip(self._columns, values))
+        values = information_gain(X, y)
+        self._relevance_values = dict(zip(self._columns, values))
+
+    def _preprocess(self, X):
+        return compute_aggregated_values("ROOT", X, self._feature_tree, self._columns)
+
+    def _leaf_filtering(self):
+        average_ig = statistics.mean(
+            [self._relevance_values[node] for node in self.representatives_]
+        )
+
+        leaves = get_leaves(self._feature_tree)
+        remove_nodes = [
+            leaf
+            for leaf in leaves
+            if self._relevance_values[leaf] < average_ig
+            or self._relevance_values[leaf] == 0
+        ]
+        updated_representatives = [
+            node for node in self.representatives_ if node not in remove_nodes
+        ]
+        self.representatives_ = updated_representatives
