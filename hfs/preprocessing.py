@@ -7,7 +7,6 @@ from networkx.algorithms.dag import ancestors
 from networkx.algorithms.traversal import bfs_successors
 from sklearn.utils.validation import check_array, check_is_fitted
 
-
 from .base import HierarchicalEstimator
 from .helpers import get_irrelevant_leaves
 
@@ -73,7 +72,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         X_ = self._add_columns(X)
         X_ = self._propagate_ones(X_)
         return X_
-    
+
     def _extend_dag(self, X):
         """Add features that are not represented yet as nodes to the root
         X: dataset with more features than hierarchy
@@ -81,7 +80,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         If a position in X is not represented in the hierarchy the value should be set to -1.
         """
         max = len(self._feature_tree.nodes)
-        for x in range(len(X)):
+        for x in range(len(self._columns)):
             if self._columns[x] == -1:
                 if x in self._feature_tree.nodes:
                     self._feature_tree.add_edge("ROOT", max)

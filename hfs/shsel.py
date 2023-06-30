@@ -52,7 +52,7 @@ class SHSELSelector(HierarchicalFeatureSelector):
 
         # Feature Selection Algorithm
         self._calculate_relevance(X, y)
-        self._fit()
+        self._fit(X)
 
         self.is_fitted_ = True
         return self

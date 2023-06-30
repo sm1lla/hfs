@@ -6,6 +6,7 @@ import numpy as np
 from info_gain.info_gain import info_gain, info_gain_ratio
 from networkx.algorithms.simple_paths import all_simple_paths
 from numpy.linalg import norm
+from pyitlib import discrete_random_variable as drv
 from scipy import sparse
 
 
@@ -207,6 +208,10 @@ def normalize_score(score, max_value):
     if score != 0:
         score = math.log(1 + (score / max_value)) + 1
     return score
+
+
+def conditional_mutual_information(node1, node2, y):
+    return drv.information_mutual_conditional(node1, node2, y)
 
 
 def cosine_similarity(i: np.ndarray, j: np.ndarray):
