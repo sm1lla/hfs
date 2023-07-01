@@ -152,6 +152,8 @@ class Filter(HierarchicalEstimator, ABC):
             Index of test instance for which the features shall be selected.
         """
         for node in self._feature_tree:
+            self._instance_status[node] = 1
+        for node in self._feature_tree:
             if self._xtest[idx][node] == 1:
                 for anc in self._feature_tree.predecessors(node): #TODO: save it first to make it more efficient?
                     self._instance_status[anc] = 0
@@ -169,6 +171,8 @@ class Filter(HierarchicalEstimator, ABC):
         idx
             Index of test instance for which the features shall be selected.
         """
+        for node in self._feature_tree:
+            self._instance_status[node] = 1
         for node in self._feature_tree:
             if node == "ROOT":
                 continue

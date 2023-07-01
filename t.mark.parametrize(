@@ -1,0 +1,144 @@
+[1mdiff --git a/hfs/filter.py b/hfs/filter.py[m
+[1mindex 4353471..dd3fe37 100644[m
+[1m--- a/hfs/filter.py[m
+[1m+++ b/hfs/filter.py[m
+[36m@@ -151,6 +151,8 @@[m [mclass Filter(HierarchicalEstimator, ABC):[m
+         idx[m
+             Index of test instance for which the features shall be selected.[m
+         """[m
+[32m+[m[32m        for node in self._feature_tree:[m
+[32m+[m[32m            self._instance_status[node] = 1[m
+         for node in self._feature_tree:[m
+             if self._xtest[idx][node] == 1:[m
+                 for anc in self._feature_tree.predecessors(node): #TODO: save it first to make it more efficient?[m
+[36m@@ -169,6 +171,8 @@[m [mclass Filter(HierarchicalEstimator, ABC):[m
+         idx[m
+             Index of test instance for which the features shall be selected.[m
+         """[m
+[32m+[m[32m        for node in self._feature_tree:[m
+[32m+[m[32m            self._instance_status[node] = 1[m
+         for node in self._feature_tree:[m
+             if node == "ROOT":[m
+                 continue[m
+[1mdiff --git a/hfs/go.py b/hfs/go.py[m
+[1mindex 395c2d4..5729ccf 100644[m
+[1m--- a/hfs/go.py[m
+[1m+++ b/hfs/go.py[m
+[36m@@ -17,7 +17,7 @@[m [mdef load_dag(url, file_name):[m
+     go_digraph_sparse = nx.to_scipy_sparse_array(go_digraph)[m
+     nx.write_gml(go_digraph, file_name+".gml")[m
+     l = go_digraph.nodes()[m
+[31m-    print(l)[m
+[32m+[m[32m    #print(l)[m
+     #np.save("./algo/data/nodes_go.npy", l)[m
+ [m
+ [m
+[1mdiff --git a/hfs/preprocessing.py b/hfs/preprocessing.py[m
+[1mindex c1a735c..a7a8e4d 100644[m
+[1m--- a/hfs/preprocessing.py[m
+[1m+++ b/hfs/preprocessing.py[m
+[36m@@ -25,6 +25,8 @@[m [mclass HierarchicalPreprocessor(HierarchicalEstimator):[m
+         y : None[m
+             There is no need of a target in a transformer, yet the pipeline API[m
+             requires this parameter.[m
+[32m+[m[32m        columns:[m
+[32m+[m[32m            need to map features from X to nodes on graph[m
+ [m
+ [m
+         Returns[m
+[36m@@ -80,7 +82,7 @@[m [mclass HierarchicalPreprocessor(HierarchicalEstimator):[m
+         If a position in X is not represented in the hierarchy the value should be set to -1.[m
+         """[m
+         max = len(self._feature_tree.nodes)[m
+[31m-        for x in range(len(self._columns)):[m
+[32m+[m[32m        for x in range(X.shape[1]):[m
+             if self._columns[x] == -1:[m
+                 if x in self._feature_tree.nodes:[m
+                     self._feature_tree.add_edge("ROOT", max)[m
+[36m@@ -137,7 +139,7 @@[m [mclass HierarchicalPreprocessor(HierarchicalEstimator):[m
+     def get_hierarchy(self):[m
+         if self.is_fitted_:[m
+             output_hierarchy = self._feature_tree[m
+[31m-            output_hierarchy.remove_node("ROOT")[m
+[32m+[m[32m            #output_hierarchy.remove_node("ROOT")[m
+             return networkx.to_numpy_array(self._feature_tree)[m
+         else:[m
+             raise RuntimeError(f"Instance has not been fitted.")[m
+[1mdiff --git a/hfs/tests/test_real_data.py b/hfs/tests/test_real_data.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..dc1c253[m
+[1m--- /dev/null[m
+[1m+++ b/hfs/tests/test_real_data.py[m
+[36m@@ -0,0 +1,72 @@[m
+[32m+[m[32mimport numpy as np[m
+[32m+[m[32mimport pytest[m
+[32m+[m
+[32m+[m[32mfrom hfs.preprocessing import HierarchicalPreprocessor[m
+[32m+[m
+[32m+[m
+[32m+[m[32mfrom ..filter import Filter[m
+[32m+[m[32mfrom ..hnb import HNB[m
+[32m+[m[32mfrom .fixtures.fixtures import *[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32mimport pytest[m
+[32m+[m
+[32m+[m[32m@pytest.fixture[m
+[32m+[m[32mdef data():[m
+[32m+[m[32m    graph = nx.read_gml("../hfs/hfs/data/go_digraph2.gml")[m
+[32m+[m[32m    subgraph = graph.subgraph([[m
+[32m+[m[32m        "GO:2001301",[m
+[32m+[m[32m        "GO:2001302",[m
+[32m+[m[32m        "GO:2001303",[m
+[32m+[m[32m        "GO:2001304",[m
+[32m+[m[32m        "GO:2001305",[m
+[32m+[m[32m        "GO:2001306",[m
+[32m+[m[32m        "GO:2001307",[m
+[32m+[m[32m        "GO:2001308",[m
+[32m+[m[32m        "GO:2001309",[m
+[32m+[m[32m        "GO:2001310",[m
+[32m+[m[32m        "GO:2001311",[m
+[32m+[m[32m        "GO:2001312",[m
+[32m+[m[32m        "GO:2001313",[m
+[32m+[m[32m        "GO:2001314",[m
+[32m+[m[32m        "GO:2001315",[m
+[32m+[m[32m        "GO:2001316",[m
+[32m+[m[32m        "GO:2001092",[m
+[32m+[m[32m        "GO:2001094",[m
+[32m+[m[32m        "GO:2001106",[m
+[32m+[m[32m        "GO:2001107",[m
+[32m+[m[32m    ] )[m
+[32m+[m[32m    df = pd.read_csv("../hfs/hfs/data/train_test.csv")[m
+[32m+[m[32m    train = df[df["split"]=="train"][m
+[32m+[m[32m    test = df[df["split"]=="test"][m
+[32m+[m[32m    g2g = pd.read_csv(r"../hfs/hfs/data/gene2gomod3.txt",sep=",")[m
+[32m+[m[32m    go_terms = g2g["GO_ID"].unique()[m
+[32m+[m[32m    y_train = train["longevity influence"].to_numpy()[m
+[32m+[m[32m    y_test = test["longevity influence"].to_numpy()[m
+[32m+[m[32m    columns = [][m
+[32m+[m[32m    for node in train.columns:[m
+[32m+[m[32m        columns.append(list(subgraph.nodes()).index(node) if node in subgraph.nodes else -1)[m
+[32m+[m[32m    train = train[go_terms].to_numpy()[m
+[32m+[m[32m    test = test[go_terms].to_numpy()[m
+[32m+[m[32m    hierarchy = nx.to_numpy_array(subgraph)[m
+[32m+[m[32m    return (hierarchy, train, y_train, test, y_test, columns)[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef test_preprocessing(data2):[m
+[32m+[m[32m    hierarchy, train, y_train, test, y_test, columns = data2[m
+[32m+[m[32m    preprocessor = HierarchicalPreprocessor(hierarchy=hierarchy)[m
+[32m+[m[32m    preprocessor.fit(train, columns=columns)[m
+[32m+[m[32m    preprocessor.transform(train)[m
+[32m+[m
+[32m+[m[32m# Test feature selection of HNB[m
+[32m+[m[32mdef test_HNB(data):[m
+[32m+[m[32m    hierarchy, train, y_train, test, y_test, columns = data[m
+[32m+[m[32m    preprocessor = HierarchicalPreprocessor(hierarchy=hierarchy)[m
+[32m+[m[32m    preprocessor.fit(train, columns=columns)[m
+[32m+[m[32m    hierarchy = preprocessor.get_hierarchy()[m
+[32m+[m[32m    train = preprocessor.transform(train)[m
+[32m+[m[32m    test = preprocessor.transform(test)[m
+[32m+[m[32m    filter = HNB(hierarchy=hierarchy, k=2)[m
+[32m+[m[32m    filter.fit_selector(X_train=train, y_train=y_train, X_test=test)[m
+[32m+[m[32m    pred = filter.select_and_predict(predict=True, saveFeatures=True)[m
