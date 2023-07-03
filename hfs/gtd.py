@@ -12,7 +12,7 @@ class GreedyTopDownSelector(HierarchicalFeatureSelector):
 
     def __init__(self, hierarchy: np.ndarray = None, iterate_first_level=True):
         super().__init__(hierarchy)
-        self.iterate_first_level = iterate_first_level
+        self.iterate_first_level = iterate_first_level  # TODO: warning for DAG
 
     def fit(self, X, y, columns=None):
         """Fitting function that sets self.representatives_ to include the columns that are kept.
