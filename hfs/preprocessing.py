@@ -112,7 +112,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
     def _add_columns(self, X):
         X_ = X
         num_rows, num_columns = X.shape
-        if num_columns != len(self._columns):
+        if num_columns < len(self._columns):
             missing_nodes_indices = list(range(num_columns, len(self._columns)))
             for _ in missing_nodes_indices:
                 X_ = np.concatenate([X_, np.zeros((num_rows, 1), dtype=int)], axis=1)
