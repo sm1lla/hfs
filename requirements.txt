@@ -1,3 +1,9 @@
 numpy
 scipy
 scikit-learn
+pandas
+networkx
+info-gain
+pyitlib
+fractions
+math
