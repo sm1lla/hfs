@@ -1,3 +1,4 @@
+import json
 import networkx as nx
 import pandas as pd
 
@@ -36,5 +37,13 @@ def evaluate_HNB(data):
     filter = HNB(hierarchy=hierarchy, k=2)
     filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
+    score = filter.get_score(y_test, pred)
+    with open('..//hfs/hfs/results/hnb.txt', 'w') as file:
+        file.write(json.dumps(score))
+def a():
+    score = {"hi":0}
+    with open('../hfs/results/hnb.txt', 'w') as file:
+        file.write(json.dumps(score))
 
+a()
 evaluate_HNB(data)

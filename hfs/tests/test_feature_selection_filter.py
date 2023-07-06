@@ -11,7 +11,7 @@ from hfs.filter import Filter
 from hfs.hnb import HNB
 from hfs.hnbs import HNBs
 from hfs.rnb import RNB
-from .fixtures.fixtures import *
+from fixtures.fixtures import *
 
 import pytest
 
@@ -61,6 +61,7 @@ def test_HNB():
     assert filter.get_score(test_y_data, pred)["accuracy"] == 0.0 # accuracy
     assert filter.get_score(test_y_data, pred)["1"]["recall"] == 0.0 # sensitivity
     assert filter.get_score(test_y_data, pred)["0"]["recall"] == 0.0 # specivity
+
 
 # Test feature selection of HNBs
 def test_HNBs():

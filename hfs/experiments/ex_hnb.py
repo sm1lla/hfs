@@ -1,3 +1,4 @@
+import json
 import networkx as nx
 import pandas as pd
 
@@ -5,6 +6,7 @@ from hfs.preprocessing import HierarchicalPreprocessor
 
 
 from hfs.hnb import HNB
+from hfs.tests.fixtures.fixtures import *
 
 
 def data():
@@ -67,3 +69,16 @@ def test_HNB(data):
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
 
 test_preprocessing(data)
+
+filter = HNB(hierarchy=small_DAG, k=2)
+filter.fit_selector(X_train=train_x_data, y_train=train_y_data, X_test=test_x_data)
+pred = filter.select_and_predict(predict=True, saveFeatures=True)
+assert np.array_equal(filter.get_features(), np.array([[0, 1, 1, 0], [0, 0, 1, 1]]))
+assert np.array_equal(pred, np.array([0, 1]))
+assert filter.get_score(test_y_data, pred)["accuracy"] == 0.0 # accuracy
+assert filter.get_score(test_y_data, pred)["1"]["recall"] == 0.0 # sensitivity
+assert filter.get_score(test_y_data, pred)["0"]["recall"] == 0.0 # specivity
+score = filter.get_score(test_y_data, pred)
+
+with open('..//hfs/hfs/results/hnb.txt', 'w') as file:
+    file.write(json.dumps(score))
