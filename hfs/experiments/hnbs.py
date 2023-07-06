@@ -1,11 +1,13 @@
 import json
 import networkx as nx
 import pandas as pd
+from hfs.hnbs import HNBs
 
 from hfs.preprocessing import HierarchicalPreprocessor
 
 
 from hfs.hnb import HNB
+from hfs.rnb import RNB
 
 
 def data():
@@ -27,7 +29,22 @@ def data():
 
 
 # Evalueate feature selection of HNB
-def evaluate_HNB(data):
+def evaluate_HNBs(data):
+    hierarchy, train, y_train, test, y_test, columns = data()
+    preprocessor = HierarchicalPreprocessor(hierarchy=hierarchy)
+    preprocessor.fit(train, columns=columns)
+    train = preprocessor.transform(train)
+    test = preprocessor.transform(test)
+    hierarchy = preprocessor.get_hierarchy()
+    filter = HNBs(hierarchy=hierarchy)
+    filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
+    pred = filter.select_and_predict(predict=True, saveFeatures=True)
+    score = filter.get_score(y_test, pred)
+    with open('../hfs/results/hnbs.txt', 'w') as file:
+        file.write("\n")
+        file.write(json.dumps(score))
+
+def evaluate_RNB(data):
     hierarchy, train, y_train, test, y_test, columns = data()
     preprocessor = HierarchicalPreprocessor(hierarchy=hierarchy)
     preprocessor.fit(train, columns=columns)
@@ -35,13 +52,17 @@ def evaluate_HNB(data):
     test = preprocessor.transform(test)
     hierarchy = preprocessor.get_hierarchy()
     for k in [10, 20, 30, 40, 50]:
-        filter = HNB(hierarchy=hierarchy, k=k)
+        filter = RNB(hierarchy=hierarchy, k=k)
         filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
         pred = filter.select_and_predict(predict=True, saveFeatures=True)
         score = filter.get_score(y_test, pred)
-        with open('../hfs/results/hnb.txt', 'w') as file:
+        with open('../hfs/results/rnb.txt', 'w') as file:
             file.write(k)
             file.write("\n")
             file.write(json.dumps(score))
 
-evaluate_HNB(data)
+
+
+
+evaluate_HNBs(data)
+evaluate_RNB(data)
