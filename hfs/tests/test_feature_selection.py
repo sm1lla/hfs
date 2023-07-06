@@ -13,6 +13,7 @@ from .fixtures.fixtures import (
     data2_1,
     data2_2,
     data3,
+    data4,
     data_shsel_selection,
     result_comparison_matrix_bu1,
     result_comparison_matrix_bu2,
@@ -31,6 +32,9 @@ from .fixtures.fixtures import (
     result_shsel1,
     result_shsel2,
     result_shsel3,
+    result_shsel_hfe1,
+    result_shsel_hfe2,
+    result_shsel_hfe4,
     result_shsel_selection,
     result_tsel1,
     result_tsel2,
@@ -94,6 +98,26 @@ def test_SHSEL_selection_with_initial_selection(data, result):
     X, y, hierarchy, columns = data
     expected, support = result
     selector = SHSELSelector(hierarchy, similarity_threshold=0.8)
+    selector.fit(X, y, columns)
+    X = selector.transform(X)
+    assert np.array_equal(X, expected)
+
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support)
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
+        (data1(), result_shsel_hfe1()),
+        (data2(), result_shsel_hfe2()),
+        (data4(), result_shsel_hfe4()),
+    ],
+)
+def test_leaf_filtering(data, result):
+    X, y, hierarchy, columns = data
+    expected, support = result
+    selector = SHSELSelector(hierarchy, use_hfe_extension=True)
     selector.fit(X, y, columns)
     X = selector.transform(X)
     assert np.array_equal(X, expected)

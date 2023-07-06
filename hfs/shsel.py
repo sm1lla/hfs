@@ -124,7 +124,8 @@ class SHSELSelector(HierarchicalFeatureSelector):
             [self._relevance_values[node] for node in self.representatives_]
         )
 
-        leaves = get_leaves(self._feature_tree)
+        leaves = self._select_leaves()
+
         remove_nodes = [
             leaf
             for leaf in leaves
@@ -135,3 +136,19 @@ class SHSELSelector(HierarchicalFeatureSelector):
             node for node in self.representatives_ if node not in remove_nodes
         ]
         self.representatives_ = updated_representatives
+
+    def _select_leaves(self):
+        leaves = [
+            leaf
+            for leaf in get_leaves(self._feature_tree)
+            if leaf in self.representatives_
+        ]
+
+        paths = get_paths(self._feature_tree)
+        max_path_len = max([len(path) for path in paths])
+        selected_leaves = []
+        for leaf in leaves:
+            for path in paths:
+                if leaf in path and len(path) != max_path_len:
+                    selected_leaves.append(leaf)
+        return selected_leaves
