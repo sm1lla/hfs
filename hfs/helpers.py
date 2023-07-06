@@ -235,7 +235,7 @@ def compute_aggregated_values(node: int, X, hierarchy: nx.DiGraph, columns: list
         return X
     else:
         children = hierarchy.successors(node)
-        aggregated = np.zeros((X.shape[0], 1))
+        aggregated = X[: columns.index(node)]
         for child in children:
             X = compute_aggregated_values(child)
             aggregated = np.add(aggregated, X[:, columns.index(child)])
