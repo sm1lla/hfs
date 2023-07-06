@@ -188,7 +188,7 @@ class Filter(HierarchicalEstimator, ABC):
 
     def _get_nonredundant_features_mr(self, idx):
         """
-        Get nonredundant features based on the MRT considering all pathes.
+        Get nonredundant features based on the MR considering all pathes.
         Basic functionality of the HIP algorithm proposed by Wan & Freitas.
 
         Parameters
@@ -403,6 +403,7 @@ class Filter(HierarchicalEstimator, ABC):
             metrics of prediction
         """
         score = classification_report(y_true=ytest, y_pred=predictions, output_dict=True)
+        score["sensitivityxspecificity"] = score["0"]["recall"]*score["1"]["recall"]
         return score
     
     def get_features(self):

@@ -34,6 +34,7 @@ def evaluate_HNB(data):
     train = preprocessor.transform(train)
     test = preprocessor.transform(test)
     hierarchy = preprocessor.get_hierarchy()
+    for 
     filter = HNB(hierarchy=hierarchy, k=2)
     filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
