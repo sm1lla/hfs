@@ -25,15 +25,8 @@ def data():
     return (hierarchy, train, y_train, test, y_test, columns)
 
 
-def test_preprocessing(data):
-    hierarchy, train, y_train, test, y_test, columns = data()
-    preprocessor = HierarchicalPreprocessor(hierarchy=hierarchy)
-    preprocessor.fit(train, columns=columns)
-    train_new = preprocessor.transform(train)
-    print(train_new)
-
-# Test feature selection of HNB
-def test_HNB(data):
+# Evalueate feature selection of HNB
+def evaluate_HNB(data):
     hierarchy, train, y_train, test, y_test, columns = data()
     preprocessor = HierarchicalPreprocessor(hierarchy=hierarchy)
     preprocessor.fit(train, columns=columns)
@@ -44,4 +37,4 @@ def test_HNB(data):
     filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
 
-test_preprocessing(data)
+evaluate_HNB(data)

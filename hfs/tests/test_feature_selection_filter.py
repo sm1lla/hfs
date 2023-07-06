@@ -5,12 +5,12 @@ from sklearn.utils.estimator_checks import check_estimator
 from hfs.tan import Tan
 
 
-from ..mr import MRT
-from ..hip import HIP
-from ..filter import Filter
-from ..hnb import HNB
-from ..hnbs import HNBs
-from ..rnb import RNB
+from hfs.mr import MRT
+from hfs.hip import HIP
+from hfs.filter import Filter
+from hfs.hnb import HNB
+from hfs.hnbs import HNBs
+from hfs.rnb import RNB
 from .fixtures.fixtures import *
 
 import pytest
@@ -58,8 +58,9 @@ def test_HNB():
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
     assert np.array_equal(filter.get_features(), np.array([[0, 1, 1, 0], [0, 0, 1, 1]]))
     assert np.array_equal(pred, np.array([0, 1]))
-    assert filter.get_score(test_y_data, pred) == 0.0
-
+    assert filter.get_score(test_y_data, pred)["accuracy"] == 0.0 # accuracy
+    assert filter.get_score(test_y_data, pred)["1"]["recall"] == 0.0 # sensitivity
+    assert filter.get_score(test_y_data, pred)["0"]["recall"] == 0.0 # specivity
 
 # Test feature selection of HNBs
 def test_HNBs():
@@ -68,9 +69,10 @@ def test_HNBs():
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
     assert np.array_equal(pred, np.array([0, 1]))
     assert np.array_equal(filter.get_features(), np.array([[0, 1, 1, 1], [0, 0, 1, 1]]))
-    assert filter.get_score(test_y_data, pred) == 0.0
-
-
+    assert filter.get_score(test_y_data, pred)["accuracy"] == 0.0 #accuracy
+    assert filter.get_score(test_y_data, pred)["1"]["recall"] == 0.0 # sensitivity
+    assert filter.get_score(test_y_data, pred)["0"]["recall"] == 0.0 # specivity
+    
 # Test feature selection of RNB
 def test_RNB():
     filter = RNB(hierarchy=small_DAG, k=2)
@@ -78,8 +80,10 @@ def test_RNB():
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
     assert np.array_equal(pred, np.array([0, 1]))
     assert np.array_equal(filter.get_features(), np.array([[0, 1, 1, 0], [0, 1, 1, 0]]))
-    assert filter.get_score(test_y_data, pred) == 0.0
-
+    assert filter.get_score(test_y_data, pred)["accuracy"] == 0.0 # accuracy
+    assert filter.get_score(test_y_data, pred)["1"]["recall"] == 0.0 # sensitivity
+    assert filter.get_score(test_y_data, pred)["0"]["recall"] == 0.0 # specivity
+    
 # Test feature selection of MRT
 def test_MRT(data1):
     hierarchy, X_train, y_train, X_test, relevance= data1
@@ -99,12 +103,16 @@ def test_HIP(data1):
     filter.fit_selector(X_train=X_train, y_train=y_train, X_test=X_test) 
     filter._relevance = relevance
     filter._feature_tree = hierarchy
-    filter.select_and_predict(predict=True, saveFeatures=True)
+    pred = filter.select_and_predict(predict=True, saveFeatures=True)
     features = filter.get_features()
     result_features = np.array([[1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],[1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]])
     assert(features.all()==result_features.all())
+    assert filter.get_score(test_y_data, pred)["accuracy"] == 0.5 # accuracy
+    assert filter.get_score(test_y_data, pred)["1"]["recall"] == 0.0 # sensitivity
+    assert filter.get_score(test_y_data, pred)["0"]["recall"] == 1.0 # specivity
 
-def test_TAN(data2): #mst rename
+# Test feature selection of TAN
+def test_TAN(data2): 
     hierarchy, X_train_ones, X_train, y_train, X_test, resulted_features = data2
     filter = Tan(nx.to_numpy_array(hierarchy))
     filter.fit_selector(X_train=X_train_ones, y_train=y_train, X_test=X_test) 
@@ -113,3 +121,7 @@ def test_TAN(data2): #mst rename
     filter.select_and_predict(predict=True, saveFeatures=True)
     f = filter.get_features()
     assert(resulted_features.all() == f.all())
+    pred = filter.select_and_predict(predict=True, saveFeatures=True)
+    assert filter.get_score(test_y_data, pred)["accuracy"] == 0.5 # accuracy
+    assert filter.get_score(test_y_data, pred)["1"]["recall"] == 1.0 # sensitivity
+    assert filter.get_score(test_y_data, pred)["0"]["recall"] == 0.0 # specivity

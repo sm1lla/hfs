@@ -3,7 +3,8 @@ from abc import ABC
 import networkx as nx
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, classification_report
+
 from sklearn.naive_bayes import BernoulliNB
 
 from .base import HierarchicalEstimator
@@ -361,7 +362,7 @@ class Filter(HierarchicalEstimator, ABC):
 
     def _predict(self, idx, estimator):
         """
-        Predicts for .
+        Predicts for an instance of the test set.
 
         Parameters
         ----------
@@ -380,8 +381,29 @@ class Filter(HierarchicalEstimator, ABC):
         clf.fit(self._xtrain[:, features], self._ytrain)
         return clf.predict(self._xtest[idx][features].reshape(1, -1))
 
-    def get_score(self, ytest, predictions):
+    def get_score2(self, ytest, predictions):
         return accuracy_score(y_true=ytest, y_pred=predictions)
 
+    def get_score(self, ytest, predictions):
+        """
+        Returns score of the predictions.
+        Note that recall of the positive class is known as “sensitivity”;
+        recall of the negative class is “specificity”
+
+        Parameters
+        ----------
+        ytest: 1d array-like, or label indicator array / sparse matrix
+            truth values of y
+        predictions: 1d array-like, or label indicator array / sparse matrix
+            obtained predictions
+
+        Returns
+        -------
+        report: dict
+            metrics of prediction
+        """
+        score = classification_report(y_true=ytest, y_pred=predictions, output_dict=True)
+        return score
+    
     def get_features(self):
         return self._features
