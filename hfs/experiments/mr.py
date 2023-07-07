@@ -5,7 +5,7 @@ import pandas as pd
 from hfs.preprocessing import HierarchicalPreprocessor
 
 
-from hfs.hnb import HNB
+from hfs.mr import MR
 
 
 def data():
@@ -27,19 +27,18 @@ def data():
 
 
 # Evalueate feature selection of HNB
-def evaluate_HNB(data):
+def evaluate_MR(data):
     hierarchy, train, y_train, test, y_test, columns = data()
     preprocessor = HierarchicalPreprocessor(hierarchy=hierarchy)
     preprocessor.fit(train, columns=columns)
     train = preprocessor.transform(train)
     test = preprocessor.transform(test)
     hierarchy = preprocessor.get_hierarchy()
-    for k in [10, 20, 30, 40, 50]:
-        filter = HNB(hierarchy=hierarchy, k=k)
-        filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
-        pred = filter.select_and_predict(predict=True, saveFeatures=True)
-        score = filter.get_score(y_test, pred)
-        with open(f'../hfs/results/hnb{k}.txt', 'w') as file:
-            file.write(json.dumps(score))
+    filter = MR(hierarchy=hierarchy)
+    filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
+    pred = filter.select_and_predict(predict=True, saveFeatures=True)
+    score = filter.get_score(y_test, pred)
+    with open(f'../hfs/results/mr.txt', 'w') as file:
+        file.write(json.dumps(score))
 
-evaluate_HNB(data)
+evaluate_MR(data)

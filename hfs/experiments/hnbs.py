@@ -56,9 +56,7 @@ def evaluate_RNB(data):
         filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
         pred = filter.select_and_predict(predict=True, saveFeatures=True)
         score = filter.get_score(y_test, pred)
-        with open('../hfs/results/rnb.txt', 'w') as file:
-            file.write(k)
-            file.write("\n")
+        with open(f'../hfs/results/rnb{k}.txt', 'w') as file:
             file.write(json.dumps(score))
 
 
