@@ -230,16 +230,19 @@ def pearson_correlation(x: np.array, y: np.array):
     return np.corrcoef(x, y)[0, 1]
 
 
-def compute_aggregated_values(node: int, X, hierarchy: nx.DiGraph, columns: list[int]):
+def compute_aggregated_values(
+    X, hierarchy: nx.DiGraph, columns: list[int], node="ROOT"
+):
     if hierarchy.out_degree(node) == 0:
         return X
-    else:
-        children = hierarchy.successors(node)
-        aggregated = X[: columns.index(node)]
-        for child in children:
-            X = compute_aggregated_values(child)
-            aggregated = np.add(aggregated, X[:, columns.index(child)])
+    children = hierarchy.successors(node)
+    aggregated = np.zeros((X.shape[0]))
+    for child in list(children):
+        X = compute_aggregated_values(X, hierarchy, columns, node=child)
+        aggregated = np.add(aggregated, X[:, columns.index(child)])
+
     if node != "ROOT":
+        aggregated = np.add(aggregated, X[:, columns.index(node)])
         column_index = columns.index(node)
         X[:, column_index] = aggregated
     return X

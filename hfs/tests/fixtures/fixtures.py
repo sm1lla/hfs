@@ -471,6 +471,30 @@ def result_ig_values2():
     ]
 
 
+def result_aggregated1():
+    return np.array(
+        [
+            [1, 0, 0, 0, 1],
+            [2, 0, 0, 1, 1],
+            [3, 1, 1, 1, 1],
+            [4, 2, 1, 1, 1],
+            [5, 2, 1, 1, 1],
+        ]
+    )
+
+
+def result_aggregated2():
+    return np.array(
+        [
+            [3, 1, 0, 0, 1],
+            [4, 3, 2, 1, 0],
+            [3, 2, 1, 0, 0],
+            [2, 0, 0, 0, 1],
+            [2, 1, 0, 0, 0],
+        ],
+    )
+
+
 _feature_number = 9
 
 
