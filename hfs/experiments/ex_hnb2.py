@@ -55,7 +55,6 @@ def test_preprocessing(data):
     preprocessor.fit(train, columns=columns)
     train_new = preprocessor.transform(train)
     print(train_new)
-    return (hierarchy, train, test, y_train, y_test)
 
 # Test feature selection of HNB
 def test_HNB(data):
@@ -68,19 +67,13 @@ def test_HNB(data):
     filter = HNB(hierarchy=hierarchy, k=2)
     filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
-    
 
-hierarchy, train, y_train, test, y_test, columns = data()
-preprocessor = HierarchicalPreprocessor(hierarchy=hierarchy)
-preprocessor.fit(train, columns=columns)
-train = preprocessor.transform(train)
-test = preprocessor.transform(test)
-hierarchy = preprocessor.get_hierarchy()
-filter = HNB(hierarchy=hierarchy, k=10)
-filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
+#test_preprocessing(data)
+
+filter = HNB(hierarchy=small_DAG, k=2)
+filter.fit_selector(X_train=train_x_data, y_train=train_y_data, X_test=test_x_data)
 pred = filter.select_and_predict(predict=True, saveFeatures=True)
+score = filter.get_score(test_y_data, pred)
 
-score = filter.get_score(y_test, pred)
-
-with open('../hfs/results/hnbex.txt', 'w') as file:
+with open('../hfs/results/fhnb.txt', 'w') as file:
     file.write(json.dumps(score))

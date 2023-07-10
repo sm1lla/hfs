@@ -93,7 +93,7 @@ class Filter(HierarchicalEstimator, ABC):
         X = self._validate_data(
             X,
         )
-        self.n_features_ = X.shape[1]
+        self._n_features = X.shape[1]
         return self
 
     def fit_selector(self, X_train, y_train, X_test):
@@ -116,9 +116,9 @@ class Filter(HierarchicalEstimator, ABC):
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
-        self.n_features_ = X_train.shape[1]
+        self._n_features = X_train.shape[1]
         self._features = np.zeros(shape=X_test.shape)
-        self._feature_length = np.empty(self.n_features,dtype=int)
+        self._feature_length = np.zeros(self._xtest.shape[1],dtype=int)
 
         # Validate data
         checkData(self._feature_tree, self._xtrain, self._ytrain)
@@ -174,7 +174,7 @@ class Filter(HierarchicalEstimator, ABC):
             self._instance_status[node] = 1
         for node in self._feature_tree:
             if self._xtest[idx][node] == 1:
-                for anc in self._feature_tree.predecessors(node): #TODO: save it first to make it more efficient?
+                for anc in self._feature_tree.predecessors(node):
                     self._instance_status[anc] = 0
             else:
                 for desc in self._feature_tree.successors(node):
@@ -295,8 +295,8 @@ class Filter(HierarchicalEstimator, ABC):
         """
 
         edges = self._feature_tree.edges
-        self._edge_status = np.zeros((self.n_features_,self.n_features_))
-        self._cmi = np.zeros((self.n_features_,self.n_features_))
+        self._edge_status = np.zeros((self._n_features,self._n_features))
+        self._cmi = np.zeros((self._n_features,self._n_features))
         self._sorted_edges = []
         for node1 in self._feature_tree.nodes:
             for node2 in self._feature_tree.nodes:
@@ -306,7 +306,7 @@ class Filter(HierarchicalEstimator, ABC):
                 self._edge_status[node1][node2] = 1
         sorted_indices = np.argsort(self._cmi, axis = None)
         for index in sorted_indices:
-            coordinates = divmod(index, self.n_features_)
+            coordinates = divmod(index, self._n_features)
 
             if coordinates[0] < coordinates[1]:
                 self._sorted_edges.append(coordinates)
@@ -329,9 +329,9 @@ class Filter(HierarchicalEstimator, ABC):
             for node2 in self._feature_tree:
                     self._edge_status[node1][node2] = 1
 
-        representants = [i for i in range(self.n_features_)]
+        representants = [i for i in range(self._n_features)]
         members = {}
-        for i in range(self.n_features_):
+        for i in range(self._n_features):
             members[i]=[i]
 
         # get paths 
@@ -397,7 +397,13 @@ class Filter(HierarchicalEstimator, ABC):
             prediction of test instance's target value.
         """
         features = [nodes for nodes, status in self._instance_status.items() if status]
-        self._feature_length[idx] = len(features)
+        with open(f'../hfs/results/features/features{idx}.txt', 'w') as file:
+            file.write(f"features: {len(features)}")
+            file.write(f"{len(self._instance_status)}")
+            file.write(str(features))
+        #self._feature_length[idx] = len(features)
+        print(f"{idx}: {self._feature_length[idx]}")
+
         clf = estimator
         clf.fit(self._xtrain[:, features], self._ytrain)
         return clf.predict(self._xtest[idx][features].reshape(1, -1))
@@ -416,16 +422,20 @@ class Filter(HierarchicalEstimator, ABC):
             obtained predictions
 
         Returns
-        -------
+        -------self._feature_length
         report: dict
             metrics of prediction
         """
         avg_feature_length = 0
         for feature_length in self._feature_length:
-            avg_feature_length += feature_length
-        avg_feature_length = avg_feature_length / self.n_features
+            print(f"avg {avg_feature_length}")
+            print(f"featurelength {feature_length}")
+            print(self._xtrain.shape)
+            avg_feature_length += ( feature_length / self._xtrain.shape[1])
+        avg_feature_length = avg_feature_length / len(self._feature_length)
+        print(f"res: {avg_feature_length}")
         score = classification_report(y_true=ytest, y_pred=predictions, output_dict=True)
-        score["sensitivityxspecificity"] = score["0"]["recall"]*score["1"]["recall"]
+        score["sensitivityxspecificity"] = float(score["0"]["recall"])*float(score["1"]["recall"])
         score["compression"] = avg_feature_length
 
         return score

@@ -41,6 +41,7 @@ class HIP(Filter):
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
+            self._feature_length[idx] = np.array(list(self._instance_status.values()))
             for node in self._feature_tree:
                 self._instance_status[node] = 1
         return predictions

@@ -38,7 +38,7 @@ def evaluate_HIP(data):
     filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
     score = filter.get_score(y_test, pred)
-    with open(f'../hfs/results/hip_testtrainsplit.txt', 'w') as file:
+    with open(f'../hfs/results/hip_score2.txt', 'w') as file:
         file.write(json.dumps(score))
 
 evaluate_HIP(data)
