@@ -3,7 +3,7 @@ from abc import ABC
 import networkx as nx
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, classification_report
 from sklearn.naive_bayes import BernoulliNB
 
 from .base import HierarchicalEstimator
@@ -117,6 +117,7 @@ class Filter(HierarchicalEstimator, ABC):
         self._xtest = X_test
         self.n_features_ = X_train.shape[1]
         self._features = np.zeros(shape=X_test.shape)
+        self._feature_length = np.zeros(self._xtest.shape[1],dtype=int)
 
         # Validate data
         checkData(self._feature_tree, self._xtrain, self._ytrain)
@@ -139,6 +140,21 @@ class Filter(HierarchicalEstimator, ABC):
     def select_and_predict(
         self, predict=True, saveFeatures=False, estimator=BernoulliNB()
     ):
+        """
+        Select features lazy for each test instance amd optionally predict target value of test instances.
+        To be implemented by children.
+        Parameters
+        ----------
+        predict :   {bool}
+            true if predictions shall be obtained
+        saveFeatures: {bool}
+            true if features selected for each test instance shall be saved
+        estimator
+                    Estimator to use for predictions.
+        Returns
+        -------
+        predictions for test input samples, if predict = false, returns empty array
+        """
         pass
 
     def _get_nonredundant_features(self, idx):
@@ -152,8 +168,10 @@ class Filter(HierarchicalEstimator, ABC):
             Index of test instance for which the features shall be selected.
         """
         for node in self._feature_tree:
+            self._instance_status[node] = 1
+        for node in self._feature_tree:
             if self._xtest[idx][node] == 1:
-                for anc in self._feature_tree.predecessors(node): #TODO: save it first to make it more efficient?
+                for anc in self._feature_tree.predecessors(node):
                     self._instance_status[anc] = 0
             else:
                 for desc in self._feature_tree.successors(node):
@@ -170,6 +188,8 @@ class Filter(HierarchicalEstimator, ABC):
             Index of test instance for which the features shall be selected.
         """
         for node in self._feature_tree:
+            self._instance_status[node] = 1
+        for node in self._feature_tree:
             if node == "ROOT":
                 continue
             if self._xtest[idx][node] == 1:
@@ -183,7 +203,7 @@ class Filter(HierarchicalEstimator, ABC):
 
     def _get_nonredundant_features_mr(self, idx):
         """
-        Get nonredundant features based on the MRT considering all pathes.
+        Get nonredundant features based on the MR considering all pathes.
         Basic functionality of the HIP algorithm proposed by Wan & Freitas.
 
         Parameters
@@ -357,7 +377,7 @@ class Filter(HierarchicalEstimator, ABC):
 
     def _predict(self, idx, estimator):
         """
-        Predicts for .
+        Predicts for an instance of the test set.
 
         Parameters
         ----------
@@ -377,7 +397,44 @@ class Filter(HierarchicalEstimator, ABC):
         return clf.predict(self._xtest[idx][features].reshape(1, -1))
 
     def get_score(self, ytest, predictions):
-        return accuracy_score(y_true=ytest, y_pred=predictions)
+        """
+        Returns score of the predictions.
+        Note that recall of the positive class is known as “sensitivity”;
+        recall of the negative class is “specificity”
+
+        Parameters
+        ----------
+        ytest: 1d array-like, or label indicator array / sparse matrix
+            truth values of y
+        predictions: 1d array-like, or label indicator array / sparse matrix
+            obtained predictions
+        Returns
+        -------self._feature_length
+        report: dict
+            metrics of prediction
+        """
+        avg_feature_length = 0
+        for idx in range(0,self._xtest.shape[0]-1):
+            print(f"avg {avg_feature_length}")
+            print(f"featurelength {self._feature_length[idx]}")
+            print(self._xtrain.shape)
+            avg_feature_length += ( self._feature_length[idx] / self._xtrain.shape[1])
+        avg_feature_length = avg_feature_length / (len(self._feature_length))
+        score = classification_report(y_true=ytest, y_pred=predictions, output_dict=True)
+        score["sensitivityxspecificity"] = float(score["0"]["recall"])*float(score["1"]["recall"])
+        score["compression"] = avg_feature_length
+
+        return score
 
     def get_features(self):
+        """
+        Get selected features.
+        Parameters
+        ----------
+        None
+        Returns
+        -------
+        features : numpy array
+            Boolean value at index states if feature is selected.
+        """
         return self._features
