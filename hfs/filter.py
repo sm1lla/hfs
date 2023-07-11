@@ -397,10 +397,11 @@ class Filter(HierarchicalEstimator, ABC):
             prediction of test instance's target value.
         """
         features = [nodes for nodes, status in self._instance_status.items() if status]
-        with open(f'../hfs/results/features/features{idx}.txt', 'w') as file:
-            file.write(f"features: {len(features)}")
-            file.write(f"{len(self._instance_status)}")
-            file.write(str(features))
+        with open(f'../hfs/results/features/features.txt', 'a') as file:
+            file.write(f"\n{idx}: ")
+            file.write(f"f_len: {len(features)}")
+            file.write(f"fl: {self._feature_length[idx]}\n")
+            file.write(f"   {str(features)}")
         #self._feature_length[idx] = len(features)
         print(f"{idx}: {self._feature_length[idx]}")
 
@@ -427,13 +428,24 @@ class Filter(HierarchicalEstimator, ABC):
             metrics of prediction
         """
         avg_feature_length = 0
-        for feature_length in self._feature_length:
+        #for feature_length in self._feature_length:
+        a = 0
+        for idx in range(0,self._xtest.shape[0]-1): 
+            if self._feature_length[idx] == 0:
+                a = a+1
+                continue
             print(f"avg {avg_feature_length}")
-            print(f"featurelength {feature_length}")
+            print(f"featurelength {self._feature_length[idx]}")
             print(self._xtrain.shape)
-            avg_feature_length += ( feature_length / self._xtrain.shape[1])
-        avg_feature_length = avg_feature_length / len(self._feature_length)
+            avg_feature_length += ( self._feature_length[idx] / self._xtrain.shape[1])
+        avg_feature_length = avg_feature_length / (len(self._feature_length)-a)
+
+        with open(f'../hfs/results/features/features.txt', 'a') as file:
+            file.write(f" \n avg: {avg_feature_length}: ")
+            file.write(f"a: {a}")
+            file.write(f"fl: {(len(self._feature_length))}, ")
         print(f"res: {avg_feature_length}")
+        print(f"a: {a}")
         score = classification_report(y_true=ytest, y_pred=predictions, output_dict=True)
         score["sensitivityxspecificity"] = float(score["0"]["recall"])*float(score["1"]["recall"])
         score["compression"] = avg_feature_length

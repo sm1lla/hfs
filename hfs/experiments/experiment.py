@@ -13,7 +13,7 @@ from hfs.mr import MR
 from hfs.tan import Tan
 
 
-estimator = [
+models = [
     HNB(),
     HNBs(),
     RNB(),
@@ -33,7 +33,7 @@ def evaluate_model(data):
     accuracy = 0
     specivity = 0
     sensitivity = 0
-    for train_indices, test_indices in kfold.split(X):
+    for model in models:
         xtrain = X[train]
         xtest = X[test]
         ytrain = y[train]

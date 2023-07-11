@@ -43,6 +43,7 @@ class MR(Filter):
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
+            self._feature_length[idx] = len([nodes for nodes, status in self._instance_status.items() if status])
             for node in self._feature_tree:
                 self._instance_status[node] = 1
         return predictions

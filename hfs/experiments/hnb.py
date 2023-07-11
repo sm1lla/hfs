@@ -39,7 +39,7 @@ def evaluate_HNB(data):
         filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
         pred = filter.select_and_predict(predict=True, saveFeatures=True)
         score = filter.get_score(y_test, pred)
-        with open(f'../hfs/results/hnb{k}_5.txt', 'w') as file:
+        with open(f'../hfs/results/hnb{k}.txt', 'w') as file:
             file.write(json.dumps(score))
 
 evaluate_HNB(data)

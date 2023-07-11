@@ -1,5 +1,6 @@
 from sklearn.model_selection import KFold
-
+import networkx as nx
+import pandas as pd
 def data():
     graph = nx.read_gml("../hfs/data/go_digraph2.gml")
     df = pd.read_csv("../hfs/data/dropped_genes_without_goandli.csv")
@@ -12,4 +13,4 @@ def data():
     y = df["longevity influence"].to_numpy()
     hierarchy = nx.to_numpy_array(graph)
 
-    return (hierarchy, X, y columns)
+    return (hierarchy, X, y, columns)

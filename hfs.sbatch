@@ -1,7 +1,8 @@
 #!/bin/bash 
 #SBATCH --job-name="hfs-exp" 
 #SBATCH --mem=100G  
-#SBATCH --exclude=ic922-[01-02] 
+#SBATCH --exclude=ic922-[01-02]
+#SBATCH -n 30
 #SBATCH --account=renard 
 #SBATCH --partition=magic 
 #SBATCH --time=2-00:00:00 
@@ -16,4 +17,4 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate env
 export PYTHONPATH=~/hfs-1/
 
-python experiments/hip.py
+python experiments/hnbs.py

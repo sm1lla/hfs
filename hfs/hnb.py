@@ -44,11 +44,7 @@ class HNB(Filter):
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
-                self._feature_length[idx] = len(self._features)
-            with open(f'../hfs/results/features/features{idx}.txt', 'w') as file:
-                file.write(f"features: {self._feature_length[idx]}")
-                file.write(f"{len(self._instance_status)}")
-                file.write(str(self._features[idx]))
+            self._feature_length[idx] = len([nodes for nodes, status in self._instance_status.items() if status])
             for node in self._feature_tree:
                 self._instance_status[node] = 1
         return predictions
