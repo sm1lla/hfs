@@ -1,3 +1,8 @@
+info-gain
+matplotlib
+networkx
 numpy
+nxontology
+pyitlib
 scipy
 scikit-learn
