@@ -3,7 +3,8 @@ from abc import ABC
 import networkx as nx
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, classification_report
+
 from sklearn.naive_bayes import BernoulliNB
 
 from .base import HierarchicalEstimator
@@ -92,7 +93,7 @@ class Filter(HierarchicalEstimator, ABC):
         X = self._validate_data(
             X,
         )
-        self.n_features_ = X.shape[1]
+        self._n_features = X.shape[1]
         return self
 
     def fit_selector(self, X_train, y_train, X_test):
@@ -115,8 +116,9 @@ class Filter(HierarchicalEstimator, ABC):
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
-        self.n_features_ = X_train.shape[1]
+        self._n_features = X_train.shape[1]
         self._features = np.zeros(shape=X_test.shape)
+        self._feature_length = np.zeros(self._xtest.shape[1],dtype=int)
 
         # Validate data
         checkData(self._feature_tree, self._xtrain, self._ytrain)
@@ -139,6 +141,23 @@ class Filter(HierarchicalEstimator, ABC):
     def select_and_predict(
         self, predict=True, saveFeatures=False, estimator=BernoulliNB()
     ):
+        """
+        Select features lazy for each test instance amd optionally predict target value of test instances.
+        To be implemented by children.
+
+        Parameters
+        ----------
+        predict :   {bool}
+            true if predictions shall be obtained
+        saveFeatures: {bool}
+            true if features selected for each test instance shall be saved
+        estimator
+                    Estimator to use for predictions.
+
+        Returns
+        -------
+        predictions for test input samples, if predict = false, returns empty array
+        """
         pass
 
     def _get_nonredundant_features(self, idx):
@@ -152,8 +171,10 @@ class Filter(HierarchicalEstimator, ABC):
             Index of test instance for which the features shall be selected.
         """
         for node in self._feature_tree:
+            self._instance_status[node] = 1
+        for node in self._feature_tree:
             if self._xtest[idx][node] == 1:
-                for anc in self._feature_tree.predecessors(node): #TODO: save it first to make it more efficient?
+                for anc in self._feature_tree.predecessors(node):
                     self._instance_status[anc] = 0
             else:
                 for desc in self._feature_tree.successors(node):
@@ -170,6 +191,8 @@ class Filter(HierarchicalEstimator, ABC):
             Index of test instance for which the features shall be selected.
         """
         for node in self._feature_tree:
+            self._instance_status[node] = 1
+        for node in self._feature_tree:
             if node == "ROOT":
                 continue
             if self._xtest[idx][node] == 1:
@@ -183,7 +206,7 @@ class Filter(HierarchicalEstimator, ABC):
 
     def _get_nonredundant_features_mr(self, idx):
         """
-        Get nonredundant features based on the MRT considering all pathes.
+        Get nonredundant features based on the MR considering all pathes.
         Basic functionality of the HIP algorithm proposed by Wan & Freitas.
 
         Parameters
@@ -267,9 +290,13 @@ class Filter(HierarchicalEstimator, ABC):
                 self._instance_status[node] = 0
 
     def _build_mst(self):
+        """
+        Create minimum spanning tree of the features. This eliminates the redundancy of features on each path.
+        """
+
         edges = self._feature_tree.edges
-        self._edge_status = np.zeros((self.n_features_,self.n_features_))
-        self._cmi = np.zeros((self.n_features_,self.n_features_))
+        self._edge_status = np.zeros((self._n_features,self._n_features))
+        self._cmi = np.zeros((self._n_features,self._n_features))
         self._sorted_edges = []
         for node1 in self._feature_tree.nodes:
             for node2 in self._feature_tree.nodes:
@@ -279,12 +306,10 @@ class Filter(HierarchicalEstimator, ABC):
                 self._edge_status[node1][node2] = 1
         sorted_indices = np.argsort(self._cmi, axis = None)
         for index in sorted_indices:
-            coordinates = divmod(index, self.n_features_)
+            coordinates = divmod(index, self._n_features)
 
             if coordinates[0] < coordinates[1]:
                 self._sorted_edges.append(coordinates)
-            
-
         
 
     def _get_nonredundant_features_from_mst(self, idx):
@@ -304,9 +329,9 @@ class Filter(HierarchicalEstimator, ABC):
             for node2 in self._feature_tree:
                     self._edge_status[node1][node2] = 1
 
-        representants = [i for i in range(self.n_features_)]
+        representants = [i for i in range(self._n_features)]
         members = {}
-        for i in range(self.n_features_):
+        for i in range(self._n_features):
             members[i]=[i]
 
         # get paths 
@@ -357,7 +382,7 @@ class Filter(HierarchicalEstimator, ABC):
 
     def _predict(self, idx, estimator):
         """
-        Predicts for .
+        Predicts for an instance of the test set.
 
         Parameters
         ----------
@@ -372,12 +397,60 @@ class Filter(HierarchicalEstimator, ABC):
             prediction of test instance's target value.
         """
         features = [nodes for nodes, status in self._instance_status.items() if status]
+        with open(f'../hfs/results/features/features{idx}.txt', 'w') as file:
+            file.write(f"features: {len(features)}")
+            file.write(f"{len(self._instance_status)}")
+            file.write(str(features))
+        #self._feature_length[idx] = len(features)
+        print(f"{idx}: {self._feature_length[idx]}")
+
         clf = estimator
         clf.fit(self._xtrain[:, features], self._ytrain)
         return clf.predict(self._xtest[idx][features].reshape(1, -1))
 
     def get_score(self, ytest, predictions):
-        return accuracy_score(y_true=ytest, y_pred=predictions)
+        """
+        Returns score of the predictions.
+        Note that recall of the positive class is known as “sensitivity”;
+        recall of the negative class is “specificity”
 
+        Parameters
+        ----------
+        ytest: 1d array-like, or label indicator array / sparse matrix
+            truth values of y
+        predictions: 1d array-like, or label indicator array / sparse matrix
+            obtained predictions
+
+        Returns
+        -------self._feature_length
+        report: dict
+            metrics of prediction
+        """
+        avg_feature_length = 0
+        for feature_length in self._feature_length:
+            print(f"avg {avg_feature_length}")
+            print(f"featurelength {feature_length}")
+            print(self._xtrain.shape)
+            avg_feature_length += ( feature_length / self._xtrain.shape[1])
+        avg_feature_length = avg_feature_length / len(self._feature_length)
+        print(f"res: {avg_feature_length}")
+        score = classification_report(y_true=ytest, y_pred=predictions, output_dict=True)
+        score["sensitivityxspecificity"] = float(score["0"]["recall"])*float(score["1"]["recall"])
+        score["compression"] = avg_feature_length
+
+        return score
+    
     def get_features(self):
+        """
+        Get selected features.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        features : numpy array
+            Boolean value at index states if feature is selected.
+        """
         return self._features

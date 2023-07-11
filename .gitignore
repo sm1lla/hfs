@@ -66,5 +66,7 @@ doc/generated/
 # PyBuilder
 target/
 
-# Data
+# HFS
 data/
+results/
+

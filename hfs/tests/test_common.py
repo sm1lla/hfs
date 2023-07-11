@@ -15,7 +15,7 @@ from ..hill_climbing import BottomUpSelector, TopDownSelector
 from ..hip import HIP
 from ..hnb import HNB
 from ..hnbs import HNBs
-from ..mr import MRT
+from ..mr import MR
 from ..rnb import RNB
 from ..shsel import SHSELSelector
 from ..tsel import TSELSelector
@@ -36,7 +36,7 @@ from ..tsel import TSELSelector
         HNB(),
         HNBs(),
         RNB(),
-        MRT(),
+        MR(),
         HIP(),
         BottomUpSelector(),
         GreedyTopDownSelector(),

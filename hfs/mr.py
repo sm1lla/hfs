@@ -1,4 +1,4 @@
-"MRT-select feature selection"
+"MR-select feature selection"
 
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
@@ -6,14 +6,14 @@ from sklearn.naive_bayes import BernoulliNB
 from .filter import Filter
 
 
-class MRT(Filter):
+class MR(Filter):
 
     """
     Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas
     """
 
     def __init__(self, hierarchy=None, k=0):
-        super(MRT, self).__init__(hierarchy)
+        super(MR, self).__init__(hierarchy)
         self.k = k
 
     def select_and_predict(
