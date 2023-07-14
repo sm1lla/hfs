@@ -13,13 +13,13 @@ import networkx as nx
 import pandas as pd
 import numpy as np
 
-from hfs.preprocessing import HierarchicalPreprocessor
-from hfs.hnb import HNB
-from hfs.hnbs import HNBs
-from hfs.rnb import RNB
-from hfs.hip import HIP
-from hfs.mr import MR
-from hfs.tan import Tan
+from ..hfs.preprocessing import HierarchicalPreprocessor
+from ..hfs.hnb import HNB
+from ..hfs.hnbs import HNBs
+from ..hfs.rnb import RNB
+from ..hfs.hip import HIP
+from ..hfs.mr import MR
+from ..hfs.tan import Tan
 
 # Define data
 def data():
