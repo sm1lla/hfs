@@ -68,3 +68,6 @@ target/
 
 # Data
 data/
+
+# Results
+results/

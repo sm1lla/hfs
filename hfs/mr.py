@@ -12,9 +12,8 @@ class MR(Filter):
     Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas
     """
 
-    def __init__(self, hierarchy=None, k=0):
+    def __init__(self, hierarchy=None):
         super(MR, self).__init__(hierarchy)
-        self.k = k
 
     def select_and_predict(
         self, predict=True, saveFeatures=False, estimator=BernoulliNB()
