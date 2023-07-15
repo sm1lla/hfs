@@ -31,6 +31,20 @@ scikit-learn compatible classes.
 
    auto_examples/index
 
+   .. toctree::
+   :maxdepth: 3
+   :hidden:
+   :caption: Algorithms
+
+   auto_examples/index
+
+   .. toctree::
+   :maxdepth: 3
+   :hidden:
+   :caption: Experiments
+
+   auto_examples/index
+
 `Getting started <quick_start.html>`_
 -------------------------------------
 
@@ -49,4 +63,9 @@ An example of API documentation.
 `Examples <auto_examples/index.html>`_
 --------------------------------------
 
-A set of examples. It complements the `User Guide <user_guide.html>`_.
+A set of examples. It complements the `User Guide <user_guide.html>`_
+
+`Algorithms overview <algorithms/index.html>`_
+--------------------------------------
+
+The implemented algorithms
