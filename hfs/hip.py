@@ -7,7 +7,7 @@ from .filter import Filter
 class HIP(Filter):
 
     """
-    Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas
+    Select non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas
     """
 
     def __init__(self, hierarchy=None):
