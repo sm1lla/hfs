@@ -283,6 +283,10 @@ texinfo_documents = [
    'Miscellaneous'),
 ]
 
+# -- Bibtex --------------
+extensions = ['sphinxcontrib.bibtex']
+bibtex_bibfiles = ['refs.bib']
+
 # Documents to append as an appendix to all manuals.
 #texinfo_appendices = []
 
