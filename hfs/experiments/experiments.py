@@ -4,11 +4,6 @@ import networkx as nx
 import pandas as pd
 
 from ..preprocessing import HierarchicalPreprocessor
-
-
-from ..hip import HIP
-
-from ..preprocessing import HierarchicalPreprocessor
 from ..hnb import HNB
 from ..hnbs import HNBs
 from ..rnb import RNB
@@ -16,23 +11,6 @@ from ..hip import HIP
 from ..mr import MR
 from ..tan import Tan
 
-
-models = [
-    HNB(),
-    HNBs(),
-    RNB(),
-    MR(),
-    HIP(),
-    Tan(),
-]
-model_names = [
-    "HNB",
-    "HNBs",
-    "RNB",
-    "MR",
-    "HIP",
-    "Tan",
-]
 def data():
     dir = pathlib.Path(__file__).parent.parent.absolute()
     rel = pathlib.Path('data/go_digraph2.gml')
@@ -57,24 +35,81 @@ def data():
     hierarchy = nx.to_numpy_array(graph)
     return (hierarchy, train, y_train, test, y_test, columns)
 
+def hnb(hierarchy, train, y_train, test, y_test, k):
+    model = HNB(hierarchy=hierarchy, k=k)
+    model.fit_selector(X_train=train, y_train=y_train, X_test=test)
+    pred = model.select_and_predict(predict=True, saveFeatures=True)
+    score = model.get_score(y_test, pred)
+    rel = pathlib.Path(f'results/all.txt')
+    path = dir /rel 
+    with open(path, 'a') as file:
+        file.write("HNB:\n")
+        file.write(json.dumps(score))
+
+def hnbs(hierarchy, train, y_train, test, y_test, k):
+    model = HNBs(hierarchy=hierarchy)
+    model.fit_selector(X_train=train, y_train=y_train, X_test=test)
+    pred = model.select_and_predict(predict=True, saveFeatures=True)
+    score = model.get_score(y_test, pred)
+    rel = pathlib.Path(f'results/all.txt')
+    path = dir /rel 
+    with open(path, 'a') as file:
+        file.write("HNBs:\n")
+        file.write(json.dumps(score))
+
+def rnb(hierarchy, train, y_train, test, y_test, k):
+    model = RNB(hierarchy=hierarchy, k=k)
+    model.fit_selector(X_train=train, y_train=y_train, X_test=test)
+    pred = model.select_and_predict(predict=True, saveFeatures=True)
+    score = model.get_score(y_test, pred)
+    rel = pathlib.Path(f'results/all.txt')
+    path = dir /rel 
+    with open(path, 'a') as file:
+        file.write("RNB:\n")
+        file.write(json.dumps(score))
+
+def mr(hierarchy, train, y_train, test, y_test, k):
+    model = MR(hierarchy=hierarchy)
+    model.fit_selector(X_train=train, y_train=y_train, X_test=test)
+    pred = model.select_and_predict(predict=True, saveFeatures=True)
+    score = model.get_score(y_test, pred)
+    rel = pathlib.Path(f'results/all.txt')
+    path = dir /rel 
+    with open(path, 'a') as file:
+        file.write("MR:\n")
+        file.write(json.dumps(score))
+
+def tan(hierarchy, train, y_train, test, y_test, k):
+    model = Tan(hierarchy=hierarchy)
+    model.fit_selector(X_train=train, y_train=y_train, X_test=test)
+    pred = model.select_and_predict(predict=True, saveFeatures=True)
+    score = model.get_score(y_test, pred)
+    rel = pathlib.Path(f'results/all.txt')
+    path = dir /rel 
+    with open(path, 'a') as file:
+        file.write("Tan:\n")
+        file.write(json.dumps(score))
+
+def hip(hierarchy, train, y_train, test, y_test, k):
+    model = HIP(hierarchy=hierarchy)
+    model.fit_selector(X_train=train, y_train=y_train, X_test=test)
+    pred = model.select_and_predict(predict=True, saveFeatures=True)
+    score = model.get_score(y_test, pred)
+    rel = pathlib.Path(f'results/all.txt')
+    path = dir /rel 
+    with open(path, 'a') as file:
+        file.write("HIP:\n")
+        file.write(json.dumps(score))
 
 # Evalueate feature selection of HNB
-def evaluate(data):
+def evaluate(data, k):
     hierarchy, train, y_train, test, y_test, columns = data()
     preprocessor = HierarchicalPreprocessor(hierarchy=hierarchy)
     preprocessor.fit(train, columns=columns)
     train = preprocessor.transform(train)
     test = preprocessor.transform(test)
     hierarchy = preprocessor.get_hierarchy()
-    model_idx = 0
-    for model in models:
-        filter = model(hierarchy=hierarchy)
-        filter.fit_selector(X_train=train, y_train=y_train, X_test=test)
-        pred = filter.select_and_predict(predict=True, saveFeatures=True)
-        score = filter.get_score(y_test, pred)
-        rel = pathlib.Path(f'results/{model_names[model_idx]}.txt')
-        path = dir /rel 
-        with open(path, 'w') as file:
-            file.write(json.dumps(score))
+    for function in [hnb, hnbs, rnb, tan, mr, hip]:
+        function(hierarchy=hierarchy, train=train, y_train=y_train, test=test, y_test=y_test,k=k)
 
-evaluate(data)
+evaluate(data,20)
