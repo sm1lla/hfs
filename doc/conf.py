@@ -283,6 +283,10 @@ texinfo_documents = [
    'Miscellaneous'),
 ]
 
+# -- Bibtex --------------
+extensions = ['sphinxcontrib.bibtex']
+bibtex_bibfiles = ['refs.bib']
+
 # Documents to append as an appendix to all manuals.
 #texinfo_appendices = []
 
@@ -317,4 +321,4 @@ sphinx_gallery_conf = {
 
 def setup(app):
     # a copy button to copy snippet of code from the documentation
-    app.add_javascript('js/copybutton.js')
+    app.add_js_file('js/copybutton.js')

@@ -415,9 +415,6 @@ class Filter(HierarchicalEstimator, ABC):
         """
         avg_feature_length = 0
         for idx in range(0,self._xtest.shape[0]-1):
-            print(f"avg {avg_feature_length}")
-            print(f"featurelength {self._feature_length[idx]}")
-            print(self._xtrain.shape)
             avg_feature_length += ( self._feature_length[idx] / self._xtrain.shape[1])
         avg_feature_length = avg_feature_length / (len(self._feature_length))
         score = classification_report(y_true=ytest, y_pred=predictions, output_dict=True)
