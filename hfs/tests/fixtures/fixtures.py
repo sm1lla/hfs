@@ -19,8 +19,7 @@ def data1():
             [1, 1, 1, 1, 1],
         ]
     )
-    edges = [(0, 1), (1, 2), (0, 3), (0, 4)]
-    hierarchy = nx.DiGraph(edges)
+    hierarchy = hierarchy1()
     columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([0, 0, 0, 0, 1])
@@ -37,8 +36,7 @@ def data1_2():
             [1, 1, 1, 1, 1],
         ]
     )
-    edges = [(0, 4), (0, 3), (0, 1), (1, 2)]
-    hierarchy = nx.DiGraph(edges)
+    hierarchy = hierarchy1_2()
     columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([0, 0, 0, 0, 1])
@@ -55,8 +53,7 @@ def data2():
             [1, 1, 0, 0, 0],
         ],
     )
-    edges = [(0, 1), (1, 2), (2, 3), (0, 4)]
-    hierarchy = nx.DiGraph(edges)
+    hierarchy = hierarchy2()
     columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
@@ -113,12 +110,62 @@ def data3():
         ],
     )
 
-    hierarchy = nx.DiGraph()
-    hierarchy.add_nodes_from([0, 1, 2, 3, 4])
+    hierarchy = hierarchy3()
     columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
     hierarchy = nx.to_numpy_array(hierarchy)
     y = np.array([1, 0, 0, 1, 1])
     return (X, y, hierarchy, columns)
+
+
+def data4():
+    X = np.array(
+        [
+            [1, 1, 0, 1, 1, 1, 1],
+            [1, 1, 1, 0, 1, 0, 0],
+            [1, 1, 1, 0, 1, 1, 0],
+            [1, 0, 0, 1, 0, 1, 0],
+            [1, 1, 0, 0, 1, 1, 1],
+        ],
+    )
+    edges = [(0, 1), (1, 2), (0, 3), (0, 4), (0, 5), (5, 6)]
+    hierarchy = nx.DiGraph(edges)
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
+    hierarchy = nx.to_numpy_array(hierarchy)
+    y = np.array([1, 0, 0, 1, 1])
+    return (X, y, hierarchy, columns)
+
+
+def hierarchy1():
+    edges = [(0, 1), (1, 2), (0, 3), (0, 4)]
+    return nx.DiGraph(edges)
+
+
+def hierarchy1_2():
+    edges = [(0, 4), (0, 3), (0, 1), (1, 2)]
+    return nx.DiGraph(edges)
+
+
+def hierarchy2():
+    edges = [(0, 1), (1, 2), (2, 3), (0, 4)]
+    return nx.DiGraph(edges)
+
+
+def hierarchy3():
+    hierarchy = nx.DiGraph()
+    hierarchy.add_nodes_from([0, 1, 2, 3, 4])
+    return hierarchy
+
+
+def dataframe():
+    return pd.DataFrame(
+        {
+            4: [4, 4, 4, 4, 4],
+            2: [2, 2, 2, 2, 2],
+            0: [0, 0, 0, 0, 0],
+            1: [1, 1, 1, 1, 1],
+            3: [3, 3, 3, 3, 3],
+        }
+    )
 
 
 def result_tsel1():
@@ -151,6 +198,10 @@ def result_shsel1():
     return result_tsel1()
 
 
+def result_shsel_hfe1():
+    return result_shsel1()
+
+
 def result_shsel2():
     result = np.array(
         [
@@ -162,6 +213,34 @@ def result_shsel2():
         ],
     )
     support = np.array([False, False, True, False, True])
+    return (result, support)
+
+
+def result_shsel_hfe2():
+    result = np.array(
+        [
+            [0],
+            [1],
+            [1],
+            [0],
+            [0],
+        ],
+    )
+    support = np.array([False, False, True, False, False])
+    return (result, support)
+
+
+def result_shsel_hfe4():
+    result = np.array(
+        [
+            [0, 1, 1],
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+            [0, 1, 1],
+        ],
+    )
+    support = np.array([False, False, True, False, False, True, True])
     return (result, support)
 
 
@@ -390,6 +469,30 @@ def result_ig_values2():
         info_gain(np.array([0, 1, 0, 0, 0]), y),
         info_gain(np.array([1, 0, 0, 1, 0]), y),
     ]
+
+
+def result_aggregated1():
+    return np.array(
+        [
+            [1, 0, 0, 0, 1],
+            [2, 0, 0, 1, 1],
+            [3, 1, 1, 1, 1],
+            [4, 2, 1, 1, 1],
+            [5, 2, 1, 1, 1],
+        ]
+    )
+
+
+def result_aggregated2():
+    return np.array(
+        [
+            [3, 1, 0, 0, 1],
+            [4, 3, 2, 1, 0],
+            [3, 2, 1, 0, 0],
+            [2, 0, 0, 0, 1],
+            [2, 1, 0, 0, 0],
+        ],
+    )
 
 
 _feature_number = 9

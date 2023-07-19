@@ -9,13 +9,29 @@ import pytest
 
 from ..go import open_dag
 from ..helpers import (
+    compute_aggregated_values,
     connect_dag,
+    create_feature_tree,
     gain_ratio,
     getRelevance,
     information_gain,
     shrink_dag,
 )
-from .fixtures.fixtures import *
+
+from .fixtures.fixtures import (
+    big_DAG,
+    data1,
+    data2,
+    result_aggregated1,
+    result_aggregated2,
+    result_gr_values2,
+    result_ig_values2,
+    small_DAG,
+    train_x_data,
+    train_y_data,
+)
+
+
 
 
 def test_shrink_dag():
@@ -118,3 +134,17 @@ def test_gain_ratio(data, result):
     X, y, _, _ = data
     gr = gain_ratio(X, y)
     assert result == gr
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
+        (data1(), result_aggregated1()),
+        (data2(), result_aggregated2()),
+    ],
+)
+def test_compute_aggregated_values(data, result):
+    X, _, hierarchy, columns = data
+    hierarchy = create_feature_tree(nx.DiGraph(hierarchy))
+    X_transformed = compute_aggregated_values(X, hierarchy, columns)
+    assert np.array_equal(X_transformed, result)
