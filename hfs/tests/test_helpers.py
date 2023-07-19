@@ -17,6 +17,7 @@ from ..helpers import (
     information_gain,
     shrink_dag,
 )
+
 from .fixtures.fixtures import (
     big_DAG,
     data1,
@@ -30,7 +31,7 @@ from .fixtures.fixtures import (
     train_y_data,
 )
 
-# sys.path.append("/home/kathrin/hfs/hfs2/")
+
 
 
 def test_shrink_dag():
@@ -82,16 +83,29 @@ def test_shrink_dag():
     for node in ["GO:2001092", "GO:2001094", "GO:2001106", "GO:2001107"]:
         assert not (node in graph.nodes())
 
-
-def test_connect_dag():
+@pytest.mark.parametrize(
+    "data",
+    [
+        lazy_data4(),
+    ],
+)
+def test_connect_dag(data):
+    small_DAG, big_DAG = data
     graph = nx.DiGraph(big_DAG)
     x_identifiers = [0, 1, 2, 5, 6, 7, 8]
     graph = connect_dag(digraph=graph, x_identifiers=x_identifiers)
     new_graph = nx.DiGraph([(0, 1), (0, 2), (1, 6), (1, 5), (1, 7), (0, 7), (5, 8)])
     assert nx.is_isomorphic(graph, new_graph)
 
+@pytest.mark.parametrize(
+    "data",
+    [
+        lazy_data2(),
+    ],
+)
 
-def test_relevance():
+def test_relevance(data):
+    small_DAG, train_x_data, train_y_data, test_x_data, test_y_data = data
     results = [Fraction(1, 2), Fraction(8, 9), 2, 0]
     for node_idx in range(len(small_DAG)):
         value = getRelevance(train_x_data, train_y_data, node_idx)

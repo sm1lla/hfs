@@ -16,10 +16,6 @@ def load_dag(url, file_name):
     
     go_digraph_sparse = nx.to_scipy_sparse_array(go_digraph)
     nx.write_gml(go_digraph, file_name+".gml")
-    l = go_digraph.nodes()
-    print(l)
-    #np.save("./algo/data/nodes_go.npy", l)
-
 
 def open_dag(file_name):
     graph = nx.read_gml(file_name+".gml")

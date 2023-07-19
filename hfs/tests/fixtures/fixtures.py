@@ -529,12 +529,41 @@ def getFixedData(instance_number):
         df.loc[len(df)] = randomLinesWithAssertions(y)
     return df.to_numpy(), y
 
+def lazy_data1():
+    edges = [(9,3),(9,7),(7,1),(3,1),(7,6),(1,6),(1,5),(6,8),
+             (3,0),(4,0),(1,5),(2,0),(10,2),(4,11),(5,11)]
+    hierarchy = nx.DiGraph(edges)
+    X_train = np.ones((2,len(hierarchy.nodes)))
+    y_train = np.array([0,1])
+    X_test = np.array([[1,0,1,1,0,0,0,1,0,1,1,0],[1,0,1,1,0,0,0,1,0,1,1,0]])
+    y_test = np.array([1, 0])
+    relevance = [0.25, 0.23, 0.38, 0.25, 0.28, 0.38, 0.26, 0.31, 0.26, 0.23, 0.21, 0.26]
 
-big_DAG = getFixedDag()
-data = getFixedData(20)
+    return (hierarchy, X_train, y_train, X_test, y_test, relevance,)
 
-small_DAG = nx.to_numpy_array(nx.DiGraph([(0, 1), (0, 2), (1, 2), (1, 3)]))
-train_x_data = np.array([[1, 1, 0, 1], [1, 0, 0, 0], [1, 1, 1, 0], [1, 1, 1, 1]])
-train_y_data = np.array([0, 0, 1, 1])
-test_x_data = np.array([[1, 1, 0, 0], [1, 1, 1, 0]])
-test_y_data = np.array([1, 0])
+def lazy_data2():
+    small_DAG = nx.to_numpy_array(nx.DiGraph([(0, 1), (0, 2), (1, 2), (1, 3)]))
+    train_x_data = np.array([[1, 1, 0, 1], [1, 0, 0, 0], [1, 1, 1, 0], [1, 1, 1, 1]])
+    train_y_data = np.array([0, 0, 1, 1])
+    test_x_data = np.array([[1, 1, 0, 0], [1, 1, 1, 0]])
+    test_y_data = np.array([1, 0])
+    return (small_DAG, train_x_data, train_y_data, test_x_data, test_y_data)
+
+def lazy_data3():
+    edges = [(4,0),(0,3),(2,3),(5,2),(5,1)]
+    hierarchy = nx.DiGraph(edges)
+    X_train_ones = np.ones((9,len(hierarchy.nodes)))
+    X_train = np.array([[1,1,1,1,1,1],[0,1,0,0,1,1],[1,1,0,0,1,1],
+                        [0,1,1,0,1,1],[0,0,1,0,1,1],[0,0,0,0,0,1],
+                        [0,0,1,1,0,1],[1,0,0,1,1,0],[0,1,0,0,0,1]])
+    y_train = np.array([0,1,1,0,1,1,0,1,1])
+    X_test = np.array([[0,0,1,0,1,1],[0,1,1,0,1,1]])
+    y_test = np.array([1, 0])
+    resulted_features = np.array([[0., 1., 1., 1., 1., 0.], [0., 1., 1., 1., 1., 0.]])
+    return (hierarchy, X_train_ones, X_train, y_train, X_test, y_test, resulted_features)
+
+def lazy_data4():
+    big_DAG = getFixedDag()
+    small_DAG = nx.to_numpy_array(nx.DiGraph([(0, 1), (0, 2), (1, 2), (1, 3)]))
+    return small_DAG, big_DAG
+

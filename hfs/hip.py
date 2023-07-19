@@ -7,12 +7,11 @@ from .filter import Filter
 class HIP(Filter):
 
     """
-    Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas
+    Select non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas
     """
 
-    def __init__(self, hierarchy=None, k=0):
+    def __init__(self, hierarchy=None):
         super(HIP, self).__init__(hierarchy)
-        self.k = k
 
     def select_and_predict(
         self, predict=True, saveFeatures=False, estimator=BernoulliNB()
@@ -41,6 +40,7 @@ class HIP(Filter):
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
+            self._feature_length[idx] = len([nodes for nodes, status in self._instance_status.items() if status])
             for node in self._feature_tree:
                 self._instance_status[node] = 1
         return predictions
