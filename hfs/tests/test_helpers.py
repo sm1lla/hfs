@@ -1,8 +1,6 @@
 import os
-import sys
 from fractions import Fraction
 
-import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pytest
@@ -17,21 +15,16 @@ from ..helpers import (
     information_gain,
     shrink_dag,
 )
-
 from .fixtures.fixtures import (
-    big_DAG,
     data1,
     data2,
+    lazy_data2,
+    lazy_data4,
     result_aggregated1,
     result_aggregated2,
     result_gr_values2,
     result_ig_values2,
-    small_DAG,
-    train_x_data,
-    train_y_data,
 )
-
-
 
 
 def test_shrink_dag():
@@ -83,6 +76,7 @@ def test_shrink_dag():
     for node in ["GO:2001092", "GO:2001094", "GO:2001106", "GO:2001107"]:
         assert not (node in graph.nodes())
 
+
 @pytest.mark.parametrize(
     "data",
     [
@@ -97,13 +91,13 @@ def test_connect_dag(data):
     new_graph = nx.DiGraph([(0, 1), (0, 2), (1, 6), (1, 5), (1, 7), (0, 7), (5, 8)])
     assert nx.is_isomorphic(graph, new_graph)
 
+
 @pytest.mark.parametrize(
     "data",
     [
         lazy_data2(),
     ],
 )
-
 def test_relevance(data):
     small_DAG, train_x_data, train_y_data, test_x_data, test_y_data = data
     results = [Fraction(1, 2), Fraction(8, 9), 2, 0]
