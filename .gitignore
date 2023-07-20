@@ -67,7 +67,8 @@ doc/generated/
 target/
 
 # Data
-data/
+hfs/data/*
+!hfs/data/**.py
 
 # Results
 results/
