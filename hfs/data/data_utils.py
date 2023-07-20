@@ -43,10 +43,14 @@ def process_data(
 
 
 def load_data(
-    path: str = "hfs/data/TrainingSet.tsv",
+    path: str = "hfs/data/sport_tweets_train.tsv",
+    test_version: bool = True
 ) -> tuple[pd.DataFrame, nx.DiGraph, np.ndarray]:
-    hierarchy = pickle.load(open(Path(f"{path.split('.')[0]}_hierarchy.pickle"), "rb"))
-    data = pd.read_csv(Path(f"{path.split('.')[0]}_with_hierarchy.csv"))
+    version = ""
+    if test_version:
+        version = "_testing"
+    hierarchy = pickle.load(open(Path(f"{path.split('.')[0]}_hierarchy{version}.pickle"), "rb"))
+    data = pd.read_csv(Path(f"{path.split('.')[0]}_with_hierarchy{version}.csv"))
     labels = np.array(data["label"])
     data.drop("label", axis=1, inplace=True)
     return data, labels, hierarchy
