@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from ..data.data_utils import create_mapping_columns_to_nodes, load_data, process_data
+from ..data.data_utils import create_mapping_columns_to_nodes, load_data
 from .fixtures.fixtures import (
     dataframe,
     hierarchy1,
