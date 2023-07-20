@@ -1,0 +1,3 @@
+from experiments.experiments_eager import classification_experiments
+
+classification_experiments()
