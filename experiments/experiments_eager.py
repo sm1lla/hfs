@@ -1,6 +1,6 @@
 import networkx as nx
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import BernoulliNB
 
 from hfs.data.data_utils import create_mapping_columns_to_nodes, load_data
 from hfs.gtd import GreedyTopDownSelector
@@ -92,9 +92,7 @@ def classify(X, y, classifier):
 def initialize_wandb(experiment: str):
     wandb.init(
         project="hfs",
-        config={
-            "experiment": experiment,
-        },
+        config={"experiment": experiment, "group": "hyperparam"},
     )
 
 
@@ -122,7 +120,7 @@ def classification_experiments(
         "top_down",
     ],
 ):
-    classifier = GaussianNB()
+    classifier = BernoulliNB()
     X, y, hierarchy, columns = get_preprocessed_data()
 
     for experiment_name in experiments:
@@ -136,7 +134,7 @@ def classification_experiments(
         classfiy_time = time.time()
 
         # Calculate metrics
-        compression_rate = X.shape[1] / X_transformed.shape[1]
+        compression_rate = X_transformed.shape[1] / X.shape[1]
         preprocess_time = transform_time - start_time
         num_features = X_transformed.shape[1]
         classify_time = classfiy_time - transform_time
