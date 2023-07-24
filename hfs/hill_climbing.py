@@ -202,19 +202,20 @@ class BottomUpSelector(HillClimbingSelector):
         while unvisited:
             temporary_feature_set = current_feature_set.copy()
             node = unvisited.pop()
-            parent = list(self._feature_tree.predecessors(node))[0]
-            temporary_feature_set.append(parent)
-            children = list(self._feature_tree.successors(parent))
-            updated_feature_set = [
-                node for node in temporary_feature_set if node not in children
-            ]
-            temporary_fitness = self._fitness_function(
-                self._comparison_matrix(updated_feature_set)
-            )
-            if temporary_fitness < current_fitness:
-                current_feature_set = temporary_feature_set
-                current_fitness = temporary_fitness
-                unvisited = set(current_feature_set)
+            parent = list(self._feature_tree.predecessors(node))[0] # does not work with DAG
+            if parent != 'ROOT':
+                temporary_feature_set.append(parent)
+                children = list(self._feature_tree.successors(parent))
+                updated_feature_set = [
+                    node for node in temporary_feature_set if node not in children
+                ]
+                temporary_fitness = self._fitness_function(
+                    self._comparison_matrix(updated_feature_set)
+                )
+                if temporary_fitness < current_fitness:
+                    current_feature_set = temporary_feature_set
+                    current_fitness = temporary_fitness
+                    unvisited = set(current_feature_set)
 
         return current_feature_set
 
