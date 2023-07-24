@@ -12,7 +12,7 @@ from .fixtures.fixtures import (
 
 
 def test_load_data():
-    X, labels, hierarchy = load_data()
+    X, labels, hierarchy = load_data(test_version=True)
     mapping = create_mapping_columns_to_nodes(X, hierarchy)
     assert len(mapping) == 269
     assert len(X) == labels.shape[0]
