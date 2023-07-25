@@ -18,72 +18,75 @@ def get_preprocessed_data():
     X = X.to_numpy()
     hierarchy = nx.to_numpy_array(hierarchy)
     preprocessor = HierarchicalPreprocessor(hierarchy)
-    preprocessor.fit(X, columns)
+    preprocessor.fit(X, columns=columns)
     X_transformed = preprocessor.transform(X)
     hierarchy_updated = preprocessor.get_hierarchy()
     columns_updated = preprocessor.get_columns()
     return X_transformed, y, hierarchy_updated, columns_updated
 
 
-def shsel(X, y, hierarchy, columns):
+def shsel(X, y, X_test, hierarchy, columns):
     print("SHSEL Feature Selection")
     selector = SHSELSelector(hierarchy)
     selector.fit(X, y, columns=columns)
     X_transformed = selector.transform(X)
-    return X_transformed
+    X_test_transformed = selector.transform(X_test)
+    return X_transformed, X_test_transformed
 
 
-def hfe(X, y, hierarchy, columns):
+def hfe(X, y, X_test, hierarchy, columns):
     print("HFE Feature Selection")
     selector = SHSELSelector(
         hierarchy, relevance_metric="Correlation", use_hfe_extension=True
     )
     selector.fit(X, y, columns=columns)
     X_transformed = selector.transform(X)
-    return X_transformed
+    X_test_transformed = selector.transform(X_test)
+    return X_transformed, X_test_transformed
 
 
-def tsel(X, y, hierarchy, columns):
+def tsel(X, y, X_test, hierarchy, columns):
     print("TSEL Feature Selection")
     selector = TSELSelector(hierarchy)
     selector.fit(X, y, columns=columns)
     X_transformed = selector.transform(X)
-    return X_transformed
+    X_test_transformed = selector.transform(X_test)
+    return X_transformed, X_test_transformed
 
 
-def top_down(X, y, hierarchy, columns):
+def top_down(X, y, X_test, hierarchy, columns):
     print("Hill Climbing Top Down Feature Selection")
     selector = TopDownSelector(hierarchy)
     selector.fit(X, y, columns=columns)
     X_transformed = selector.transform(X)
-    return X_transformed
+    X_test_transformed = selector.transform(X_test)
+    return X_transformed, X_test_transformed
 
 
-def bottom_up(X, y, hierarchy, columns):
+def bottom_up(X, y, X_test, hierarchy, columns):
     print("Hill Climbing Bottom Up Feature Selection")
     selector = BottomUpSelector(hierarchy)
     selector.fit(X, y, columns=columns)
     X_transformed = selector.transform(X)
-    return X_transformed
+    X_test_transformed = selector.transform(X_test)
+    return X_transformed, X_test_transformed
 
 
-def gtd(X, y, hierarchy, columns):
+def gtd(X, y, X_test, hierarchy, columns):
     print("Greedy Top Down Feature Selection")
     selector = GreedyTopDownSelector(hierarchy)
     selector.fit(X, y, columns=columns)
     X_transformed = selector.transform(X)
-    return X_transformed
+    X_test_transformed = selector.transform(X_test)
+    return X_transformed, X_test_transformed
 
 
-def baseline(X, y, hierarchy, columns):
+def baseline(X, y, X_test, hierarchy, columns):
     print("Baseline (without feature selection)")
-    return X
+    return X, X_test
 
 
-def classify(X, y, classifier):
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.3, random_state=0
-    )
+def classify(X_train, y_train, X_test, y_test, classifier):
     classifier.fit(X_train, y_train)
     accuracy = classifier.score(X_test, y_test)
     return accuracy
@@ -109,7 +112,7 @@ def get_experiment():
 
 
 def classification_experiments(
-    use_wandb=True,
+    use_wandb=False,
     experiments: list[str] = [
         "baseline",
         "shsel",
@@ -122,21 +125,28 @@ def classification_experiments(
 ):
     classifier = BernoulliNB()
     X, y, hierarchy, columns = get_preprocessed_data()
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=0
+    )
 
     for experiment_name in experiments:
         if use_wandb:
             initialize_wandb(experiment_name)
         experiment = get_experiment()[experiment_name]
         start_time = time.time()
-        X_transformed = experiment(X, y, hierarchy, columns)
+        X_train_transformed, X_test_transformed = experiment(
+            X_train, y_train, X_test, hierarchy, columns
+        )
         transform_time = time.time()
-        accuracy = classify(X_transformed, y, classifier)
+        accuracy = classify(
+            X_train_transformed, y_train, X_test_transformed, y_test, classifier
+        )
         classfiy_time = time.time()
 
         # Calculate metrics
-        compression_rate = X_transformed.shape[1] / X.shape[1]
+        compression_rate = X_train_transformed.shape[1] / X_train.shape[1]
         preprocess_time = transform_time - start_time
-        num_features = X_transformed.shape[1]
+        num_features = X_train_transformed.shape[1]
         classify_time = classfiy_time - transform_time
 
         # Print metrics
