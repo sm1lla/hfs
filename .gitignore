@@ -69,6 +69,13 @@ target/
 # Data
 hfs/data/*
 !hfs/data/**.py
+!hfs/data/**_testing**
 
 # Results
 results/
+
+# Slurm output files
+slurm-*.out
+
+# WandB
+wandb

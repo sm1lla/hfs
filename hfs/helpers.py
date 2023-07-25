@@ -167,18 +167,21 @@ def lift(data, labels):
 
         prob_feature = non_zero_values / num_samples
 
-        prob_event_conditional = (
-            len(
-                [
-                    value
-                    for index, value in enumerate(column)
-                    if value != 0 and labels[index] != 0
-                ]
+        if non_zero_values > 0:
+            prob_event_conditional = (
+                len(
+                    [
+                        value
+                        for index, value in enumerate(column)
+                        if value != 0 and labels[index] != 0
+                    ]
+                )
+                / non_zero_values
             )
-            / non_zero_values
-        )
 
-        lift_values.append(prob_event_conditional / prob_feature)
+            lift_values.append(prob_event_conditional / prob_feature)
+        else:
+            lift_values.append(0)
     return lift_values
 
 

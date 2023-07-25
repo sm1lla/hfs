@@ -6,3 +6,6 @@ nxontology
 pyitlib
 scipy
 scikit-learn
+kgextension
+pytz
+pandas==1.5.3

@@ -93,7 +93,7 @@ def test_shrink_dag(data3):
 
 
 def test_preprocessor_real_data():
-    X, _, hierarchy = load_data()
+    X, _, hierarchy = load_data(test_version=True)
     columns = create_mapping_columns_to_nodes(X, hierarchy)
     X = X.to_numpy()
     hierarchy = nx.to_numpy_array(hierarchy)

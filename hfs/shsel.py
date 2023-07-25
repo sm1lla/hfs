@@ -82,7 +82,7 @@ class SHSELSelector(HierarchicalFeatureSelector):
                 else:
                     similarity = pearson_correlation(
                         X[:, self._columns.index(parent_node)],
-                        X[:, self._columns.index[node]],
+                        X[:, self._columns.index(node)],
                     )
                 if similarity >= self.similarity_threshold:
                     remove_nodes.add(node)
