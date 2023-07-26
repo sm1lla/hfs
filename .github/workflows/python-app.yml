@@ -31,6 +31,7 @@ jobs:
     - name: Test with pytest
       run: |
         pytest hfs --cov-report xml
+        coverage xml
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       env:
