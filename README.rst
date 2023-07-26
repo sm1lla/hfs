@@ -1,9 +1,6 @@
 .. -*- mode: rst -*-
 
-|Codecov|
-
-.. |Codecov| image:: https://codecov.io/gh/sm1lla/branch/master/graph/badge.svg
-.. _Codecov: https://app.codecov.io/github/sm1lla/hf
+[![codecov](https://codecov.io/gh/sm1lla/hfs/branch/master/graph/badge.svg?token=OGXIDWQC03)](https://codecov.io/gh/sm1lla/hfs)
 
 
 project-template - A template for scikit-learn contributions
