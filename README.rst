@@ -2,7 +2,7 @@
 
 |Codecov|
 
-.. |Codecov| image:: https://codecov.io/gh/scikit-learn-contrib/project-template/branch/master/graph/badge.svg
+.. |Codecov| image:: https://codecov.io/gh/sm1lla/branch/master/graph/badge.svg
 .. _Codecov: https://app.codecov.io/github/sm1lla/hf
 
 
