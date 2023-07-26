@@ -1,6 +1,6 @@
 .. -*- mode: rst -*-
 
-|Codecov|
+|Codecov|_
 
 
 .. |Codecov| image:: https://codecov.io/gh/sm1lla/hfs/master/graph/badge.svg?token=OGXIDWQC03
