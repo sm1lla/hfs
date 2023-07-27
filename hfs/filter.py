@@ -110,6 +110,7 @@ class Filter(HierarchicalEstimator, ABC):
             The target values, i.e., hierarchical class labels for classification.
         """
         # Create DAG
+        self.n_features_ = X_train.shape[1]
         self._set_feature_tree()
         self._feature_tree.remove_node("ROOT")
         if columns:
@@ -122,7 +123,7 @@ class Filter(HierarchicalEstimator, ABC):
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
-        self.n_features_ = X_train.shape[1]
+       
         self._features = np.zeros(shape=X_test.shape)
         self._feature_length = np.zeros(self._xtest.shape[1],dtype=int)
         

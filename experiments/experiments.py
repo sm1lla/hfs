@@ -15,15 +15,15 @@ from hfs.tan import Tan
 
 def data():
     dir = pathlib.Path(__file__).parent.parent.absolute()
-    rel = pathlib.Path("data/go_digraph2.gml")
+    rel = pathlib.Path("hfs/data/go_digraph2.gml")
     path = dir / rel
     graph = nx.read_gml(path)
-    rel = pathlib.Path("data/train_test.csv")
+    rel = pathlib.Path("hfs/data/train_test.csv")
     path = dir / rel
     df = pd.read_csv(path)
     train = df[df["split"] == "train"]
     test = df[df["split"] == "test"]
-    rel = pathlib.Path("data/gene2gomod3.txt")
+    rel = pathlib.Path("dhfs/ata/gene2gomod3.txt")
     path = dir / rel
     g2g = pd.read_csv(path, sep=",")
     go_terms = g2g["GO_ID"].unique()
