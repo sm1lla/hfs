@@ -112,8 +112,12 @@ class Filter(HierarchicalEstimator, ABC):
         # Create DAG
         self._set_feature_tree()
         self._feature_tree.remove_node("ROOT")
+        if columns:
+            self._columns = columns
+        else:
+            self._columns = list(range(self.n_features_))
 
-        mapping = {index: value for index, value in enumerate(columns)}
+        mapping = {index: value for index, value in enumerate(self._columns)}
         self._feature_tree = nx.relabel_nodes(self._feature_tree, mapping)
         self._xtrain = X_train
         self._ytrain = y_train
@@ -121,10 +125,7 @@ class Filter(HierarchicalEstimator, ABC):
         self.n_features_ = X_train.shape[1]
         self._features = np.zeros(shape=X_test.shape)
         self._feature_length = np.zeros(self._xtest.shape[1],dtype=int)
-        if columns:
-            self._columns = columns
-        else:
-            self._columns = list(range(self.n_features_))
+        
 
         # Validate data
         checkData(self._feature_tree, self._xtrain, self._ytrain)
