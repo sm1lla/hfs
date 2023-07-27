@@ -1,10 +1,9 @@
 """
 Sklearn compatible estimators for preprocessing hierarchical data
 """
-import networkx
+import networkx as nx
 import numpy as np
 from networkx.algorithms.dag import ancestors
-from networkx.algorithms.traversal import bfs_successors
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from .base import HierarchicalEstimator
@@ -34,9 +33,12 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         """
         X = check_array(X, accept_sparse=True)
         super().fit(X, y, columns)
+        if columns is None:
+            self._columns = [-1] * self.n_features_
         self._extend_dag(X)
         self._shrink_dag()
         self._find_missing_columns()
+        self._adjust_node_names()
         self.is_fitted_ = True
         return self
 
@@ -79,7 +81,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         columns: only the columns that are represented in hierarchy. Each position at column represents the position in X, the value is the number of the node.
         If a position in X is not represented in the hierarchy the value should be set to -1.
         """
-        max = len(self._feature_tree.nodes)
+        max = len(self._feature_tree.nodes) - 1
         for x in range(len(self._columns)):
             if self._columns[x] == -1:
                 if x in self._feature_tree.nodes:
@@ -131,13 +133,19 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
                     for ancestor in ancestor_nodes:
                         index = self._column_index(ancestor)
                         X[row_index, index] = 1.0
-
         return X
+
+    def _adjust_node_names(self):
+        nodes = list(self._feature_tree.nodes())
+        nodes.remove("ROOT")
+        self._columns = [nodes.index(node_name) for node_name in self._columns]
+        mapping = {node_name: nodes.index(node_name) for node_name in nodes}
+        self._feature_tree = nx.relabel_nodes(self._feature_tree, mapping)
 
     def get_hierarchy(self):
         if self.is_fitted_:
             output_hierarchy = self._feature_tree
             output_hierarchy.remove_node("ROOT")
-            return networkx.to_numpy_array(self._feature_tree)
+            return nx.to_numpy_array(self._feature_tree)
         else:
             raise RuntimeError(f"Instance has not been fitted.")
