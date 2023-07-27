@@ -18,7 +18,7 @@ Else if the value of :math:`f_i` is 0 it removes all descendants :math:`f_d` (re
 In a second step it selects the :math:`k` most relevant features from the obtained set.
 On the selected features of the training set an estimator can now calculate a prediction for the testing instance. 
 Wan, Freitas and de Magalhaes suggest the usage of an Naive Bayes Classifier, the library allows the combination with any sklearn-compatible binary classifier.
-\\
+
 
 The two phases can be executed separately from each other. 
 The so called HNB-s selects all non-redundant features without performing any after-selecting steps.
