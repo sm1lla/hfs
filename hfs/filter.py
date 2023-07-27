@@ -95,7 +95,7 @@ class Filter(HierarchicalEstimator, ABC):
         self.n_features_ = X.shape[1]
         return self
 
-    def fit_selector(self, X_train, y_train, X_test):
+    def fit_selector(self, X_train, y_train, X_test, columns=None):
         """
         Fit Filter class. Due to laziness fitting of parameters as well as predictions are obtained per instance.
 
@@ -112,12 +112,19 @@ class Filter(HierarchicalEstimator, ABC):
         # Create DAG
         self._set_feature_tree()
         self._feature_tree.remove_node("ROOT")
+
+        mapping = {index: value for index, value in enumerate(columns)}
+        self._feature_tree = nx.relabel_nodes(self._feature_tree, mapping)
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
         self.n_features_ = X_train.shape[1]
         self._features = np.zeros(shape=X_test.shape)
         self._feature_length = np.zeros(self._xtest.shape[1],dtype=int)
+        if columns:
+            self._columns = columns
+        else:
+            self._columns = list(range(self.n_features_))
 
         # Validate data
         checkData(self._feature_tree, self._xtrain, self._ytrain)
@@ -392,9 +399,12 @@ class Filter(HierarchicalEstimator, ABC):
             prediction of test instance's target value.
         """
         features = [nodes for nodes, status in self._instance_status.items() if status]
+        features_in_dataset = []
+        for feature in features:
+            features_in_dataset.append(self._columns.index(feature))
         clf = estimator
-        clf.fit(self._xtrain[:, features], self._ytrain)
-        return clf.predict(self._xtest[idx][features].reshape(1, -1))
+        clf.fit(self._xtrain[:, features_in_dataset], self._ytrain)
+        return clf.predict(self._xtest[idx][features_in_dataset].reshape(1, -1))
 
     def get_score(self, ytest, predictions):
         """
