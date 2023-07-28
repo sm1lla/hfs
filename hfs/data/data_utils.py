@@ -8,17 +8,20 @@ from kgextension.generator import direct_type_generator
 
 
 def process_data(
-    path: str = "hfs/data/sport_tweets_train.tsv", test_version: bool = True
+    path: str = "hfs/data/sport_tweets_train.tsv", test_version: bool = False
 ):
     """Extends data with types and build hierarchy. Saves dataframe and hierarchy graph to a csv file"""
     data = pd.read_csv(Path(path), sep="\t")
     if test_version:
+        data = data[:10]
+    else:
         data = data[:600]
     extended_data = direct_type_generator(
         data,
         ["Dbpedia_URI_1", "Dbpedia_URI_2", "Dbpedia_URI_3"],
         hierarchy=True,
         caching=False,
+        result_type="counts",
     )
     graph = extended_data.attrs["hierarchy"]
     cleaned_data = extended_data[
@@ -36,7 +39,9 @@ def process_data(
 
     version = ""
     if test_version:
-        version = "_subset600"
+        version = "_testing"
+    else:
+        version = "_subset600_counts"
     pickle.dump(
         graph, open(Path(f"{path.split('.')[0]}_hierarchy{version}.pickle"), "wb")
     )
@@ -52,7 +57,7 @@ def load_data(
     if test_version:
         version = "_testing"
     else:
-        version = "_subset600"
+        version = "_subset300"
     hierarchy = pickle.load(
         open(Path(f"{path.split('.')[0]}_hierarchy{version}.pickle"), "rb")
     )
