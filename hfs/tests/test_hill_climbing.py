@@ -7,6 +7,7 @@ from .fixtures.fixtures import (
     data1_2,
     data2,
     data3,
+    data_numerical,
     result_comparison_matrix_bu1,
     result_comparison_matrix_bu2,
     result_comparison_matrix_bu3,
@@ -18,6 +19,7 @@ from .fixtures.fixtures import (
     result_score_matrix1,
     result_score_matrix2,
     result_score_matrix3,
+    result_score_matrix_numerical,
 )
 
 
@@ -61,6 +63,24 @@ def test_bottom_up_selection(data, result):
 @pytest.mark.parametrize(
     "data, result",
     [
+        (data1(), result_hill_selection_bu()),
+    ],
+)
+def test_bottom_up_selection_numerical(data, result):
+    X, y, hierarchy, columns = data
+    expected, support, k = result
+    selector = BottomUpSelector(hierarchy, k=k, dataset_type="numerical")
+    selector.fit(X, y, columns)
+    X = selector.transform(X)
+    assert np.array_equal(X, expected)
+
+    support_mask = selector.get_support()
+    assert np.array_equal(support_mask, support)
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
         (data1(), result_score_matrix1()),
         (data2(), result_score_matrix2()),
         (data3(), result_score_matrix3()),
@@ -71,6 +91,23 @@ def test_calculate_scores(data, result):
     score_matrix_expected = result
 
     selector = TopDownSelector(hierarchy, dataset_type="binary")
+    selector.fit(X, y, columns)
+    score_matrix = selector._calculate_scores(X)
+
+    assert np.array_equal(score_matrix, score_matrix_expected)
+
+
+@pytest.mark.parametrize(
+    "data, result",
+    [
+        (data_numerical(), result_score_matrix_numerical()),
+    ],
+)
+def test_calculate_scores_numerical(data, result):
+    X, y, hierarchy, columns = data
+    score_matrix_expected = result
+
+    selector = TopDownSelector(hierarchy, dataset_type="numerical")
     selector.fit(X, y, columns)
     score_matrix = selector._calculate_scores(X)
 

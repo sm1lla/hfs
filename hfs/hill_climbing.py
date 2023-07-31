@@ -62,7 +62,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
             X.copy(), self._feature_tree, self._columns
         )
         if self.dataset_type == "numerical":
-            normalized_matrix = score_matrix.copy()
+            normalized_matrix = np.zeros_like(score_matrix, dtype=float)
             for row_index in range(self._num_rows):
                 for column_index in range(self.n_features_):
                     if self.dataset_type == "numerical":
@@ -70,6 +70,7 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
                         normalized_matrix[row_index, column_index] = normalize_score(
                             score, max(score_matrix[row_index, :])
                         )
+            score_matrix = normalized_matrix
         return score_matrix
 
     def _compare(
