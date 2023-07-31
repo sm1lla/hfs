@@ -6,7 +6,12 @@ from scipy import sparse
 from sklearn.utils.validation import check_X_y
 
 from hfs.feature_selection import HierarchicalFeatureSelector
-from hfs.helpers import cosine_similarity, get_leaves, normalize_score
+from hfs.helpers import (
+    compute_aggregated_values,
+    cosine_similarity,
+    get_leaves,
+    normalize_score,
+)
 
 
 class HillClimbingSelector(HierarchicalFeatureSelector):
@@ -51,21 +56,21 @@ class HillClimbingSelector(HierarchicalFeatureSelector):
         raise NotImplementedError
 
     def _calculate_scores(self, X):
-        score_matrix = np.zeros((self._num_rows, self.n_features_))
-        for row in range(self._num_rows):
-            for column_index in range(self.n_features_):
-                children = []
-                if self._columns[column_index in self._feature_tree.nodes]:
-                    children = list(
-                        descendants(self._feature_tree, self._columns[column_index])
-                    )
-                scores_children = [X[row, child] for child in children]
-                score = sum(scores_children, start=X[row, column_index])
-
-                if self.dataset_type == "numerical":
-                    normalize_score(score, max(X[row, :]))
-
-                score_matrix[row, column_index] = score
+        """Calculate sums of datapoints in X and their children. If the dataset is of the type "numerical" the
+        sums are normalized."""
+        score_matrix = compute_aggregated_values(
+            X.copy(), self._feature_tree, self._columns
+        )
+        if self.dataset_type == "numerical":
+            normalized_matrix = np.zeros_like(score_matrix, dtype=float)
+            for row_index in range(self._num_rows):
+                for column_index in range(self.n_features_):
+                    if self.dataset_type == "numerical":
+                        score = score_matrix[row_index, column_index]
+                        normalized_matrix[row_index, column_index] = normalize_score(
+                            score, max(score_matrix[row_index, :])
+                        )
+            score_matrix = normalized_matrix
         return score_matrix
 
     def _compare(
@@ -202,8 +207,10 @@ class BottomUpSelector(HillClimbingSelector):
         while unvisited:
             temporary_feature_set = current_feature_set.copy()
             node = unvisited.pop()
-            parent = list(self._feature_tree.predecessors(node))[0] # does not work with DAG
-            if parent != 'ROOT':
+            parent = list(self._feature_tree.predecessors(node))[
+                0
+            ]  # does not work with DAG
+            if parent != "ROOT":
                 temporary_feature_set.append(parent)
                 children = list(self._feature_tree.successors(parent))
                 updated_feature_set = [

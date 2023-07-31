@@ -10,19 +10,41 @@ from hfs.shsel import SHSELSelector
 from hfs.tsel import TSELSelector
 import time
 import wandb
+from .experiments import data
 
 
-def get_preprocessed_data():
+def preprocess_data(hierarchy, X_train, X_test, columns):
+    preprocessor = HierarchicalPreprocessor(hierarchy)
+    preprocessor.fit(X_train, columns=columns)
+    X_train_transformed = preprocessor.transform(X_train)
+    X_test_transformed = preprocessor.transform(X_test)
+    hierarchy_updated = preprocessor.get_hierarchy()
+    columns_updated = preprocessor.get_columns()
+    return X_train_transformed, X_test_transformed, hierarchy_updated, columns_updated
+
+
+def get_gene_data():
+    return data()
+
+
+def get_tweet_data():
     X, y, hierarchy = load_data()
     columns = create_mapping_columns_to_nodes(X, hierarchy)
     X = X.to_numpy()
     hierarchy = nx.to_numpy_array(hierarchy)
-    preprocessor = HierarchicalPreprocessor(hierarchy)
-    preprocessor.fit(X, columns=columns)
-    X_transformed = preprocessor.transform(X)
-    hierarchy_updated = preprocessor.get_hierarchy()
-    columns_updated = preprocessor.get_columns()
-    return X_transformed, y, hierarchy_updated, columns_updated
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=0
+    )
+    return hierarchy, X_train, y_train, X_test, y_test, columns
+
+
+def get_data(dataset: str):
+    if dataset == "gene":
+        return get_gene_data()
+    if dataset == "tweets":
+        return get_tweet_data()
+    else:
+        raise ValueError("Invalid dataset")
 
 
 def shsel(X, y, X_test, hierarchy, columns):
@@ -92,10 +114,12 @@ def classify(X_train, y_train, X_test, y_test, classifier):
     return accuracy
 
 
-def initialize_wandb(experiment: str):
+def initialize_wandb(experiment: str, dataset: str):
     wandb.init(
+        name=experiment,
         project="hfs",
-        config={"experiment": experiment, "group": "hyperparam"},
+        group=dataset,
+        config={"experiment": experiment, "dataset": "subset300"},
     )
 
 
@@ -122,16 +146,17 @@ def classification_experiments(
         "bottom_up",
         "top_down",
     ],
+    dataset="tweets",
 ):
     classifier = BernoulliNB()
-    X, y, hierarchy, columns = get_preprocessed_data()
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.3, random_state=0
+    hierarchy, X_train, y_train, X_test, y_test, columns = get_data(dataset)
+    X_train, X_test, hierarchy, columns = preprocess_data(
+        hierarchy, X_train, X_test, columns
     )
 
     for experiment_name in experiments:
         if use_wandb:
-            initialize_wandb(experiment_name)
+            initialize_wandb(experiment_name, dataset)
         experiment = get_experiment()[experiment_name]
         start_time = time.time()
         X_train_transformed, X_test_transformed = experiment(

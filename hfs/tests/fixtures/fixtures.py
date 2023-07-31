@@ -135,6 +135,23 @@ def data4():
     return (X, y, hierarchy, columns)
 
 
+def data_numerical():
+    X = np.array(
+        [
+            [1, 6, 3, 0, 1],
+            [4, 7, 1, 7, 0],
+            [2, 2, 5, 4, 0],
+            [6, 0, 2, 0, 2],
+            [1, 4, 1, 0, 3],
+        ]
+    )
+    hierarchy = hierarchy1()
+    columns = get_columns_for_numpy_hierarchy(hierarchy, X.shape[1])
+    hierarchy = nx.to_numpy_array(hierarchy)
+    y = np.array([0, 0, 0, 0, 1])
+    return (X, y, hierarchy, columns)
+
+
 def hierarchy1():
     edges = [(0, 1), (1, 2), (0, 3), (0, 4)]
     return nx.DiGraph(edges)
@@ -368,6 +385,48 @@ def result_score_matrix1():
     )
 
 
+def result_score_matrix_numerical():
+    return np.array(
+        [
+            [
+                1.6931471805599454,
+                1.5978370007556206,
+                1.241162056816888,
+                0,
+                1.0870113769896297,
+            ],
+            [
+                1.6931471805599454,
+                1.3513978868378886,
+                1.0512932943875506,
+                1.3136575588550417,
+                0,
+            ],
+            [
+                1.6931471805599454,
+                1.4307829160924541,
+                1.325422400434628,
+                1.2682639865946794,
+                0,
+            ],
+            [
+                1.6931471805599454,
+                1.1823215567939547,
+                1.1823215567939547,
+                0,
+                1.1823215567939547,
+            ],
+            [
+                1.6931471805599454,
+                1.4418327522790393,
+                1.1053605156578263,
+                0,
+                1.2876820724517808,
+            ],
+        ]
+    )
+
+
 def result_comparison_matrix_td1():
     return np.array(
         [
@@ -529,17 +588,43 @@ def getFixedData(instance_number):
         df.loc[len(df)] = randomLinesWithAssertions(y)
     return df.to_numpy(), y
 
+
 def lazy_data1():
-    edges = [(9,3),(9,7),(7,1),(3,1),(7,6),(1,6),(1,5),(6,8),
-             (3,0),(4,0),(1,5),(2,0),(10,2),(4,11),(5,11)]
+    edges = [
+        (9, 3),
+        (9, 7),
+        (7, 1),
+        (3, 1),
+        (7, 6),
+        (1, 6),
+        (1, 5),
+        (6, 8),
+        (3, 0),
+        (4, 0),
+        (1, 5),
+        (2, 0),
+        (10, 2),
+        (4, 11),
+        (5, 11),
+    ]
     hierarchy = nx.DiGraph(edges)
-    X_train = np.ones((2,len(hierarchy.nodes)))
-    y_train = np.array([0,1])
-    X_test = np.array([[1,0,1,1,0,0,0,1,0,1,1,0],[1,0,1,1,0,0,0,1,0,1,1,0]])
+    X_train = np.ones((2, len(hierarchy.nodes)))
+    y_train = np.array([0, 1])
+    X_test = np.array(
+        [[1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0], [1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0]]
+    )
     y_test = np.array([1, 0])
     relevance = [0.25, 0.23, 0.38, 0.25, 0.28, 0.38, 0.26, 0.31, 0.26, 0.23, 0.21, 0.26]
 
-    return (hierarchy, X_train, y_train, X_test, y_test, relevance,)
+    return (
+        hierarchy,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+        relevance,
+    )
+
 
 def lazy_data2():
     small_DAG = nx.to_numpy_array(nx.DiGraph([(0, 1), (0, 2), (1, 2), (1, 3)]))
@@ -549,21 +634,42 @@ def lazy_data2():
     test_y_data = np.array([1, 0])
     return (small_DAG, train_x_data, train_y_data, test_x_data, test_y_data)
 
+
 def lazy_data3():
-    edges = [(4,0),(0,3),(2,3),(5,2),(5,1)]
+    edges = [(4, 0), (0, 3), (2, 3), (5, 2), (5, 1)]
     hierarchy = nx.DiGraph(edges)
-    X_train_ones = np.ones((9,len(hierarchy.nodes)))
-    X_train = np.array([[1,1,1,1,1,1],[0,1,0,0,1,1],[1,1,0,0,1,1],
-                        [0,1,1,0,1,1],[0,0,1,0,1,1],[0,0,0,0,0,1],
-                        [0,0,1,1,0,1],[1,0,0,1,1,0],[0,1,0,0,0,1]])
-    y_train = np.array([0,1,1,0,1,1,0,1,1])
-    X_test = np.array([[0,0,1,0,1,1],[0,1,1,0,1,1]])
+    X_train_ones = np.ones((9, len(hierarchy.nodes)))
+    X_train = np.array(
+        [
+            [1, 1, 1, 1, 1, 1],
+            [0, 1, 0, 0, 1, 1],
+            [1, 1, 0, 0, 1, 1],
+            [0, 1, 1, 0, 1, 1],
+            [0, 0, 1, 0, 1, 1],
+            [0, 0, 0, 0, 0, 1],
+            [0, 0, 1, 1, 0, 1],
+            [1, 0, 0, 1, 1, 0],
+            [0, 1, 0, 0, 0, 1],
+        ]
+    )
+    y_train = np.array([0, 1, 1, 0, 1, 1, 0, 1, 1])
+    X_test = np.array([[0, 0, 1, 0, 1, 1], [0, 1, 1, 0, 1, 1]])
     y_test = np.array([1, 0])
-    resulted_features = np.array([[0., 1., 1., 1., 1., 0.], [0., 1., 1., 1., 1., 0.]])
-    return (hierarchy, X_train_ones, X_train, y_train, X_test, y_test, resulted_features)
+    resulted_features = np.array(
+        [[0.0, 1.0, 1.0, 1.0, 1.0, 0.0], [0.0, 1.0, 1.0, 1.0, 1.0, 0.0]]
+    )
+    return (
+        hierarchy,
+        X_train_ones,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+        resulted_features,
+    )
+
 
 def lazy_data4():
     big_DAG = getFixedDag()
     small_DAG = nx.to_numpy_array(nx.DiGraph([(0, 1), (0, 2), (1, 2), (1, 3)]))
     return small_DAG, big_DAG
-
