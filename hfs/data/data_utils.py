@@ -21,7 +21,6 @@ def process_data(
         ["Dbpedia_URI_1", "Dbpedia_URI_2", "Dbpedia_URI_3"],
         hierarchy=True,
         caching=False,
-        result_type="counts",
     )
     graph = extended_data.attrs["hierarchy"]
     cleaned_data = extended_data[
@@ -41,7 +40,7 @@ def process_data(
     if test_version:
         version = "_testing"
     else:
-        version = "_subset600_counts"
+        version = "_subset600"
     pickle.dump(
         graph, open(Path(f"{path.split('.')[0]}_hierarchy{version}.pickle"), "wb")
     )

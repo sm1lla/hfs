@@ -116,9 +116,10 @@ def classify(X_train, y_train, X_test, y_test, classifier):
 
 def initialize_wandb(experiment: str, dataset: str):
     wandb.init(
+        name=experiment,
         project="hfs",
         group=dataset,
-        config={"experiment": experiment},
+        config={"experiment": experiment, "dataset": "subset300"},
     )
 
 
