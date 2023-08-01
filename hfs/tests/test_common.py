@@ -5,9 +5,6 @@ from hfs import (
     EagerHierarchicalFeatureSelector,
     HierarchicalEstimator,
     HierarchicalPreprocessor,
-    TemplateClassifier,
-    TemplateEstimator,
-    TemplateTransformer,
 )
 
 from ..gtd import GreedyTopDownSelector
@@ -30,9 +27,6 @@ from ..tsel import TSELSelector
         HierarchicalPreprocessor(),
         TopDownSelector(),
         SHSELSelector(),
-        TemplateEstimator(),
-        TemplateTransformer(),
-        TemplateClassifier(),
         HNB(),
         HNBs(),
         RNB(),
