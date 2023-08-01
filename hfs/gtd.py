@@ -1,16 +1,29 @@
+"""
+Greedy Top Down Feature Selector.
+"""
 import numpy as np
 from networkx import ancestors, descendants
 from scipy.sparse import issparse
 from sklearn.utils.validation import check_X_y
 
-from .feature_selection import HierarchicalFeatureSelector
+from .feature_selection import EagerHierarchicalFeatureSelector
 from .helpers import gain_ratio
 
 
-class GreedyTopDownSelector(HierarchicalFeatureSelector):
-    """Greedy Top Down feature selection method for hierarchical features proposed by Lu et al 2013"""
+class GreedyTopDownSelector(EagerHierarchicalFeatureSelector):
+    """Greedy Top Down feature selection method proposed by Lu et al 2013.
+
+    This feature selection method is intended for hierarchical data.
+    Therefore, it inherits from the EagerHierarchicalFeatureSelector.
+    """
 
     def __init__(self, hierarchy: np.ndarray = None, iterate_first_level=True):
+        """Initializes a GreedyTopDownSelector.
+
+        Parameters
+        ----------
+        hierarchy : np.ndarray
+                    The hierarchy graph as an adjacency matrix."""
         super().__init__(hierarchy)
         self.iterate_first_level = iterate_first_level  # TODO: warning for DAG
 
@@ -21,7 +34,12 @@ class GreedyTopDownSelector(HierarchicalFeatureSelector):
         X : {array-like, sparse matrix}, shape (n_samples, n_features)
             The training input samples.
         y : array-like, shape (n_samples,)
-            The target values. An array of int, that should either be 1 or 0.
+            The target values. An array of int. Not needed for all estimators.
+        columns: list or None, length n_features
+            The mapping from the hierarchy graphs nodes to the columns in X.
+            A list of ints. If this parameter is None the columns in X and
+            the corresponding nodes in the hierarchy are expected to be in the
+            same order.
         Returns
         -------
         self : object

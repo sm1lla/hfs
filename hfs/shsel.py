@@ -4,7 +4,7 @@ import numpy as np
 from scipy import sparse
 from sklearn.utils.validation import check_X_y
 
-from .feature_selection import HierarchicalFeatureSelector
+from .feature_selection import EagerHierarchicalFeatureSelector
 from .helpers import (
     compute_aggregated_values,
     get_leaves,
@@ -14,7 +14,7 @@ from .helpers import (
 )
 
 
-class SHSELSelector(HierarchicalFeatureSelector):
+class SHSELSelector(EagerHierarchicalFeatureSelector):
     """SHSEL feature selection method for hierarchical features proposed by Ristoski and Paulheim"""
 
     def __init__(

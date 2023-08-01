@@ -2,8 +2,8 @@ import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
 from hfs import (
+    EagerHierarchicalFeatureSelector,
     HierarchicalEstimator,
-    HierarchicalFeatureSelector,
     HierarchicalPreprocessor,
     TemplateClassifier,
     TemplateEstimator,
@@ -26,7 +26,7 @@ from ..tsel import TSELSelector
     [
         TSELSelector(),
         HierarchicalEstimator(),
-        HierarchicalFeatureSelector(),
+        EagerHierarchicalFeatureSelector(),
         HierarchicalPreprocessor(),
         TopDownSelector(),
         SHSELSelector(),

@@ -5,7 +5,7 @@ from networkx.algorithms.dag import descendants
 from scipy import sparse
 from sklearn.utils.validation import check_X_y
 
-from hfs.feature_selection import HierarchicalFeatureSelector
+from hfs.feature_selection import EagerHierarchicalFeatureSelector
 from hfs.helpers import (
     compute_aggregated_values,
     cosine_similarity,
@@ -14,7 +14,7 @@ from hfs.helpers import (
 )
 
 
-class HillClimbingSelector(HierarchicalFeatureSelector):
+class HillClimbingSelector(EagerHierarchicalFeatureSelector):
     def __init__(
         self,
         hierarchy: np.ndarray = None,

@@ -2,11 +2,11 @@ import numpy as np
 from networkx.algorithms.dag import descendants
 from sklearn.utils.validation import check_X_y
 
-from hfs.feature_selection import HierarchicalFeatureSelector
+from hfs.feature_selection import EagerHierarchicalFeatureSelector
 from hfs.helpers import get_paths, lift
 
 
-class TSELSelector(HierarchicalFeatureSelector):
+class TSELSelector(EagerHierarchicalFeatureSelector):
     """A tree-based feature selection method for hierarchical features proposed by Jeong and Myaeng"""
 
     def __init__(

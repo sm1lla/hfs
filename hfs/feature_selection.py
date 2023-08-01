@@ -10,11 +10,11 @@ from sklearn.utils.validation import check_array
 from .base import HierarchicalEstimator
 
 
-class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
+class EagerHierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
     """Base class for eager feature selectors using hierarchical data."""
 
     def __init__(self, hierarchy: np.ndarray = None):
-        """Initializes a HierarchicalFeatureSelector.
+        """Initializes an EagerHierarchicalFeatureSelector.
 
         Parameters
         ----------

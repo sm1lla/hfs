@@ -2,7 +2,7 @@
 Estimators for feature selection on hierarchical data.
 """
 from ._version import __version__
-from .feature_selection import HierarchicalEstimator, HierarchicalFeatureSelector
+from .feature_selection import EagerHierarchicalFeatureSelector, HierarchicalEstimator
 from .filter import Filter
 from .gtd import GreedyTopDownSelector
 from .hill_climbing import BottomUpSelector, TopDownSelector
@@ -23,7 +23,7 @@ __all__ = [
     "BottomUpSelector",
     "GreedyTopDownSelector",
     "HierarchicalEstimator",
-    "HierarchicalFeatureSelector",
+    "EagerHierarchicalFeatureSelector",
     "HierarchicalPreprocessor",
     "Filter",
     "HIP",
