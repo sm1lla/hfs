@@ -9,12 +9,11 @@ from ..go import open_dag
 from ..helpers import (
     compute_aggregated_values,
     connect_dag,
-    create_feature_tree,
-    gain_ratio,
+    create_hierarchy,
     getRelevance,
-    information_gain,
     shrink_dag,
 )
+from ..metrics import gain_ratio, information_gain
 from .fixtures.fixtures import (
     data1,
     data2,
@@ -139,6 +138,6 @@ def test_gain_ratio(data, result):
 )
 def test_compute_aggregated_values(data, result):
     X, _, hierarchy, columns = data
-    hierarchy = create_feature_tree(nx.DiGraph(hierarchy))
+    hierarchy = create_hierarchy(nx.DiGraph(hierarchy))
     X_transformed = compute_aggregated_values(X, hierarchy, columns)
     assert np.array_equal(X_transformed, result)

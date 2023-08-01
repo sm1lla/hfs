@@ -7,7 +7,7 @@ from scipy.sparse import issparse
 from sklearn.utils.validation import check_X_y
 
 from .feature_selection import EagerHierarchicalFeatureSelector
-from .helpers import gain_ratio
+from .metrics import gain_ratio
 
 
 class GreedyTopDownSelector(EagerHierarchicalFeatureSelector):

@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_array
 
-from .helpers import create_feature_tree
+from .helpers import create_hierarchy
 
 
 class HierarchicalEstimator(BaseEstimator, TransformerMixin):
@@ -106,7 +106,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
             )
 
         # Build the feature tree.
-        self._feature_tree = create_feature_tree(self._feature_tree)
+        self._feature_tree = create_hierarchy(self._feature_tree)
 
     def _column_index(self, node):
         # Get the corresponding column index for a node in the hierarchy.

@@ -5,13 +5,8 @@ from scipy import sparse
 from sklearn.utils.validation import check_X_y
 
 from .feature_selection import EagerHierarchicalFeatureSelector
-from .helpers import (
-    compute_aggregated_values,
-    get_leaves,
-    get_paths,
-    information_gain,
-    pearson_correlation,
-)
+from .helpers import compute_aggregated_values, get_leaves, get_paths
+from .metrics import information_gain, pearson_correlation
 
 
 class SHSELSelector(EagerHierarchicalFeatureSelector):

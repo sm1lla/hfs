@@ -7,7 +7,8 @@ from sklearn.metrics import accuracy_score, classification_report
 from sklearn.naive_bayes import BernoulliNB
 
 from .base import HierarchicalEstimator
-from .helpers import checkData, conditional_mutual_information, getRelevance
+from .helpers import checkData, getRelevance
+from .metrics import conditional_mutual_information
 
 
 class Filter(HierarchicalEstimator, ABC):
@@ -117,7 +118,7 @@ class Filter(HierarchicalEstimator, ABC):
         self._xtest = X_test
         self.n_features_ = X_train.shape[1]
         self._features = np.zeros(shape=X_test.shape)
-        self._feature_length = np.zeros(self._xtest.shape[1],dtype=int)
+        self._feature_length = np.zeros(self._xtest.shape[1], dtype=int)
 
         # Validate data
         checkData(self._feature_tree, self._xtrain, self._ytrain)
@@ -264,7 +265,7 @@ class Filter(HierarchicalEstimator, ABC):
                     # get most relevant nodes seen on paths until current node
                     for _mr in mr[suc]:
                         if self._relevance[_mr] > self._relevance[node]:
-                        # each node not selected will removed
+                            # each node not selected will removed
                             self._instance_status[node] = 0
                             more_rel_nodes.append(_mr)
                         else:
@@ -288,24 +289,23 @@ class Filter(HierarchicalEstimator, ABC):
 
     def _build_mst(self):
         edges = self._feature_tree.edges
-        self._edge_status = np.zeros((self.n_features_,self.n_features_))
-        self._cmi = np.zeros((self.n_features_,self.n_features_))
+        self._edge_status = np.zeros((self.n_features_, self.n_features_))
+        self._cmi = np.zeros((self.n_features_, self.n_features_))
         self._sorted_edges = []
         for node1 in self._feature_tree.nodes:
             for node2 in self._feature_tree.nodes:
                 if node1 == node2:
                     continue
-                self._cmi[node1][node2] = conditional_mutual_information(self._xtrain[:,node1], self._xtrain[:,node2], self._ytrain)
+                self._cmi[node1][node2] = conditional_mutual_information(
+                    self._xtrain[:, node1], self._xtrain[:, node2], self._ytrain
+                )
                 self._edge_status[node1][node2] = 1
-        sorted_indices = np.argsort(self._cmi, axis = None)
+        sorted_indices = np.argsort(self._cmi, axis=None)
         for index in sorted_indices:
             coordinates = divmod(index, self.n_features_)
 
             if coordinates[0] < coordinates[1]:
                 self._sorted_edges.append(coordinates)
-            
-
-        
 
     def _get_nonredundant_features_from_mst(self, idx):
         """
@@ -322,14 +322,14 @@ class Filter(HierarchicalEstimator, ABC):
         for node1 in self._feature_tree:
             self._instance_status[node1] = 0
             for node2 in self._feature_tree:
-                    self._edge_status[node1][node2] = 1
+                self._edge_status[node1][node2] = 1
 
         representants = [i for i in range(self.n_features_)]
         members = {}
         for i in range(self.n_features_):
-            members[i]=[i]
+            members[i] = [i]
 
-        # get paths 
+        # get paths
         reachable_nodes = {}
         for node in self._feature_tree:
             reachable_nodes[node] = []
@@ -337,19 +337,27 @@ class Filter(HierarchicalEstimator, ABC):
                 reachable_nodes[node].append(des)
         # select edges
         for edge in self._sorted_edges:
-            if (self._edge_status[edge[0]][edge[1]]
-                 # check redundancy: same path and same value
-                and (self._xtest[idx][edge[0]] != self._xtest[idx][edge[1]] or 
-                     (edge[0] not in reachable_nodes[edge[1]] and edge[1] not in reachable_nodes[edge[1]]))
+            if (
+                self._edge_status[edge[0]][edge[1]]
+                # check redundancy: same path and same value
+                and (
+                    self._xtest[idx][edge[0]] != self._xtest[idx][edge[1]]
+                    or (
+                        edge[0] not in reachable_nodes[edge[1]]
+                        and edge[1] not in reachable_nodes[edge[1]]
+                    )
+                )
                 # check if circle in UDAG using the property, that edge (a,b) infers circle iff a und b
                 # are members of the same component
-                and representants[edge[0]] != representants[edge[1]]):
-                
+                and representants[edge[0]] != representants[edge[1]]
+            ):
                 UDAG.add_edge(edge[0], edge[1])
                 self._edge_status[edge[0]][edge[1]] = 0
 
                 # merge: change the representatives of the smaller component
-                if len(members[representants[edge[0]]]) <= len(members[representants[edge[1]]]):
+                if len(members[representants[edge[0]]]) <= len(
+                    members[representants[edge[1]]]
+                ):
                     for m in members[edge[0]]:
                         representants[m] = representants[edge[1]]
                         members[representants[edge[1]]].append(m)
@@ -360,20 +368,28 @@ class Filter(HierarchicalEstimator, ABC):
 
                 # remove all edges with redundant ancestors or descendants of e0 and e1
                 for selected_node in [edge[0], edge[1]]:
-                    for neighbor_node in nx.ancestors(self._feature_tree, selected_node):
-                        if self._xtest[idx][selected_node] == self._xtest[idx][neighbor_node]:
+                    for neighbor_node in nx.ancestors(
+                        self._feature_tree, selected_node
+                    ):
+                        if (
+                            self._xtest[idx][selected_node]
+                            == self._xtest[idx][neighbor_node]
+                        ):
                             # alternative: collect all and then delete in sorted_edges
-                            self._edge_status[:,neighbor_node] = 0
+                            self._edge_status[:, neighbor_node] = 0
                             self._edge_status[neighbor_node][:] = 0
-                    for neighbor_node in nx.descendants(self._feature_tree, selected_node):
-                        if self._xtest[idx][selected_node] == self._xtest[idx][neighbor_node]:
-                            self._edge_status[:,neighbor_node] = 0
+                    for neighbor_node in nx.descendants(
+                        self._feature_tree, selected_node
+                    ):
+                        if (
+                            self._xtest[idx][selected_node]
+                            == self._xtest[idx][neighbor_node]
+                        ):
+                            self._edge_status[:, neighbor_node] = 0
                             self._edge_status[neighbor_node][:] = 0
 
                 self._instance_status[edge[0]] = 1
                 self._instance_status[edge[1]] = 1
-                
-            
 
     def _predict(self, idx, estimator):
         """
@@ -414,11 +430,15 @@ class Filter(HierarchicalEstimator, ABC):
             metrics of prediction
         """
         avg_feature_length = 0
-        for idx in range(0,self._xtest.shape[0]-1):
-            avg_feature_length += ( self._feature_length[idx] / self._xtrain.shape[1])
+        for idx in range(0, self._xtest.shape[0] - 1):
+            avg_feature_length += self._feature_length[idx] / self._xtrain.shape[1]
         avg_feature_length = avg_feature_length / (len(self._feature_length))
-        score = classification_report(y_true=ytest, y_pred=predictions, output_dict=True)
-        score["sensitivityxspecificity"] = float(score["0"]["recall"])*float(score["1"]["recall"])
+        score = classification_report(
+            y_true=ytest, y_pred=predictions, output_dict=True
+        )
+        score["sensitivityxspecificity"] = float(score["0"]["recall"]) * float(
+            score["1"]["recall"]
+        )
         score["compression"] = avg_feature_length
 
         return score
