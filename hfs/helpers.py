@@ -44,7 +44,7 @@ def getRelevance(xdata, ydata, node):
 
 
 def checkData(dag, x_data, y_data):
-    """Checks whether the given dataset satisfies the 0-1-propagation property on the DAG.
+    """Checks whether the given dataset satisfies the 0-1-propagation on the DAG.
 
     The 0-1-propagation property states that if there is a directed edge (u, v)
     in the DAG, then whenever node u has a value of 1 in the dataset, node v
@@ -61,7 +61,8 @@ def checkData(dag, x_data, y_data):
 
     Raises
     ----------
-    ValueError: If the dataset violates the 0-1-propagation property on any of the edges in the DAG.
+    ValueError: If the dataset violates the 0-1-propagation property
+    on any of the edges in the DAG.
 
     """
     data = np.column_stack((x_data, y_data))
@@ -69,9 +70,9 @@ def checkData(dag, x_data, y_data):
     for edge in edges:
         for idx in range(len(data)):
             if data[idx, edge[0]] == 0 and data[idx, edge[1]] == 1:
-                # depending on number of errors -> delete those instances instead of throwing errors?
                 raise ValueError(
-                    f"Test instance {idx} violates 0-1-propagation on edge ({edge[0]}, {edge[1]})"
+                    f"Test instance {idx} violates 0-1-propagation \
+                    on edge ({edge[0]}, {edge[1]})"
                     f"{data[idx]}"
                 )
 
@@ -87,12 +88,14 @@ def get_irrelevant_leaves(x_identifier, digraph):
     Parameters
     ----------
     x_identifier :  list
-                    A list containing node identifiers that are considered relevant, typically representing
-                    nodes of interest in the DAG.
+                    A list containing node identifiers that are considered
+                    relevant
     digraph : networkx.DiGraph
-            The Directed Acyclic Graph (DAG) from which irrelevant leaves will be identified.
+            The Directed Acyclic Graph (DAG) from which irrelevant leaves
+            will be identified.
 
-    Returns:
+    Returns
+    ----------
     selected_leaves : list
                     A list of leaf nodes that contain no relevant information.
     """
@@ -108,17 +111,18 @@ def get_irrelevant_leaves(x_identifier, digraph):
 
 
 def get_leaves(graph: nx.DiGraph):
-    """
-    Get the leaf nodes from the given directed acyclic graph (DAG).
+    """Get the leaf nodes from the given directed acyclic graph (DAG).
 
     A leaf node is a node in the graph that meets the following criteria:
     - It has no outgoing edges (out_degree == 0).
-    - It has at least one incoming edge (in_degree > 0), indicating it has one or more parent nodes.
+    - It has at least one incoming edge (in_degree > 0), indicating it
+      has one or more parent nodes.
 
     Parameters
     ----------
     graph : networkx.DiGraph
-            The Directed Acyclic Graph (DAG) from which the leaf nodes will be identified.
+            The Directed Acyclic Graph (DAG) from which the leaf nodes
+            will be identified.
 
     Returns
     ----------
@@ -134,16 +138,15 @@ def get_leaves(graph: nx.DiGraph):
 
 
 def shrink_dag(x_identifier, digraph):
-    """
-    Remove irrelevant leaf nodes from the given DAG.
+    """Remove irrelevant leaf nodes from the given DAG.
 
     Parameters
     ----------
     x_identifier : list
-                A list containing node identifiers that are considered relevant,
-                typically representing nodes of interest in the DAG.
+            A list containing node identifiers that are considered relevant
     digraph : networkx.DiGraph
-            The Directed Acyclic Graph (DAG) from which irrelevant leaf nodes will be removed.
+            The Directed Acyclic Graph (DAG) from which irrelevant leaf nodes
+            will be removed.
 
     Returns
     ----------
@@ -151,18 +154,19 @@ def shrink_dag(x_identifier, digraph):
             The resulting DAG after removing all irrelevant leaf nodes.
 
     """
-    leaves = get_irrelevant_leaves(x_identifier=x_identifier, digraph=digraph)
+    leaves = get_irrelevant_leaves(x_identifier, digraph)
     while leaves:
         for x in leaves:
             digraph.remove_node(x)
-        leaves = get_irrelevant_leaves(x_identifier=x_identifier, digraph=digraph)
+        leaves = get_irrelevant_leaves(x_identifier, digraph)
     return digraph
 
 
 def connect_dag(x_identifiers, digraph):
     top_sort = nx.topological_sort(digraph)
 
-    # connect every node with at least one ancestor on each path that is for shure in x_i
+    # connect every node with at least one ancestor on each path
+    # that is for shure in x_i
     # i = 0: source is either in or not in, as they are no predecessors,
     # there should not be any artificial edge
     # i: for each pred there is a direct edge to the pred and iff pred not in x_ide
@@ -198,8 +202,7 @@ def connect_dag(x_identifiers, digraph):
 
 
 def create_hierarchy(hierarchy: nx.DiGraph) -> nx.DiGraph:
-    """
-    Create a virtual root node to connect disjoint hierarchies.
+    """Create a virtual root node to connect disjoint hierarchies.
 
     Parameters
     ----------
@@ -222,11 +225,10 @@ def create_hierarchy(hierarchy: nx.DiGraph) -> nx.DiGraph:
 
 
 def get_paths(graph: nx.DiGraph, reverse=False):
-    """
-    Get all the paths from the "ROOT" node to the leaf nodes in the input graph.
+    """Get all the paths from the "ROOT" node to the leaf nodes in the input graph.
 
     Parameters
-     ----------
+    ----------
     graph : networkx.DiGraph
             The Directed Acyclic Graph (DAG) for which paths need to be found.
     reverse : bool
@@ -234,7 +236,7 @@ def get_paths(graph: nx.DiGraph, reverse=False):
             effectively giving the paths from leaf nodes to the "ROOT" node.
 
     Returns
-     ----------
+    ----------
     paths : list
             A list node lists which represent paths.
     """
@@ -247,20 +249,47 @@ def get_paths(graph: nx.DiGraph, reverse=False):
 
 
 def get_columns_for_numpy_hierarchy(hierarchy: nx.DiGraph, num_columns: int):
-    """If each node in the hierarchy is named after a column's index this methods will give you
-    the mapping from column index to node name of the node after the graph was transformed to a numpy array
-    and back
-    Value represents new node (numpy) while index is the name of node in Digraph before transformation.
+    """Get mapping from hierarchy nodes to columns after hierarchy transformation.
+
+    If each node in the hierarchy is named after a column's index this methods
+    will give you the mapping from column index to node name of the node after
+    the graph was transformed to a numpy array and back. During this
+    transformation the node names are lost and afterwards each node is named
+    after its index in hierarchy.nodes.
+
+    Parameters
+    ----------
+    hierarchy : networkx.DiGraph
+            The Directed Acyclic Graph (DAG) representing the hierarchy.
+    num_columns : bool
+            The number of columns in the dataset.
+
+    Returns
+    ----------
+    columns : list
+            A mapping from nodes to columns.
     """
     columns = []
     for node in range(num_columns):
-        columns.append(
-            list(hierarchy.nodes()).index(node) if node in hierarchy.nodes else -1
-        )
+        index = list(hierarchy.nodes()).index(node) if node in hierarchy.nodes else -1
+        columns.append(index)
     return columns
 
 
 def normalize_score(score, max_value):
+    """Normalize the given score using logarithmic scaling and a maximum value.
+
+    Parameters
+    ----------
+    score : float or int
+            The score to be normalized.
+    max_value : float or int
+            The maximum of the scores in the corresponding row.
+
+    Returns
+    ----------
+    float or int: The normalized score after applying logarithmic scaling.
+    """
     if score != 0:
         score = math.log(1 + (score / max_value)) + 1
     return score
@@ -269,6 +298,34 @@ def normalize_score(score, max_value):
 def compute_aggregated_values(
     X, hierarchy: nx.DiGraph, columns: list[int], node="ROOT"
 ):
+    """Recursively aggregate features in X by summing up their children's values.
+
+    The method traverses the given Directed Acyclic Graph (DAG) hierarchy
+    starting from the specified node, and recursively aggregates the values
+    from its children nodes up to the specified root node. To caculate all
+    values start form "ROOT".
+
+    Parameters
+    ----------
+    X : {array-like, sparse matrix}
+        The input array with the original data.
+    hierarchy : networkx.DiGraph
+            The Directed Acyclic Graph (DAG) representing the hierarchical
+            structure.
+    columns : list
+            The mapping from the hierarchy graphs nodes to the columns in X.
+            A list of ints. If this parameter is None the columns in X and
+            the corresponding nodes in the hierarchy are expected to be in the
+            same order.
+    node : {int, str}
+            The starting node for aggregation. Default is "ROOT".
+
+    Returns
+    ----------
+    X : numpy.ndarray
+        The input array `X` with the aggregated values based on the provided
+        hierarchy.
+    """
     if hierarchy.out_degree(node) == 0:
         return X
     children = hierarchy.successors(node)
