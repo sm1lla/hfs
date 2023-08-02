@@ -1,3 +1,4 @@
+"""Different metric functions."""
 import numpy as np
 from info_gain.info_gain import info_gain, info_gain_ratio
 from numpy.linalg import norm
