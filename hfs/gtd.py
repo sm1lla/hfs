@@ -13,6 +13,9 @@ from .metrics import gain_ratio
 class GreedyTopDownSelector(EagerHierarchicalFeatureSelector):
     """Greedy Top Down feature selection method proposed by Lu et al. 2013.
 
+    The features are selected choosing nodes from the hierarchy that
+    score in the heuristic function and aren't an ancestor or descendant
+    of a node with a higher score.
     This feature selection method is intended for hierarchical data.
     Therefore, it inherits from the EagerHierarchicalFeatureSelector.
     """
