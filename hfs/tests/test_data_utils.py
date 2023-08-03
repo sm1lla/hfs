@@ -16,27 +16,21 @@ from .fixtures.fixtures import (
 def remove_created_files():
     dirname = os.path.dirname(__file__)
     data_file = os.path.join(
-        dirname, Path("../data/sport_tweets_train_with_hierarchy_testing.csv")
+        dirname, Path("../data/sport_tweets_train_with_hierarchy_testing1.csv")
     )
     hierarchy_file = os.path.join(
-        dirname, Path("../data/sport_tweets_train_hierarchy_testing.pickle")
+        dirname, Path("../data/sport_tweets_train_hierarchy_testing1.pickle")
     )
     os.remove(data_file)
     os.remove(hierarchy_file)
 
 
-@pytest.fixture()
-def create_and_delete_data():
+def test_process_data_no_error():
     process_data(test_version=True)
-    yield
     remove_created_files()
 
 
-def test_process_data_no_error():
-    process_data(test_version=True)
-
-
-def test_load_data(create_and_delete_data):
+def test_load_data():
     X, labels, hierarchy = load_data(test_version=True)
     mapping = create_mapping_columns_to_nodes(X, hierarchy)
     assert len(mapping) == 269
