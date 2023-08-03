@@ -315,7 +315,7 @@ def compute_aggregated_values(
             The Directed Acyclic Graph (DAG) representing the hierarchical
             structure.
     columns : list
-            The mapping from the hierarchy graphs nodes to the columns in X.
+            The mapping from the hierarchy graph's nodes to the columns in X.
             A list of ints. If this parameter is None the columns in X and
             the corresponding nodes in the hierarchy are expected to be in the
             same order.

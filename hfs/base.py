@@ -14,7 +14,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
 
     The HierarchicalEstimator implements scikit-learn's BaseEstimator and
     TransformerMixin interfaces. It can be used as a base class for feature
-    selection classes or data preprocessors that work with hierarchical data.
+    selection classes or data preprocessors that use hierarchical data.
     """
 
     def __init__(self, hierarchy: np.ndarray = None):
@@ -39,7 +39,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
         y : array-like, shape (n_samples,) or None
             The target values. Only necessary for some estimators.
         columns: list or None,
-            The mapping from the hierarchy graphs nodes to the columns in X.
+            The mapping from the hierarchy graph's nodes to the columns in X.
             A list of ints. If this parameter is None the columns in X and
             the corresponding nodes in the hierarchy are expected to be in the
             same order.

@@ -41,7 +41,7 @@ class GreedyTopDownSelector(EagerHierarchicalFeatureSelector):
 
         The number of columns in X and the number of nodes in the hierarchy
         are expected to be the same and each column should be mapped to
-        exactly one nonde in the hierarchy with the columns parameter.
+        exactly one node in the hierarchy with the columns parameter.
         After fitting self.representatives_ includes the names of all
         nodes from the hierarchy that are left after feature selection.
         The features are selected choosing nodes from the hierarchy that
@@ -53,9 +53,9 @@ class GreedyTopDownSelector(EagerHierarchicalFeatureSelector):
         X : {array-like, sparse matrix}, shape (n_samples, n_features)
             The training input samples.
         y : array-like, shape (n_samples,)
-            The target values. An array of int. Not needed for all estimators.
+            The target values. An array of int.
         columns: list or None, length n_features
-            The mapping from the hierarchy graphs nodes to the columns in X.
+            The mapping from the hierarchy graph's nodes to the columns in X.
             A list of ints. If this parameter is None the columns in X and
             the corresponding nodes in the hierarchy are expected to be in the
             same order.
