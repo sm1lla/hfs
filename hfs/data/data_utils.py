@@ -25,11 +25,12 @@ def process_data(
         If True only a small subset of the data (10 samples) is processed.
         This is meant for testing purposes. Default is False.
     """
-    data = pd.read_csv(Path(path), sep="\t")
     if test_version:
-        data = data[:10]
+        data = pd.read_csv(Path(f"{path.split('.')[0]}_testing.tsv"), sep="\t")
     else:
+        data = pd.read_csv(Path(path), sep="\t")
         data = data[:600]
+
     extended_data = direct_type_generator(
         data,
         ["Dbpedia_URI_1", "Dbpedia_URI_2", "Dbpedia_URI_3"],
