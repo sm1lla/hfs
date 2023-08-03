@@ -1,7 +1,9 @@
+import os
+
 import pandas as pd
 import pytest
 
-from ..data.data_utils import create_mapping_columns_to_nodes, load_data
+from ..data.data_utils import create_mapping_columns_to_nodes, load_data, process_data
 from .fixtures.fixtures import (
     dataframe,
     hierarchy1,
@@ -16,6 +18,10 @@ def test_load_data():
     mapping = create_mapping_columns_to_nodes(X, hierarchy)
     assert len(mapping) == 269
     assert len(X) == labels.shape[0]
+
+
+def test_process_data_no_error():
+    process_data(test_version=True)
 
 
 @pytest.mark.parametrize(
