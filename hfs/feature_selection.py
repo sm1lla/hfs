@@ -107,7 +107,7 @@ class EagerHierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
             warnings.warn(warning_missing_nodes)
 
         not_in_dataset = [
-            node for node in self._feature_tree.nodes() if node not in self._columns
+            node for node in self._hierarchy.nodes() if node not in self._columns
         ]
         if not_in_dataset:
             warning_missing_columns = """The hierarchy should not include any

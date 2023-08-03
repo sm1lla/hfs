@@ -121,9 +121,9 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         In this case the hierarchy graph has not been updated yet.
         """
         if self.is_fitted_:
-            output_hierarchy = self._feature_tree
+            output_hierarchy = self._hierarchy
             output_hierarchy.remove_node("ROOT")
-            return nx.to_numpy_array(self._feature_tree)
+            return nx.to_numpy_array(self._hierarchy)
         else:
             raise RuntimeError("Instance has not been fitted.")
 
@@ -133,15 +133,15 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         For columns that no have a corresponding node in the hierarchy a
         node is added right under the "ROOT" node.
         """
-        max = len(self._feature_tree.nodes) - 1
+        max = len(self._hierarchy.nodes) - 1
         for x in range(len(self._columns)):
             if self._columns[x] == -1:
-                if x in self._feature_tree.nodes:
-                    self._feature_tree.add_edge("ROOT", max)
+                if x in self._hierarchy.nodes:
+                    self._hierarchy.add_edge("ROOT", max)
                     self._columns[x] = max
                     max += 1
                 else:
-                    self._feature_tree.add_edge("ROOT", x)
+                    self._hierarchy.add_edge("ROOT", x)
                     self._columns[x] = x
 
     def _shrink_dag(self):
@@ -153,13 +153,13 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         contain any necessary information.
         """
         leaves = get_irrelevant_leaves(
-            x_identifier=self._columns, digraph=self._feature_tree
+            x_identifier=self._columns, digraph=self._hierarchy
         )
         while leaves:
             for x in leaves:
-                self._feature_tree.remove_node(x)
+                self._hierarchy.remove_node(x)
             leaves = get_irrelevant_leaves(
-                x_identifier=self._columns, digraph=self._feature_tree
+                x_identifier=self._columns, digraph=self._hierarchy
             )
 
     def _find_missing_columns(self):
@@ -170,7 +170,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         """
         missing_nodes = [
             node
-            for node in self._feature_tree.nodes
+            for node in self._hierarchy.nodes
             if node not in self._columns and node != "ROOT"
         ]
         self._columns.extend(missing_nodes)
@@ -213,12 +213,12 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         X : array of shape [n_samples, n_new_features]
             The dataset with updated feature values.
         """
-        nodes = list(self._feature_tree.nodes)
+        nodes = list(self._hierarchy.nodes)
         nodes.remove("ROOT")
 
         for node in nodes:
             column_index = self._column_index(node)
-            ancestor_nodes = ancestors(self._feature_tree, node)
+            ancestor_nodes = ancestors(self._hierarchy, node)
             ancestor_nodes.remove("ROOT")
             for row_index, entry in enumerate(X[:, column_index]):
                 if entry == 1.0:
@@ -236,8 +236,8 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         transformation needs to be performed to ouput the hierarchy.
         Therefore the node names need to be adjusted.
         """
-        nodes = list(self._feature_tree.nodes())
+        nodes = list(self._hierarchy.nodes())
         nodes.remove("ROOT")
         self._columns = [nodes.index(node_name) for node_name in self._columns]
         mapping = {node_name: nodes.index(node_name) for node_name in nodes}
-        self._feature_tree = nx.relabel_nodes(self._feature_tree, mapping)
+        self._hierarchy = nx.relabel_nodes(self._hierarchy, mapping)

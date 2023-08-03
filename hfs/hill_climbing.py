@@ -115,7 +115,7 @@ class HillClimbingSelector(EagerHierarchicalFeatureSelector):
                     The scores calculated for each value in X.
         """
         score_matrix = compute_aggregated_values(
-            X.copy(), self._feature_tree, self._columns
+            X.copy(), self._hierarchy, self._columns
         )
 
         if self.dataset_type == "numerical":
@@ -233,14 +233,14 @@ class TopDownSelector(HillClimbingSelector):
         self._score_matrix = self._calculate_scores(X)
 
         # Start with nodes on first level after virtual root node
-        optimal_feature_set = set(self._feature_tree.successors("ROOT"))
+        optimal_feature_set = set(self._hierarchy.successors("ROOT"))
         fitness = 0
         best_fitness = 0
         best_feature_set = None
 
         while True:
             for node in optimal_feature_set:
-                children = list(self._feature_tree.successors(node))
+                children = list(self._hierarchy.successors(node))
                 if children:
                     # Replace the current node with its children and
                     # evaluate the resulting feature set using the
@@ -367,7 +367,7 @@ class BottomUpSelector(HillClimbingSelector):
         self._score_matrix = self._calculate_scores(X)
 
         # Start with the leaves.
-        current_feature_set = get_leaves(self._feature_tree)
+        current_feature_set = get_leaves(self._hierarchy)
         if current_feature_set == ["ROOT"] or current_feature_set == []:
             return []
         current_fitness = self._fitness_function(
@@ -379,14 +379,14 @@ class BottomUpSelector(HillClimbingSelector):
         while unvisited:
             temporary_feature_set = current_feature_set.copy()
             node = unvisited.pop()
-            parent = list(self._feature_tree.predecessors(node))[
+            parent = list(self._hierarchy.predecessors(node))[
                 0
             ]  # This does not work with a DAG.
             if parent != "ROOT":
                 # Replace the current node and its siblings with their
                 # parent node.
                 temporary_feature_set.append(parent)
-                children = list(self._feature_tree.successors(parent))
+                children = list(self._hierarchy.successors(parent))
                 updated_feature_set = [
                     node for node in temporary_feature_set if node not in children
                 ]
@@ -419,7 +419,7 @@ class BottomUpSelector(HillClimbingSelector):
 
     def _fitness_function(self, comparison_matrix: np.ndarray) -> float:
         # number_of_leaf_nodes is the alpha value from paper.
-        number_of_leaf_nodes = len(get_leaves(self._feature_tree))
+        number_of_leaf_nodes = len(get_leaves(self._hierarchy))
         if number_of_leaf_nodes == 0:
             number_of_leaf_nodes = 1
 

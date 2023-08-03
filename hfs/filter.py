@@ -49,7 +49,7 @@ class Filter(HierarchicalEstimator, ABC):
         node
             Node for which the ancestors should be obtained.
         """
-        return nx.ancestors(self._feature_tree, node)
+        return nx.ancestors(self._hierarchy, node)
 
     def _get_descendants(self, node):
         """
@@ -60,13 +60,13 @@ class Filter(HierarchicalEstimator, ABC):
         node
             Node for which the descendants should be obtained.
         """
-        return nx.descendants(self._feature_tree, node)
+        return nx.descendants(self._hierarchy, node)
 
-    def _create_feature_tree(self):
+    def _create_hierarchy(self):
         """ "
         Create digraph from numpy array.
         """
-        self._feature_tree = nx.from_numpy_array(
+        self._hierarchy = nx.from_numpy_array(
             self.hierarchy, parallel_edges=False, create_using=nx.DiGraph
         )
 
@@ -111,8 +111,8 @@ class Filter(HierarchicalEstimator, ABC):
             The target values, i.e., hierarchical class labels for classification.
         """
         # Create DAG
-        self._set_feature_tree()
-        self._feature_tree.remove_node("ROOT")
+        self._set_hierarchy()
+        self._hierarchy.remove_node("ROOT")
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
@@ -121,21 +121,20 @@ class Filter(HierarchicalEstimator, ABC):
         self._feature_length = np.zeros(self._xtest.shape[1], dtype=int)
 
         # Validate data
-        checkData(self._feature_tree, self._xtrain, self._ytrain)
-        # checkData(self._feature_tree , self._xtest, self._ytest) ???
+        checkData(self._hierarchy, self._xtrain, self._ytrain)
 
         # Get relevance, ancestors and descendants of each node
         self._relevance = {}
         self._descendants = {}
         self._ancestors = {}
-        for node in self._feature_tree:
+        for node in self._hierarchy:
             self._relevance[node] = self._get_relevance(node)
             self._ancestors[node] = self._get_ancestors(node)
             self._descendants[node] = self._get_descendants(node)
         self._get_sorted_relevance()
 
         self._instance_status = {}
-        for node in self._feature_tree:
+        for node in self._hierarchy:
             self._instance_status[node] = 1
 
     def select_and_predict(
@@ -168,14 +167,14 @@ class Filter(HierarchicalEstimator, ABC):
         idx
             Index of test instance for which the features shall be selected.
         """
-        for node in self._feature_tree:
+        for node in self._hierarchy:
             self._instance_status[node] = 1
-        for node in self._feature_tree:
+        for node in self._hierarchy:
             if self._xtest[idx][node] == 1:
-                for anc in self._feature_tree.predecessors(node):
+                for anc in self._hierarchy.predecessors(node):
                     self._instance_status[anc] = 0
             else:
-                for desc in self._feature_tree.successors(node):
+                for desc in self._hierarchy.successors(node):
                     self._instance_status[desc] = 0
 
     def _get_nonredundant_features_relevance(self, idx):
@@ -188,9 +187,9 @@ class Filter(HierarchicalEstimator, ABC):
         idx
             Index of test instance for which the features shall be selected.
         """
-        for node in self._feature_tree:
+        for node in self._hierarchy:
             self._instance_status[node] = 1
-        for node in self._feature_tree:
+        for node in self._hierarchy:
             if node == "ROOT":
                 continue
             if self._xtest[idx][node] == 1:
@@ -213,7 +212,7 @@ class Filter(HierarchicalEstimator, ABC):
             Index of test instance for which the features shall be selected.
         """
 
-        top_sort = list(nx.topological_sort(self._feature_tree))
+        top_sort = list(nx.topological_sort(self._hierarchy))
         reverse_top_sort = reversed(top_sort)
         mr = {}
 
@@ -241,7 +240,7 @@ class Filter(HierarchicalEstimator, ABC):
             more_rel_nodes = [node]
             if self._xtest[idx][node]:
                 # preds are 1 because of 0-1-propagation
-                for pred in self._feature_tree.predecessors(node):
+                for pred in self._hierarchy.predecessors(node):
                     # get most relevant nodes seen on the paths until current node
                     for _mr in mr[pred]:
                         # if their is a node on the path more important then current node
@@ -261,7 +260,7 @@ class Filter(HierarchicalEstimator, ABC):
             more_rel_nodes = [node]
             if not self._xtest[idx][node]:
                 mr[node] = node
-                for suc in self._feature_tree.successors(node):
+                for suc in self._hierarchy.successors(node):
                     # get most relevant nodes seen on paths until current node
                     for _mr in mr[suc]:
                         if self._relevance[_mr] > self._relevance[node]:
@@ -288,12 +287,12 @@ class Filter(HierarchicalEstimator, ABC):
                 self._instance_status[node] = 0
 
     def _build_mst(self):
-        edges = self._feature_tree.edges
+        edges = self._hierarchy.edges
         self._edge_status = np.zeros((self.n_features_, self.n_features_))
         self._cmi = np.zeros((self.n_features_, self.n_features_))
         self._sorted_edges = []
-        for node1 in self._feature_tree.nodes:
-            for node2 in self._feature_tree.nodes:
+        for node1 in self._hierarchy.nodes:
+            for node2 in self._hierarchy.nodes:
                 if node1 == node2:
                     continue
                 self._cmi[node1][node2] = conditional_mutual_information(
@@ -319,9 +318,9 @@ class Filter(HierarchicalEstimator, ABC):
         """
         UDAG = nx.Graph()
 
-        for node1 in self._feature_tree:
+        for node1 in self._hierarchy:
             self._instance_status[node1] = 0
-            for node2 in self._feature_tree:
+            for node2 in self._hierarchy:
                 self._edge_status[node1][node2] = 1
 
         representants = [i for i in range(self.n_features_)]
@@ -331,9 +330,9 @@ class Filter(HierarchicalEstimator, ABC):
 
         # get paths
         reachable_nodes = {}
-        for node in self._feature_tree:
+        for node in self._hierarchy:
             reachable_nodes[node] = []
-            for des in nx.descendants(self._feature_tree, node):
+            for des in nx.descendants(self._hierarchy, node):
                 reachable_nodes[node].append(des)
         # select edges
         for edge in self._sorted_edges:
@@ -368,9 +367,7 @@ class Filter(HierarchicalEstimator, ABC):
 
                 # remove all edges with redundant ancestors or descendants of e0 and e1
                 for selected_node in [edge[0], edge[1]]:
-                    for neighbor_node in nx.ancestors(
-                        self._feature_tree, selected_node
-                    ):
+                    for neighbor_node in nx.ancestors(self._hierarchy, selected_node):
                         if (
                             self._xtest[idx][selected_node]
                             == self._xtest[idx][neighbor_node]
@@ -378,9 +375,7 @@ class Filter(HierarchicalEstimator, ABC):
                             # alternative: collect all and then delete in sorted_edges
                             self._edge_status[:, neighbor_node] = 0
                             self._edge_status[neighbor_node][:] = 0
-                    for neighbor_node in nx.descendants(
-                        self._feature_tree, selected_node
-                    ):
+                    for neighbor_node in nx.descendants(self._hierarchy, selected_node):
                         if (
                             self._xtest[idx][selected_node]
                             == self._xtest[idx][neighbor_node]

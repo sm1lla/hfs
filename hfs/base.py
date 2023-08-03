@@ -58,7 +58,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
         else:
             self._columns = list(range(self.n_features_))
 
-        self._set_feature_tree()
+        self._set_hierarchy()
 
         return self
 
@@ -95,18 +95,18 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
         """
         return self._columns
 
-    def _set_feature_tree(self):
+    def _set_hierarchy(self):
         # If no hierarchy is given all nodes are at the top level of the
         # created hierarchy.
         if self.hierarchy is None:
-            self._feature_tree = nx.DiGraph()
+            self._hierarchy = nx.DiGraph()
         else:
-            self._feature_tree = nx.from_numpy_array(
+            self._hierarchy = nx.from_numpy_array(
                 self.hierarchy, create_using=nx.DiGraph
             )
 
-        # Build the feature tree.
-        self._feature_tree = create_hierarchy(self._feature_tree)
+        # Build the hierarchy.
+        self._hierarchy = create_hierarchy(self._hierarchy)
 
     def _column_index(self, node):
         # Get the corresponding column index for a node in the hierarchy.
