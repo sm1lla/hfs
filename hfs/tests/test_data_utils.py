@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pytest
 
@@ -15,10 +16,10 @@ from .fixtures.fixtures import (
 def remove_created_files():
     dirname = os.path.dirname(__file__)
     data_file = os.path.join(
-        dirname, "..\data\sport_tweets_train_with_hierarchy_testing.csv"
+        dirname, Path("..\data\sport_tweets_train_with_hierarchy_testing.csv")
     )
     hierarchy_file = os.path.join(
-        dirname, "..\data\sport_tweets_train_hierarchy_testing.pickle"
+        dirname, Path("..\data\sport_tweets_train_hierarchy_testing.pickle")
     )
     os.remove(data_file)
     os.remove(hierarchy_file)
