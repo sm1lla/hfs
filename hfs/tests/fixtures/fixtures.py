@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 from info_gain.info_gain import info_gain, info_gain_ratio
 
-from hfs.helpers import cosine_similarity, get_columns_for_numpy_hierarchy
+from hfs.helpers import get_columns_for_numpy_hierarchy
+from hfs.metrics import cosine_similarity
 
 
 def data1():

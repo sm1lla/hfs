@@ -143,7 +143,7 @@ def test_MR(data):
     filter = MR(nx.to_numpy_array(hierarchy))
     filter.fit_selector(X_train=X_train, y_train=y_train, X_test=X_test)
     filter._relevance = relevance
-    filter._feature_tree = hierarchy
+    filter._hierarchy = hierarchy
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
     features = filter.get_features()
     result_features = np.array(
@@ -168,7 +168,7 @@ def test_HIP(data):
     filter = HIP(nx.to_numpy_array(hierarchy))
     filter.fit_selector(X_train=X_train, y_train=y_train, X_test=X_test)
     filter._relevance = relevance
-    filter._feature_tree = hierarchy
+    filter._hierarchy = hierarchy
     pred = filter.select_and_predict(predict=True, saveFeatures=True)
     features = filter.get_features()
     result_features = np.array(
@@ -192,7 +192,7 @@ def test_TAN(data):
     filter = Tan(nx.to_numpy_array(hierarchy))
     filter.fit_selector(X_train=X_train_ones, y_train=y_train, X_test=X_test)
     filter._xtrain = X_train
-    filter._feature_tree = hierarchy
+    filter._hierarchy = hierarchy
     filter.select_and_predict(predict=True, saveFeatures=True)
     f = filter.get_features()
     assert resulted_features.all() == f.all()

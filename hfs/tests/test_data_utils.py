@@ -1,7 +1,9 @@
-import pandas as pd
+import os
+from pathlib import Path
+
 import pytest
 
-from ..data.data_utils import create_mapping_columns_to_nodes, load_data
+from ..data.data_utils import create_mapping_columns_to_nodes, load_data, process_data
 from .fixtures.fixtures import (
     dataframe,
     hierarchy1,
@@ -9,6 +11,23 @@ from .fixtures.fixtures import (
     hierarchy2,
     hierarchy3,
 )
+
+
+def remove_created_files():
+    dirname = os.path.dirname(__file__)
+    data_file = os.path.join(
+        dirname, Path("../data/sport_tweets_train_with_hierarchy_testing1.csv")
+    )
+    hierarchy_file = os.path.join(
+        dirname, Path("../data/sport_tweets_train_hierarchy_testing1.pickle")
+    )
+    os.remove(data_file)
+    os.remove(hierarchy_file)
+
+
+def test_process_data_no_error():
+    process_data(test_version=True)
+    remove_created_files()
 
 
 def test_load_data():

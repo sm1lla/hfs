@@ -1,5 +1,5 @@
 """
-Sklearn compatible estimators for feature selection
+Base class for estimators for eager hierarchical feature selection.
 """
 import warnings
 
@@ -10,19 +10,38 @@ from sklearn.utils.validation import check_array
 from .base import HierarchicalEstimator
 
 
-class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
+class EagerHierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
+    """Base class for eager feature selectors using hierarchical data."""
+
     def __init__(self, hierarchy: np.ndarray = None):
+        """Initializes an EagerHierarchicalFeatureSelector.
+
+        Parameters
+        ----------
+        hierarchy : np.ndarray
+                    The hierarchy graph as an adjacency matrix."""
         super().__init__(hierarchy)
 
     def fit(self, X, y=None, columns=None):
-        """Fitting function that sets self.representatives_ to include the columns that are kept.
+        """Fitting function that sets self.representatives_.
+
+        After fitting self.representatives_ should include the names of all
+        nodes from the hierarchy that are left after feature selection.
+        The number of columns in X and the number of nodes in the hierarchy
+        are expected to be the same and each column should be mapped to
+        exactly one node in the hierarchy with the columns parameter.
 
         Parameters
         ----------
         X : {array-like, sparse matrix}, shape (n_samples, n_features)
             The training input samples.
         y : array-like, shape (n_samples,)
-            The target values. An array of int, that should either be 1 or 0.
+            The target values. An array of int. Not needed for all estimators.
+        columns: list or None, length n_features
+            The mapping from the hierarchy graph's nodes to the columns in X.
+            A list of ints. If this parameter is None the columns in X and
+            the corresponding nodes in the hierarchy are expected to be in the
+            same order.
 
         Returns
         -------
@@ -33,12 +52,36 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
         super().fit(X, y, columns)
         self._check_hierarchy_X()
 
-        # representatives_ includes all node names for selected nodes, columns maps them to the respective column in X
+        # self.representatives_ includes all node names for selected nodes.
+        # self._columns maps them to the respective column in X.
         self.representatives_ = []
 
         return self
 
+    def transform(self, X):
+        """Reduce X to the selected features.
+
+        Extends the transform method from SelectorMixin. Only selected
+        columns from X are in the output dataset.
+
+        Parameters
+        ----------
+        X : array of shape (n_samples, n_features)
+            The input samples.
+
+        Returns
+        -------
+        X : array of shape [n_samples, n_selected_features]
+            The input samples with only the selected features.
+        """
+        X = check_array(X, dtype=None, accept_sparse="csr")
+        if self.n_features_ != X.shape[1]:
+            raise ValueError("X has a different shape than during fitting.")
+        return super().transform(X)
+
     def _get_support_mask(self):
+        # Implements _get_support_mask method from SelectorMixin to
+        # indicate the selected features from X.
         representatives_indices = [
             self._column_index(node) for node in self.representatives_
         ]
@@ -49,12 +92,6 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
             ]
         )
 
-    def transform(self, X):
-        X = check_array(X, dtype=None, accept_sparse="csr")
-        if self.n_features_ != X.shape[1]:
-            raise ValueError("X has a different shape than during fitting.")
-        return super().transform(X)
-
     def _check_hierarchy_X(self):
         not_in_hierarchy = [
             feature_index
@@ -62,17 +99,18 @@ class HierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
             if feature_index not in self._columns
         ]
         if not_in_hierarchy:
-            warnings.warn(
-                """All columns in X need to be mapped to a node in self.feature_tree. 
-            If columns=None the corresponding node's name is the same as the columns index in the dataset. Otherwise it is the node's is in self.columns
-            at the index of the column's index"""
-            )
+            warning_missing_nodes = """All columns in X need to be mapped
+             to a node in the hierarchy. If columns=None the corresponding
+             node's name is the same as the column's index in the dataset.
+             Otherwise, it is indicated by the value in self._columns at
+             the columns' index."""
+            warnings.warn(warning_missing_nodes)
 
         not_in_dataset = [
-            node for node in self._feature_tree.nodes() if node not in self._columns
+            node for node in self._hierarchy.nodes() if node not in self._columns
         ]
         if not_in_dataset:
-            warnings.warn(
-                """The hierarchy should not include any nodes
-            that are not mapped to a column in the dataset by the columns parameter"""
-            )
+            warning_missing_columns = """The hierarchy should not include any
+             nodes that are not mapped to a column in the dataset by the
+             columns parameter"""
+            warnings.warn(warning_missing_columns)
