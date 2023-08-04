@@ -2,12 +2,9 @@ import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
 from hfs import (
+    EagerHierarchicalFeatureSelector,
     HierarchicalEstimator,
-    HierarchicalFeatureSelector,
     HierarchicalPreprocessor,
-    TemplateClassifier,
-    TemplateEstimator,
-    TemplateTransformer,
 )
 
 from ..gtd import GreedyTopDownSelector
@@ -26,13 +23,10 @@ from ..tsel import TSELSelector
     [
         TSELSelector(),
         HierarchicalEstimator(),
-        HierarchicalFeatureSelector(),
+        EagerHierarchicalFeatureSelector(),
         HierarchicalPreprocessor(),
         TopDownSelector(),
         SHSELSelector(),
-        TemplateEstimator(),
-        TemplateTransformer(),
-        TemplateClassifier(),
         HNB(),
         HNBs(),
         RNB(),

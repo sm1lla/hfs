@@ -1,21 +1,29 @@
+"""
+SHSEL Feature Selector.
+"""
 import statistics
 
 import numpy as np
 from scipy import sparse
 from sklearn.utils.validation import check_X_y
 
-from .feature_selection import HierarchicalFeatureSelector
-from .helpers import (
-    compute_aggregated_values,
-    get_leaves,
-    get_paths,
-    information_gain,
-    pearson_correlation,
-)
+from .feature_selection import EagerHierarchicalFeatureSelector
+from .helpers import compute_aggregated_values, get_leaves, get_paths
+from .metrics import information_gain, pearson_correlation
 
 
-class SHSELSelector(HierarchicalFeatureSelector):
-    """SHSEL feature selection method for hierarchical features proposed by Ristoski and Paulheim"""
+class SHSELSelector(EagerHierarchicalFeatureSelector):
+    """SHSEL feature selection method for hierarchical features.
+
+    This feature selection method was proposed by Ristoski and Paulheim
+    in 2014. The features are selected by removing features with
+    parents that have a similar relevance and removing features with
+    lower than average information gain for each path from leaf to
+    root.
+    This Selector also implements the hierarchical feature
+    engineering (HFE) extension proposed by Oudah and Henschel in
+    2018.
+    """
 
     def __init__(
         self,
@@ -25,6 +33,31 @@ class SHSELSelector(HierarchicalFeatureSelector):
         use_hfe_extension=False,
         preprocess_numerical_data=False,
     ):
+        """Initializes a SHSELSelector.
+
+        Parameters
+        ----------
+        hierarchy : np.ndarray
+                    The hierarchy graph as an adjacency matrix.
+        relevance_metric : str
+                    The relevance metric to use in the initial selection
+                    stage of the algorithm. The options ore "IG" for
+                    information gain and "Correlation". Default is IG.
+        similarity_threshold : float
+                    The similarity threshold to use in the initial selection
+                    stage of the algorithm. This can be a number between
+                    0 an 1. Default is 0.99.
+        use_hfe_extension : bool
+                    If True the HFE algorithm proposed by Oudah and Henschel is
+                    used. Set relevance_metric to "Correlation" when using this
+                    extension. Default is False.
+        preprocess_numerical_data : False
+                    If True the data is preprocessed by adding up the child values.
+                    This method is used in the HFE extension algorithm which
+                    expects numerical data. If binary data is used it is
+                    recommended to set this parameter to False. Default is False.
+
+        """
         super().__init__(hierarchy)
         self.relevance_metric = relevance_metric
         self.similarity_threshold = similarity_threshold
@@ -32,13 +65,30 @@ class SHSELSelector(HierarchicalFeatureSelector):
         self.preprocess_numerical_data = preprocess_numerical_data
 
     def fit(self, X, y, columns=None):
-        """Fitting function that sets self.representatives_ to include the columns that are kept.
+        """Fitting function that sets self.representatives_.
+
+        The number of columns in X and the number of nodes in the hierarchy
+        are expected to be the same and each column should be mapped to
+        exactly one node in the hierarchy with the columns parameter.
+        After fitting self.representatives_ includes the names of all
+        nodes from the hierarchy that are left after feature selection.
+        The features are selected by removing features with
+        parents that have a similar relevance and removing features with
+        lower than average information gain for each path from leaf to
+        root.
+
         Parameters
         ----------
         X : {array-like, sparse matrix}, shape (n_samples, n_features)
             The training input samples.
         y : array-like, shape (n_samples,)
-            The target values. An array of int, that should either be 1 or 0.
+            The target values. An array of int.
+        columns: list or None, length n_features
+            The mapping from the hierarchy graph's nodes to the columns in X.
+            A list of ints. If this parameter is None the columns in X and
+            the corresponding nodes in the hierarchy are expected to be in the
+            same order.
+
         Returns
         -------
         self : object
@@ -58,9 +108,10 @@ class SHSELSelector(HierarchicalFeatureSelector):
         return self
 
     def _fit(self, X):
+        """The feature selection algorithm."""
         if self.preprocess_numerical_data:
             X = self._preprocess(X)
-        paths = get_paths(self._feature_tree, reverse=True)
+        paths = get_paths(self._hierarchy, reverse=True)
         self._inital_selection(paths, X)
         self._pruning(paths)
         if self.use_hfe_extension:
@@ -70,6 +121,8 @@ class SHSELSelector(HierarchicalFeatureSelector):
         remove_nodes = set()
 
         for path in paths:
+            # If the relevance is to similar to the parents relevance
+            # the child is removed
             for index, node in enumerate(path):
                 parent_node = path[index + 1]
                 if parent_node == "ROOT":
@@ -91,8 +144,26 @@ class SHSELSelector(HierarchicalFeatureSelector):
             feature for feature in self._columns if feature not in remove_nodes
         ]
 
+    def _select_leaves(self):
+        """First part of the feature selection algorithm"""
+        leaves = [
+            leaf
+            for leaf in get_leaves(self._hierarchy)
+            if leaf in self.representatives_
+        ]
+
+        paths = get_paths(self._hierarchy)
+        max_path_len = max([len(path) for path in paths])
+        selected_leaves = []
+        for leaf in leaves:
+            for path in paths:
+                if leaf in path and len(path) != max_path_len:
+                    selected_leaves.append(leaf)
+        return selected_leaves
+
     def _pruning(self, paths):
-        paths = get_paths(self._feature_tree, reverse=True)
+        """Second part of the feature selection algorithm"""
+        paths = get_paths(self._hierarchy, reverse=True)
         updated_representatives = []
 
         for path in paths:
@@ -117,9 +188,18 @@ class SHSELSelector(HierarchicalFeatureSelector):
         self._relevance_values = dict(zip(self._columns, values))
 
     def _preprocess(self, X):
-        return compute_aggregated_values("ROOT", X, self._feature_tree, self._columns)
+        """Preprocess numerical data by summing up child values.
+
+        This is part of the HFE extension and only makes sense for
+        numerial data and not for binary data.
+        """
+        return compute_aggregated_values("ROOT", X, self._hierarchy, self._columns)
 
     def _leaf_filtering(self):
+        """Filtering representatives by removing leaves with low relevance.
+
+        his is part of the HFE extension proposed by Oudah and Henschel.
+        """
         average_ig = statistics.mean(
             [self._relevance_values[node] for node in self.representatives_]
         )
@@ -136,19 +216,3 @@ class SHSELSelector(HierarchicalFeatureSelector):
             node for node in self.representatives_ if node not in remove_nodes
         ]
         self.representatives_ = updated_representatives
-
-    def _select_leaves(self):
-        leaves = [
-            leaf
-            for leaf in get_leaves(self._feature_tree)
-            if leaf in self.representatives_
-        ]
-
-        paths = get_paths(self._feature_tree)
-        max_path_len = max([len(path) for path in paths])
-        selected_leaves = []
-        for leaf in leaves:
-            for path in paths:
-                if leaf in path and len(path) != max_path_len:
-                    selected_leaves.append(leaf)
-        return selected_leaves

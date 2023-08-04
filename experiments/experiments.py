@@ -138,8 +138,5 @@ def evaluate(data, k):
         )
 
 
-evaluate(data, 40)
-evaluate(data, 50)
-evaluate(data, 20)
-evaluate(data, 30)
-
+if __name__ == "__main__":
+    evaluate(data, 20)
