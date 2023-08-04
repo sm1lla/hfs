@@ -119,9 +119,7 @@ class Filter(HierarchicalEstimator, ABC):
             self._columns = list(range(self.n_features_))
 
         mapping = {value: index for index, value in enumerate(self._columns)}
-        print(f"type:{type(self._feature_tree)}, nodes:{len(self._feature_tree.nodes)}")
         self._feature_tree = nx.relabel_nodes(self._feature_tree, mapping)
-        print(f"type:{type(self._feature_tree)}, nodes:{len(self._feature_tree.nodes)}")
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
@@ -131,7 +129,7 @@ class Filter(HierarchicalEstimator, ABC):
         
 
         # Validate data
-        #checkData(self._feature_tree, self._xtrain, self._ytrain)
+        checkData(self._feature_tree, self._xtrain, self._ytrain)
         # checkData(self._feature_tree , self._xtest, self._ytest) ???
 
         # Get relevance, ancestors and descendants of each node

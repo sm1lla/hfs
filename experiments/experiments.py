@@ -37,90 +37,76 @@ def data():
     train = train[go_terms].to_numpy()
     test = test[go_terms].to_numpy()
     hierarchy = nx.to_numpy_array(graph)
-    print(f"len: {len(columns)}, lentrain: {len(train)}, col:{len(df.columns)}")
     return (hierarchy, train, y_train, test, y_test, columns)
 
 
-def hnb(hierarchy, train, y_train, test, y_test, k, columns):
+def hnb(hierarchy, train, y_train, test, y_test, k, columns, path):
     model = HNB(hierarchy=hierarchy, k=k)
     model.fit_selector(X_train=train, y_train=y_train, X_test=test, columns=columns)
     pred = model.select_and_predict(predict=True, saveFeatures=True)
     score = model.get_score(y_test, pred)
-    rel = pathlib.Path(f"results/all_new.txt")
-    path = dir / rel
     with open(path, "a") as file:
-        file.write("HNB:\n")
+        file.write("\nHNB:\n")
         file.write(json.dumps(score))
 
 
-def hnbs(hierarchy, train, y_train, test, y_test, k, columns):
+def hnbs(hierarchy, train, y_train, test, y_test, k, columns, path):
     model = HNBs(hierarchy=hierarchy)
     model.fit_selector(X_train=train, y_train=y_train, X_test=test, columns=columns)
     pred = model.select_and_predict(predict=True, saveFeatures=True)
     score = model.get_score(y_test, pred)
-    rel = pathlib.Path(f"results/all_new.txt")
-    path = dir / rel
     with open(path, "a") as file:
-        file.write("HNBs:\n")
+        file.write("\nHNBs:\n")
         file.write(json.dumps(score))
 
 
-def rnb(hierarchy, train, y_train, test, y_test, k, columns):
+def rnb(hierarchy, train, y_train, test, y_test, k, columns, path):
     model = RNB(hierarchy=hierarchy, k=k)
     model.fit_selector(X_train=train, y_train=y_train, X_test=test, columns=columns)
     pred = model.select_and_predict(predict=True, saveFeatures=True)
     score = model.get_score(y_test, pred)
-    rel = pathlib.Path(f"results/all_new.txt")
-    path = dir / rel
     with open(path, "a") as file:
-        file.write("RNB:\n")
+        file.write("\nRNB:\n")
         file.write(json.dumps(score))
 
 
-def mr(hierarchy, train, y_train, test, y_test, k, columns):
+def mr(hierarchy, train, y_train, test, y_test, k, columns, path):
     model = MR(hierarchy=hierarchy)
     model.fit_selector(X_train=train, y_train=y_train, X_test=test, columns=columns)
     pred = model.select_and_predict(predict=True, saveFeatures=True)
     score = model.get_score(y_test, pred)
-    rel = pathlib.Path(f"results/all_new.txt")
-    path = dir / rel
     with open(path, "a") as file:
-        file.write("MR:\n")
+        file.write("\nMR:\n")
         file.write(json.dumps(score))
 
 
-def tan(hierarchy, train, y_train, test, y_test, k, columns):
+def tan(hierarchy, train, y_train, test, y_test, k, columns, path):
     model = Tan(hierarchy=hierarchy)
     model.fit_selector(X_train=train, y_train=y_train, X_test=test, columns=columns)
     pred = model.select_and_predict(predict=True, saveFeatures=True)
     score = model.get_score(y_test, pred)
-    rel = pathlib.Path(f"results/all_new.txt")
-    path = dir / rel
     with open(path, "a") as file:
-        file.write("Tan:\n")
+        file.write("\nTan:\n")
         file.write(json.dumps(score))
 
 
-def hip(hierarchy, train, y_train, test, y_test, k, columns):
+def hip(hierarchy, train, y_train, test, y_test, k, columns, path):
     model = HIP(hierarchy=hierarchy)
     model.fit_selector(X_train=train, y_train=y_train, X_test=test, columns=columns)
     pred = model.select_and_predict(predict=True, saveFeatures=True)
     score = model.get_score(y_test, pred)
-    rel = pathlib.Path(f"results/all_new.txt")
-    path = dir / rel
     with open(path, "a") as file:
-        file.write("HIP:\n")
+        file.write("\nHIP:\n")
         file.write(json.dumps(score))
 
-def naive_bayes(hierarchy, train, y_train, test, y_test, k, columns):
+def naive_bayes(hierarchy, train, y_train, test, y_test, k, columns,path):
+    
     clf = BernoulliNB()
     clf.fit(train, y_train)
-    predictions =  clf.predict(test.reshape(1, -1))
+    predictions =  clf.predict(test)
     score = classification_report(y_true=y_test, y_pred=predictions, output_dict=True)
-    rel = pathlib.Path(f"results/all_new.txt")
-    path = dir / rel
     with open(path, "a") as file:
-        file.write("Baseline:\n")
+        file.write("\nBaseline:\n")
         file.write(json.dumps(score))
 
 
@@ -131,12 +117,15 @@ def evaluate(data, k):
     preprocessor.fit(train, columns=columns)
     train = preprocessor.transform(train)
     test = preprocessor.transform(test)
-    print(f"h: {len(hierarchy)}")
     
     hierarchy = preprocessor.get_hierarchy()
-    
-    print(f"h: {len(hierarchy)}")
-    for function in [hnb, hnbs, rnb, tan, mr, hip, naive_bayes]:
+    graph = nx.DiGraph(hierarchy)
+    columns = create_mapping_columns_to_nodes(pd.DataFrame(train), graph)
+
+    dir = pathlib.Path(__file__).parent.parent.absolute()
+    rel = pathlib.Path(f"hfs/results/new/all_{k}.txt")
+    path = dir / rel
+    for function in [tan, mr, rnb, hnbs, hnb]:
         function(
             hierarchy=hierarchy,
             train=train,
@@ -144,8 +133,13 @@ def evaluate(data, k):
             test=test,
             y_test=y_test,
             k=k,
-            columns=columns
+            columns=columns,
+            path = path
         )
 
 
+evaluate(data, 40)
+evaluate(data, 50)
 evaluate(data, 20)
+evaluate(data, 30)
+
