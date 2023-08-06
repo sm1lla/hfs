@@ -11,7 +11,7 @@ from .helpers import checkData, getRelevance
 from .metrics import conditional_mutual_information
 
 
-class Filter(HierarchicalEstimator, ABC):
+class Selector(HierarchicalEstimator, ABC):
     """
     Abstract class used for all filter methods.
 
@@ -28,53 +28,6 @@ class Filter(HierarchicalEstimator, ABC):
             The hierarchy graph as an adjacency matrix.
         """
         self.hierarchy = hierarchy
-
-    def _get_relevance(self, node):
-        """
-        Gather relevance for a given node.
-
-        Parameters
-        ----------
-        node: int
-            Node for which the relevance should be obtained.
-        """
-        return getRelevance(self._xtrain, self._ytrain, node)
-
-    def _get_ancestors(self, node):
-        """
-        Gather all ancestors for a given node.
-
-        Parameters
-        ----------
-        node: int
-            Node for which the ancestors should be obtained.
-        """
-        return nx.ancestors(self._hierarchy, node)
-
-    def _get_descendants(self, node):
-        """
-        Gather all descendants for a given node.
-
-        Parameters
-        ----------
-        node : int
-            Node for which the descendants should be obtained.
-        """
-        return nx.descendants(self._hierarchy, node)
-
-    def _create_hierarchy(self):
-        """
-        Create digraph from numpy array.
-        """
-        self._hierarchy = nx.from_numpy_array(
-            self.hierarchy, parallel_edges=False, create_using=nx.DiGraph
-        )
-
-    def _get_sorted_relevance(self):
-        """
-        Sort the nodes by descending relevance.
-        """
-        self._sorted_relevance = sorted(self._relevance, key=self._relevance.get)
 
     def fit(self, X, y=None):
         """
@@ -135,15 +88,11 @@ class Filter(HierarchicalEstimator, ABC):
         # Validate data
         checkData(self._hierarchy, self._xtrain, self._ytrain)
 
-        # Get relevance, ancestors and descendants of each node
+        # Get relevance of each node
         self._relevance = {}
-        self._descendants = {}
-        self._ancestors = {}
         for node in self._hierarchy:
-            self._relevance[node] = self._get_relevance(node)
-            self._ancestors[node] = self._get_ancestors(node)
-            self._descendants[node] = self._get_descendants(node)
-        self._get_sorted_relevance()
+            self._relevance[node] = getRelevance(self._xtrain, self._ytrain, node)
+        self._sorted_relevance = sorted(self._relevance, key=self._relevance.get)
 
         self._instance_status = {}
         for node in self._hierarchy:
@@ -205,11 +154,11 @@ class Filter(HierarchicalEstimator, ABC):
             if node == "ROOT":
                 continue
             if self._xtest[idx][node] == 1:
-                for anc in self._ancestors[node]:
+                for anc in nx.ancestors(self._hierarchy, node):
                     if self._relevance[anc] <= self._relevance[node]:
                         self._instance_status[anc] = 0
             else:
-                for desc in self._descendants[node]:
+                for desc in nx.descendants(self._hierarchy, node):
                     if self._relevance[desc] <= self._relevance[node]:
                         self._instance_status[desc] = 0
 

@@ -1,10 +1,10 @@
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 
-from .filter import Filter
+from .feature_selector import Selector
 
 
-class HIP(Filter):
+class HIP(Selector):
 
     """
     Select non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas.

@@ -3,10 +3,10 @@
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 
-from .filter import Filter
+from .feature_selector import Selector
 
 
-class MR(Filter):
+class MR(Selector):
 
     """
     Select non-redundant features with the highest relevance on each path following the algorithm proposed by Wan and Freitas
