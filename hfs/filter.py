@@ -24,8 +24,8 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        hierarchy
-                    {Numpy Array} of directed acyclic graph
+        hierarchy : np.ndarray
+            The hierarchy graph as an adjacency matrix.
         """
         self.hierarchy = hierarchy
 
@@ -35,7 +35,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        node
+        node: int
             Node for which the relevance should be obtained.
         """
         return getRelevance(self._xtrain, self._ytrain, node)
@@ -46,7 +46,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        node
+        node: int
             Node for which the ancestors should be obtained.
         """
         return nx.ancestors(self._hierarchy, node)
@@ -57,13 +57,13 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        node
+        node : int
             Node for which the descendants should be obtained.
         """
         return nx.descendants(self._hierarchy, node)
 
     def _create_hierarchy(self):
-        """ "
+        """
         Create digraph from numpy array.
         """
         self._hierarchy = nx.from_numpy_array(
@@ -82,8 +82,10 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        X : The training input samples.
-        y: The target values, i.e., hierarchical class labels for classification.
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            The training input samples.
+        y : array-like, shape (n_samples,)
+            The target values. An array of int.
 
         Returns
         -------
@@ -156,11 +158,11 @@ class Filter(HierarchicalEstimator, ABC):
         Parameters
         ----------
         predict :   {bool}
-            true if predictions shall be obtained
-        saveFeatures: {bool}
-            true if features selected for each test instance shall be saved
-        estimator
-                    Estimator to use for predictions.
+            true if predictions shall be obtained.
+        saveFeatures : {bool}
+            true if features selected for each test instance shall be saved.
+        estimator : sklearn-compatible estimator.
+            Estimator to use for predictions.
         Returns
         -------
         predictions for test input samples, if predict = false, returns empty array
@@ -174,7 +176,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
+        idx : int
             Index of test instance for which the features shall be selected.
         """
         for node in self._hierarchy:
@@ -194,7 +196,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
+        idx :
             Index of test instance for which the features shall be selected.
         """
         for node in self._hierarchy:
@@ -218,7 +220,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
+        idx :
             Index of test instance for which the features shall be selected.
         """
 
@@ -297,6 +299,9 @@ class Filter(HierarchicalEstimator, ABC):
                 self._instance_status[node] = 0
 
     def _build_mst(self):
+        """
+        Build minium spanning tree for each possible edge in the feature tree. 
+        """
         edges = self._hierarchy.edges
         self._edge_status = np.zeros((self.n_features_, self.n_features_))
         self._cmi = np.zeros((self.n_features_, self.n_features_))
@@ -323,7 +328,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
+        idx : int
             Index of test instance for which the features shall be selected.
         """
         UDAG = nx.Graph()
@@ -402,9 +407,9 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
-            Index of test instance which shall be predicted
-        estimator
+        idx : int
+            Index of test instance which shall be predicted.
+        estimator : sklearn-compatible estimator
                     Estimator to use for predictions.
 
         Returns
@@ -428,14 +433,15 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        ytest: 1d array-like, or label indicator array / sparse matrix
-            truth values of y
-        predictions: 1d array-like, or label indicator array / sparse matrix
-            obtained predictions
+        ytest : 1d array-like, or label indicator array / sparse matrix
+            truth values of y.
+        predictions : 1d array-like, or label indicator array / sparse matrix
+            obtained predictions.
+
         Returns
-        -------self._feature_length
-        report: dict
-            metrics of prediction
+        -------
+        report : dict
+            metrics of prediction. 
         """
         avg_feature_length = 0
         for idx in range(0, self._xtest.shape[0] - 1):
@@ -454,9 +460,11 @@ class Filter(HierarchicalEstimator, ABC):
     def get_features(self):
         """
         Get selected features.
+
         Parameters
         ----------
         None
+
         Returns
         -------
         features : numpy array

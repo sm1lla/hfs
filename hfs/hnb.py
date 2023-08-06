@@ -9,10 +9,21 @@ from .filter import Filter
 class HNB(Filter):
 
     """
-    Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas
+    Select the k non-redundant features with the highest relevance following the algorithm proposed by Wan and Freitas.
     """
 
     def __init__(self, hierarchy=None, k=0):
+
+        """Initializes a HNB-Selector.
+
+        Parameters
+        ----------
+        hierarchy : np.ndarray
+            The hierarchy graph as an adjacency matrix.
+        k : int
+            The numbers of features to select.
+        """
+
         super(HNB, self).__init__(hierarchy)
         self.k = k
 
@@ -21,20 +32,22 @@ class HNB(Filter):
     ):
         """
         Select features lazy for each test instance amd optionally predict target value of test instances.
+        It selects the top-k-ranked features, such that redundancy along each path is removed,
+        in descending order of their individual predictive power measured by their relevance defined in helpers.py.
 
         Parameters
         ----------
-        predict :   {bool}
-            true if predictions shall be obtained
-        saveFeatures: {bool}
+        predict : bool
+            true if predictions shall be obtained.
+        saveFeatures : bool
             true if features selected for each test instance shall be saved.
-        estimator
-                    Estimator to use for predictions
+        estimator : sklearn-compatible estimator
+            Estimator to use for predictions.
 
 
         Returns
         -------
-        predictions for test input samples, if predict = false, returns empty array
+        predictions for test input samples, if predict = false, returns empty array.
         """
         predictions = np.array([])
         for idx in range(len(self._xtest)):

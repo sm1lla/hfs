@@ -14,21 +14,30 @@ class MR(Filter):
 
     def __init__(self, hierarchy=None):
         super(MR, self).__init__(hierarchy)
+        """Initializes a MR-Selector.
+
+        Parameters
+        ----------
+        hierarchy : np.ndarray
+                    The hierarchy graph as an adjacency matrix.
+        """
 
     def select_and_predict(
         self, predict=True, saveFeatures=False, estimator=BernoulliNB()
     ):
         """
         Select features lazy for each test instance amd optionally predict target value of test instances.
+        The features are selected such that for each path only the most relevant features are preserved 
+        following the relevance score defined in helpers.py.
 
         Parameters
         ----------
-        predict :   {bool}
+        predict :  bool
             true if predictions shall be obtained
-        saveFeatures: {bool}
+        saveFeatures : bool
             true if features selected for each test instance shall be saved.
-        estimator
-                    Estimator to use for predictions
+        estimator : sklearn-compatible estimator
+            Estimator to use for predictions
 
 
         Returns
