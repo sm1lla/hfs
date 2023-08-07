@@ -5,7 +5,6 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from ..go import open_dag
 from ..helpers import (
     compute_aggregated_values,
     connect_dag,
