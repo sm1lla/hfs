@@ -85,7 +85,7 @@ def test_connect_dag(data):
     small_DAG, big_DAG = data
     graph = nx.DiGraph(big_DAG)
     x_identifiers = [0, 1, 2, 5, 6, 7, 8]
-    graph = connect_dag(digraph=graph, x_identifiers=x_identifiers)
+    graph = connect_dag(hierarchy=graph, x_identifiers=x_identifiers)
     new_graph = nx.DiGraph([(0, 1), (0, 2), (1, 6), (1, 5), (1, 7), (0, 7), (5, 8)])
     assert nx.is_isomorphic(graph, new_graph)
 

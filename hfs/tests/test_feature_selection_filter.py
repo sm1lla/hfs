@@ -4,7 +4,7 @@ from sklearn.utils.estimator_checks import check_estimator
 
 from hfs.tan import Tan
 
-from ..filter import Filter
+from ..lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
 from ..hip import HIP
 from ..hnb import HNB
 from ..hnbs import HNBs
@@ -84,15 +84,15 @@ def data2():
 # Test feature selection of HNB
 def test_HNB(data):
     small_DAG, train_x_data, train_y_data, test_x_data, test_y_data = data
-    filter = HNB(hierarchy=small_DAG, k=2)
-    filter.fit_selector(X_train=train_x_data, y_train=train_y_data, X_test=test_x_data)
-    pred = filter.select_and_predict(predict=True, saveFeatures=True)
-    assert np.array_equal(filter.get_features(), np.array([[0, 1, 1, 0], [0, 0, 1, 1]]))
+    selector = HNB(hierarchy=small_DAG, k=2)
+    selector.fit_selector(X_train=train_x_data, y_train=train_y_data, X_test=test_x_data)
+    pred = selector.select_and_predict(predict=True, saveFeatures=True)
+    assert np.array_equal(selector.get_features(), np.array([[0, 1, 1, 0], [0, 0, 1, 1]]))
     assert np.array_equal(pred, np.array([0, 1]))
-    assert filter.get_score(test_y_data, pred)["accuracy"] == 0.0  # accuracy
-    assert filter.get_score(test_y_data, pred)["1"]["recall"] == 0.0  # sensitivity
-    assert filter.get_score(test_y_data, pred)["0"]["recall"] == 0.0  # specivity
-    assert filter.get_score(test_y_data, pred)["sensitivityxspecificity"] == 0.0
+    assert selector.get_score(test_y_data, pred)["accuracy"] == 0.0  # accuracy
+    assert selector.get_score(test_y_data, pred)["1"]["recall"] == 0.0  # sensitivity
+    assert selector.get_score(test_y_data, pred)["0"]["recall"] == 0.0  # specivity
+    assert selector.get_score(test_y_data, pred)["sensitivityxspecificity"] == 0.0
 
 
 @pytest.mark.parametrize(
@@ -104,15 +104,15 @@ def test_HNB(data):
 # Test feature selection of HNBs
 def test_HNBs(data):
     small_DAG, train_x_data, train_y_data, test_x_data, test_y_data = data
-    filter = HNBs(hierarchy=small_DAG)
-    filter.fit_selector(X_train=train_x_data, y_train=train_y_data, X_test=test_x_data)
-    pred = filter.select_and_predict(predict=True, saveFeatures=True)
+    selector = HNBs(hierarchy=small_DAG)
+    selector.fit_selector(X_train=train_x_data, y_train=train_y_data, X_test=test_x_data)
+    pred = selector.select_and_predict(predict=True, saveFeatures=True)
     assert np.array_equal(pred, np.array([0, 1]))
-    assert np.array_equal(filter.get_features(), np.array([[0, 1, 1, 1], [0, 0, 1, 1]]))
-    assert filter.get_score(test_y_data, pred)["accuracy"] == 0.0  # accuracy
-    assert filter.get_score(test_y_data, pred)["1"]["recall"] == 0.0  # sensitivity
-    assert filter.get_score(test_y_data, pred)["0"]["recall"] == 0.0  # specivity
-    assert filter.get_score(test_y_data, pred)["sensitivityxspecificity"] == 0.0
+    assert np.array_equal(selector.get_features(), np.array([[0, 1, 1, 1], [0, 0, 1, 1]]))
+    assert selector.get_score(test_y_data, pred)["accuracy"] == 0.0  # accuracy
+    assert selector.get_score(test_y_data, pred)["1"]["recall"] == 0.0  # sensitivity
+    assert selector.get_score(test_y_data, pred)["0"]["recall"] == 0.0  # specivity
+    assert selector.get_score(test_y_data, pred)["sensitivityxspecificity"] == 0.0
 
 
 @pytest.mark.parametrize(
@@ -124,11 +124,11 @@ def test_HNBs(data):
 # Test feature selection of RNB
 def test_RNB(data):
     small_DAG, train_x_data, train_y_data, test_x_data, test_y_data = data
-    filter = RNB(hierarchy=small_DAG, k=2)
-    filter.fit_selector(X_train=train_x_data, y_train=train_y_data, X_test=test_x_data)
-    pred = filter.select_and_predict(predict=True, saveFeatures=True)
+    selector = RNB(hierarchy=small_DAG, k=2)
+    selector.fit_selector(X_train=train_x_data, y_train=train_y_data, X_test=test_x_data)
+    pred = selector.select_and_predict(predict=True, saveFeatures=True)
     assert np.array_equal(pred, np.array([0, 1]))
-    assert np.array_equal(filter.get_features(), np.array([[0, 1, 1, 0], [0, 1, 1, 0]]))
+    assert np.array_equal(selector.get_features(), np.array([[0, 1, 1, 0], [0, 1, 1, 0]]))
 
 
 @pytest.mark.parametrize(
@@ -140,20 +140,20 @@ def test_RNB(data):
 # Test feature selection of MR
 def test_MR(data):
     hierarchy, X_train, y_train, X_test, y_test, relevance = data
-    filter = MR(nx.to_numpy_array(hierarchy))
-    filter.fit_selector(X_train=X_train, y_train=y_train, X_test=X_test)
-    filter._relevance = relevance
-    filter._hierarchy = hierarchy
-    pred = filter.select_and_predict(predict=True, saveFeatures=True)
-    features = filter.get_features()
+    selector = MR(nx.to_numpy_array(hierarchy))
+    selector.fit_selector(X_train=X_train, y_train=y_train, X_test=X_test)
+    selector._relevance = relevance
+    selector._hierarchy = hierarchy
+    pred = selector.select_and_predict(predict=True, saveFeatures=True)
+    features = selector.get_features()
     result_features = np.array(
         [[0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0]]
     )
     assert features.all() == result_features.all()
-    assert filter.get_score(y_test, pred)["accuracy"] == 0.5  # accuracy
-    assert filter.get_score(y_test, pred)["1"]["recall"] == 0.0  # sensitivity
-    assert filter.get_score(y_test, pred)["0"]["recall"] == 1.0  # specivity
-    assert filter.get_score(y_test, pred)["sensitivityxspecificity"] == 0.0
+    assert selector.get_score(y_test, pred)["accuracy"] == 0.5  # accuracy
+    assert selector.get_score(y_test, pred)["1"]["recall"] == 0.0  # sensitivity
+    assert selector.get_score(y_test, pred)["0"]["recall"] == 1.0  # specivity
+    assert selector.get_score(y_test, pred)["sensitivityxspecificity"] == 0.0
 
 
 @pytest.mark.parametrize(
@@ -165,20 +165,20 @@ def test_MR(data):
 # Test feature selection of HIP
 def test_HIP(data):
     hierarchy, X_train, y_train, X_test, y_test, relevance = data
-    filter = HIP(nx.to_numpy_array(hierarchy))
-    filter.fit_selector(X_train=X_train, y_train=y_train, X_test=X_test)
-    filter._relevance = relevance
-    filter._hierarchy = hierarchy
-    pred = filter.select_and_predict(predict=True, saveFeatures=True)
-    features = filter.get_features()
+    selector = HIP(nx.to_numpy_array(hierarchy))
+    selector.fit_selector(X_train=X_train, y_train=y_train, X_test=X_test)
+    selector._relevance = relevance
+    selector._hierarchy = hierarchy
+    pred = selector.select_and_predict(predict=True, saveFeatures=True)
+    features = selector.get_features()
     result_features = np.array(
         [[1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]
     )
     assert features.all() == result_features.all()
-    assert filter.get_score(y_test, pred)["accuracy"] == 0.5  # accuracy
-    assert filter.get_score(y_test, pred)["1"]["recall"] == 0.0  # sensitivity
-    assert filter.get_score(y_test, pred)["0"]["recall"] == 1.0  # specivity
-    assert filter.get_score(y_test, pred)["sensitivityxspecificity"] == 0.0
+    assert selector.get_score(y_test, pred)["accuracy"] == 0.5  # accuracy
+    assert selector.get_score(y_test, pred)["1"]["recall"] == 0.0  # sensitivity
+    assert selector.get_score(y_test, pred)["0"]["recall"] == 1.0  # specivity
+    assert selector.get_score(y_test, pred)["sensitivityxspecificity"] == 0.0
 
 
 @pytest.mark.parametrize(
@@ -189,15 +189,15 @@ def test_HIP(data):
 )
 def test_TAN(data):
     hierarchy, X_train_ones, X_train, y_train, X_test, y_test, resulted_features = data
-    filter = Tan(nx.to_numpy_array(hierarchy))
-    filter.fit_selector(X_train=X_train_ones, y_train=y_train, X_test=X_test)
-    filter._xtrain = X_train
-    filter._hierarchy = hierarchy
-    filter.select_and_predict(predict=True, saveFeatures=True)
-    f = filter.get_features()
+    selector = Tan(nx.to_numpy_array(hierarchy))
+    selector.fit_selector(X_train=X_train_ones, y_train=y_train, X_test=X_test)
+    selector._xtrain = X_train
+    selector._hierarchy = hierarchy
+    selector.select_and_predict(predict=True, saveFeatures=True)
+    f = selector.get_features()
     assert resulted_features.all() == f.all()
-    pred = filter.select_and_predict(predict=True, saveFeatures=True)
-    assert filter.get_score(y_test, pred)["accuracy"] == 0.5  # accuracy
-    assert filter.get_score(y_test, pred)["1"]["recall"] == 1.0  # sensitivity
-    assert filter.get_score(y_test, pred)["0"]["recall"] == 0.0  # specivity
-    assert filter.get_score(y_test, pred)["sensitivityxspecificity"] == 0.0
+    pred = selector.select_and_predict(predict=True, saveFeatures=True)
+    assert selector.get_score(y_test, pred)["accuracy"] == 0.5  # accuracy
+    assert selector.get_score(y_test, pred)["1"]["recall"] == 1.0  # sensitivity
+    assert selector.get_score(y_test, pred)["0"]["recall"] == 0.0  # specivity
+    assert selector.get_score(y_test, pred)["sensitivityxspecificity"] == 0.0

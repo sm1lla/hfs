@@ -15,12 +15,12 @@ def getRelevance(xdata, ydata, node):
 
     Parameters
     ----------
-    node
+    node : int
         Node for which the relevance should be obtained.
-    xdata
-        xdata
-    ydata
-        data as np array
+    xdata : {array-like, sparse matrix}, shape (n_samples, n_features)
+            The training input samples.
+    ydata : array-like, shape (n_samples,)
+            The target values. An array of int.
     """
     p1 = (
         Fraction(
@@ -164,12 +164,19 @@ def shrink_dag(x_identifier, digraph):
     return digraph
 
 
-def connect_dag(x_identifiers, digraph):
-    top_sort = nx.topological_sort(digraph)
+def connect_dag(x_identifiers, hierarchy: nx.DiGraph):
+    """
+    Connects digraph (DAG), such that every node not in x_identifiers is removed from the DAG, and an new edge with its predecessor is built.
 
-    # connect every node with at least one ancestor on each path
-    # that is for shure in x_i
-    # i = 0: source is either in or not in, as they are no predecessors,
+    Parameters
+    ----------
+    hierarchy : networkx.DiGraph
+                The Directed Acyclic Graph (DAG) representing the hierarchy.
+
+    """
+    top_sort = nx.topological_sort(hierarchy)
+
+    # node i = 0: source is either in or not in, as they are no predecessors,
     # there should not be any artificial edge
     # i: for each pred there is a direct edge to the pred and iff pred not in x_ide
     #       also to their pred2. (it does not matter if pred2 is really in x, if it is not,
@@ -178,32 +185,25 @@ def connect_dag(x_identifiers, digraph):
     #       if i is not -> artifical edge to every pred of i, so each path going through i
     #       will be continued, if i is removed later
 
-    new_graph = digraph.copy()
-
     for node in list(top_sort):
-        preds = list(digraph.predecessors(node))
+        preds = list(hierarchy.predecessors(node))
         for pred in preds:
             new_connections = []
-            if pred in x_identifiers:
-                # to do -> make more efficient
-                # sort x_identifiers according to order in digraph
-                # x_identifiers.sort(key = lambda i: top_sort.index())
-                pass
-            else:
-                for pred_of_pred in digraph.predecessors(pred):
+            if pred not in x_identifiers:
+                for pred_of_pred in hierarchy.predecessors(pred):
                     new_connections.append(pred_of_pred)
                 for new_connection in new_connections:
-                    digraph.add_edge(new_connection, node)
+                    hierarchy.add_edge(new_connection, node)
 
     # remove all nodes (and edges) that are not in x_identifier
     x_identifiers_set = set(x_identifiers)
-    nodes_to_remove = [node for node in digraph.nodes if node not in x_identifiers_set]
-    digraph.remove_nodes_from(nodes_to_remove)
+    nodes_to_remove = [node for node in hierarchy.nodes if node not in x_identifiers_set]
+    hierarchy.remove_nodes_from(nodes_to_remove)
 
-    return digraph
+    return hierarchy
 
 
-def create_hierarchy(hierarchy: nx.DiGraph) -> nx.DiGraph:
+def create_hierarchy(hierarchy: nx.DiGraph):
     """Create a virtual root node to connect disjoint hierarchies.
 
     Parameters
@@ -216,6 +216,7 @@ def create_hierarchy(hierarchy: nx.DiGraph) -> nx.DiGraph:
     hierarchy : networkx.DiGraph
                 The final hierarchy graph.
     """
+
     roots = [x for x in hierarchy.nodes() if hierarchy.in_degree(x) == 0]
     # create parent node to join hierarchies
     for root_node in roots:
@@ -290,7 +291,7 @@ def normalize_score(score, max_value):
 
     Returns
     ----------
-    float or int: The normalized score after applying logarithmic scaling.
+    float or int : The normalized score after applying logarithmic scaling.
     """
     if score != 0:
         score = math.log(1 + (score / max_value)) + 1

@@ -11,7 +11,7 @@ from .helpers import checkData, getRelevance
 from .metrics import conditional_mutual_information
 
 
-class Filter(HierarchicalEstimator, ABC):
+class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
     """
     Abstract class used for all filter methods.
 
@@ -24,57 +24,10 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        hierarchy
-                    {Numpy Array} of directed acyclic graph
+        hierarchy : np.ndarray
+            The hierarchy graph as an adjacency matrix.
         """
         self.hierarchy = hierarchy
-
-    def _get_relevance(self, node):
-        """
-        Gather relevance for a given node.
-
-        Parameters
-        ----------
-        node
-            Node for which the relevance should be obtained.
-        """
-        return getRelevance(self._xtrain, self._ytrain, node)
-
-    def _get_ancestors(self, node):
-        """
-        Gather all ancestors for a given node.
-
-        Parameters
-        ----------
-        node
-            Node for which the ancestors should be obtained.
-        """
-        return nx.ancestors(self._hierarchy, node)
-
-    def _get_descendants(self, node):
-        """
-        Gather all descendants for a given node.
-
-        Parameters
-        ----------
-        node
-            Node for which the descendants should be obtained.
-        """
-        return nx.descendants(self._hierarchy, node)
-
-    def _create_hierarchy(self):
-        """ "
-        Create digraph from numpy array.
-        """
-        self._hierarchy = nx.from_numpy_array(
-            self.hierarchy, parallel_edges=False, create_using=nx.DiGraph
-        )
-
-    def _get_sorted_relevance(self):
-        """
-        Sort the nodes by descending relevance.
-        """
-        self._sorted_relevance = sorted(self._relevance, key=self._relevance.get)
 
     def fit(self, X, y=None):
         """
@@ -82,8 +35,10 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        X : The training input samples.
-        y: The target values, i.e., hierarchical class labels for classification.
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            The training input samples.
+        y : array-like, shape (n_samples,)
+            The target values. An array of int.
 
         Returns
         -------
@@ -133,15 +88,11 @@ class Filter(HierarchicalEstimator, ABC):
         # Validate data
         checkData(self._hierarchy, self._xtrain, self._ytrain)
 
-        # Get relevance, ancestors and descendants of each node
+        # Get relevance of each node
         self._relevance = {}
-        self._descendants = {}
-        self._ancestors = {}
         for node in self._hierarchy:
-            self._relevance[node] = self._get_relevance(node)
-            self._ancestors[node] = self._get_ancestors(node)
-            self._descendants[node] = self._get_descendants(node)
-        self._get_sorted_relevance()
+            self._relevance[node] = getRelevance(self._xtrain, self._ytrain, node)
+        self._sorted_relevance = sorted(self._relevance, key=self._relevance.get)
 
         self._instance_status = {}
         for node in self._hierarchy:
@@ -156,11 +107,11 @@ class Filter(HierarchicalEstimator, ABC):
         Parameters
         ----------
         predict :   {bool}
-            true if predictions shall be obtained
-        saveFeatures: {bool}
-            true if features selected for each test instance shall be saved
-        estimator
-                    Estimator to use for predictions.
+            true if predictions shall be obtained.
+        saveFeatures : {bool}
+            true if features selected for each test instance shall be saved.
+        estimator : sklearn-compatible estimator.
+            Estimator to use for predictions.
         Returns
         -------
         predictions for test input samples, if predict = false, returns empty array
@@ -174,7 +125,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
+        idx : int
             Index of test instance for which the features shall be selected.
         """
         for node in self._hierarchy:
@@ -194,7 +145,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
+        idx :
             Index of test instance for which the features shall be selected.
         """
         for node in self._hierarchy:
@@ -203,11 +154,11 @@ class Filter(HierarchicalEstimator, ABC):
             if node == "ROOT":
                 continue
             if self._xtest[idx][node] == 1:
-                for anc in self._ancestors[node]:
+                for anc in nx.ancestors(self._hierarchy, node):
                     if self._relevance[anc] <= self._relevance[node]:
                         self._instance_status[anc] = 0
             else:
-                for desc in self._descendants[node]:
+                for desc in nx.descendants(self._hierarchy, node):
                     if self._relevance[desc] <= self._relevance[node]:
                         self._instance_status[desc] = 0
 
@@ -218,7 +169,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
+        idx :
             Index of test instance for which the features shall be selected.
         """
 
@@ -297,6 +248,9 @@ class Filter(HierarchicalEstimator, ABC):
                 self._instance_status[node] = 0
 
     def _build_mst(self):
+        """
+        Build minium spanning tree for each possible edge in the feature tree. 
+        """
         edges = self._hierarchy.edges
         self._edge_status = np.zeros((self.n_features_, self.n_features_))
         self._cmi = np.zeros((self.n_features_, self.n_features_))
@@ -323,7 +277,7 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
+        idx : int
             Index of test instance for which the features shall be selected.
         """
         UDAG = nx.Graph()
@@ -402,9 +356,9 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        idx
-            Index of test instance which shall be predicted
-        estimator
+        idx : int
+            Index of test instance which shall be predicted.
+        estimator : sklearn-compatible estimator
                     Estimator to use for predictions.
 
         Returns
@@ -428,14 +382,15 @@ class Filter(HierarchicalEstimator, ABC):
 
         Parameters
         ----------
-        ytest: 1d array-like, or label indicator array / sparse matrix
-            truth values of y
-        predictions: 1d array-like, or label indicator array / sparse matrix
-            obtained predictions
+        ytest : 1d array-like, or label indicator array / sparse matrix
+            truth values of y.
+        predictions : 1d array-like, or label indicator array / sparse matrix
+            obtained predictions.
+
         Returns
-        -------self._feature_length
-        report: dict
-            metrics of prediction
+        -------
+        report : dict
+            metrics of prediction. 
         """
         avg_feature_length = 0
         for idx in range(0, self._xtest.shape[0] - 1):
@@ -454,9 +409,11 @@ class Filter(HierarchicalEstimator, ABC):
     def get_features(self):
         """
         Get selected features.
+
         Parameters
         ----------
         None
+
         Returns
         -------
         features : numpy array
