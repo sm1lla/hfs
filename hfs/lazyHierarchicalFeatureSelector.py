@@ -11,7 +11,7 @@ from .helpers import checkData, getRelevance
 from .metrics import conditional_mutual_information
 
 
-class Selector(HierarchicalEstimator, ABC):
+class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
     """
     Abstract class used for all filter methods.
 

@@ -3,10 +3,10 @@
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 
-from .feature_selector import Selector
+from .lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
 
 
-class RNB(Selector):
+class RNB(LazyHierarchicalFeatureSelector):
 
     """
     Select the k features with the highest relevance.

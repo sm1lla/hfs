@@ -3,10 +3,10 @@
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 
-from .feature_selector import Selector
+from .lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
 
 
-class MR(Selector):
+class MR(LazyHierarchicalFeatureSelector):
 
     """
     Select non-redundant features with the highest relevance on each path following the algorithm proposed by Wan and Freitas

@@ -3,10 +3,10 @@
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 
-from .feature_selector import Selector
+from .lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
 
 
-class Tan(Selector):
+class Tan(LazyHierarchicalFeatureSelector):
     """
     Select non-redundant features following the algorithm proposed by Wan and Freitas.
     """

@@ -4,7 +4,7 @@ from sklearn.utils.estimator_checks import check_estimator
 
 from hfs.tan import Tan
 
-from ..feature_selector import Selector
+from ..lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
 from ..hip import HIP
 from ..hnb import HNB
 from ..hnbs import HNBs
