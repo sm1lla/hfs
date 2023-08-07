@@ -28,7 +28,7 @@ from .fixtures.fixtures import (
 def test_shrink_dag():
     dirname = os.path.dirname(__file__)
     nodes = np.load(os.path.join(dirname, "../data/nodes_go.npy"))
-    graph = open_dag(os.path.join(dirname, "../data/go_digraph"))
+    graph = nx.read_gml(os.path.join(dirname, "../data/go_digraph.gml"))
 
     nonexist_nodes = [
         "GO:2001301",
