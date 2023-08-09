@@ -1,3 +1,7 @@
+####################
+Introduction
+####################
+
 With the growth of data sets nowadays, feature selection gains more importance in the area of machine learning and forms a typical pre-processing step in machine learning. Those methods aim to improve the predictive performance (:cite:p:`fs`), for example by avoiding overfitting caused by noisy features. Feature selection thus may help to add generalisation.
 Further a smaller training set can accelerate the training time, as the data the model has to include in its calculations is less.
 Feature selection methods can increase the explainability of methods since users can concentrate on the most important variables and their meaning for the model.

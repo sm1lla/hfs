@@ -1,5 +1,6 @@
+##############################
 Tree-based redundancy removal
-==============================
+##############################
 
 
 The last method implemented is a Hierarchical Redundancy Eliminated Tree.

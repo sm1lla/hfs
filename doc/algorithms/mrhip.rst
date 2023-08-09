@@ -1,5 +1,6 @@
+####################
 MR and HIP
-===========
+####################
 
 2015 Wan and Freitas extended their previous paper with three further feature selection methods,
 from which two are implemented in this library (the third one shows high similarity to HNB-s) :cite:p:`todo`.
