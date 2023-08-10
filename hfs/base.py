@@ -90,8 +90,8 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
         Returns
         -------
         columns : list of shape n_features
-        The value at index i is the name of the corresponding node in the
-        hierarchy graph for columns i in the dataset.
+                The value at index i is the name of the corresponding node in the
+                hierarchy graph for columns i in the dataset.
         """
         return self._columns
 

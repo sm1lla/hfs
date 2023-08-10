@@ -20,6 +20,7 @@ scikit-learn compatible classes.
 .. toctree::
     :hidden:
     :caption: Documentation
+    :maxdepth: 2
 
     algorithms/index
     api
@@ -28,7 +29,7 @@ scikit-learn compatible classes.
     :hidden:
     :caption: Tutorial - Examples
 
-    auto_examples
+    auto_examples/index
 
 .. toctree::
     :hidden:

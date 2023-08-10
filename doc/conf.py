@@ -327,11 +327,10 @@ intersphinx_mapping = {
     "sklearn": ("http://scikit-learn.org/stable", None),
 }
 
-# sphinx-gallery configuration
 sphinx_gallery_conf = {
     "doc_module": "hfs",
-    "examples_dirs": "../examples",
-    "gallery_dirs": "auto_examples",
+    "backreferences_dir": os.path.join("generated"),
+    "reference_url": {"hfs": None},
 }
 
 

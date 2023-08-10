@@ -23,9 +23,9 @@ class EagerHierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
         super().__init__(hierarchy)
 
     def fit(self, X, y=None, columns=None):
-        """Fitting function that sets self.representatives_.
+        """Fitting function that sets representatives.
 
-        After fitting self.representatives_ should include the names of all
+        After fitting representatives should include the names of all
         nodes from the hierarchy that are left after feature selection.
         The number of columns in X and the number of nodes in the hierarchy
         are expected to be the same and each column should be mapped to
