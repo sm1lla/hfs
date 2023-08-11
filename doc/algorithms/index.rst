@@ -17,10 +17,11 @@ The library provides feature selection methods for both approaches, which we wil
     :includehidden:
     :maxdepth: 3
 
-    lazy
-
+    eager
+    
 .. toctree::
     :includehidden:
     :maxdepth: 3
 
-    eager
+    lazy
+
