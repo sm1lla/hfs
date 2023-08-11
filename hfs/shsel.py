@@ -118,6 +118,7 @@ class SHSELSelector(EagerHierarchicalFeatureSelector):
             self._leaf_filtering()
 
     def _inital_selection(self, paths, X):
+        """First part of the feature selection algorithm."""
         remove_nodes = set()
 
         for path in paths:
@@ -145,7 +146,7 @@ class SHSELSelector(EagerHierarchicalFeatureSelector):
         ]
 
     def _select_leaves(self):
-        """First part of the feature selection algorithm"""
+        """Select leaves of incomplete paths (part of HFE extension)"""
         leaves = [
             leaf
             for leaf in get_leaves(self._hierarchy)
@@ -198,7 +199,7 @@ class SHSELSelector(EagerHierarchicalFeatureSelector):
     def _leaf_filtering(self):
         """Filtering representatives by removing leaves with low relevance.
 
-        his is part of the HFE extension proposed by Oudah and Henschel.
+        This is part of the HFE extension proposed by Oudah and Henschel.
         """
         average_ig = statistics.mean(
             [self._relevance_values[node] for node in self.representatives_]
