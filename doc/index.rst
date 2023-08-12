@@ -1,24 +1,20 @@
-Welcome to sklearn-template's documentation!
+Welcome to the hfs documentation!
 ============================================
 
-This project is a reference implementation to anyone who wishes to develop
-scikit-learn compatible classes.
-
+This project includes the implementation of several hierarchical feature selection methods. In this documentation you 
+can find more information about how they work and how they can be used. 
 
 .. toctree::
-    :hidden:
     :caption: Introduction
 
     introduction
 
 .. toctree::
-    :hidden:
     :caption: Getting Started
 
     get_started/index
 
 .. toctree::
-    :hidden:
     :caption: Documentation
     :maxdepth: 2
 
@@ -26,13 +22,11 @@ scikit-learn compatible classes.
     api
 
 .. toctree::
-    :hidden:
     :caption: Tutorial - Examples
 
     auto_examples/index
 
 .. toctree::
-    :hidden:
     :caption: Experiments
 
     experiments/index
