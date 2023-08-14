@@ -1,6 +1,6 @@
-
+####################
 HNB, HNB-s, RNB
-================
+####################
 
 2013 Wan, Freitas and de Magalhaes introduced an algorithm to select features based on their relevance and hierarchical redundancy (:cite:p:`hnb`).
 The relevance is calculated by

@@ -33,11 +33,11 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
 
         Following conditions need to be fulfilled for the feature
         selection algorithms:
-         - every node in the hierarchy graph should be able to be mapped to
-           one column in the dataset and every column in the dataset should
-           have a corresponding node in the hierarchy
-        - for binary data, if a feature has the value 1, all of its descendents
-          in the hierarchy should also have the value 1.
+            - every node in the hierarchy graph should be able to be mapped to
+              one column in the dataset and every column in the dataset should
+              have a corresponding node in the hierarchy
+            - for binary data, if a feature has the value 1, all of its descendents
+              in the hierarchy should also have the value 1.
 
         To achieve these conditions missing columns are added to
         the hierarchy and unnecessary nodes are removed. The self._columns
@@ -117,8 +117,9 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
 
         Raises
         ----------
-        RuntimeError: If the method is called before fit has been called.
-        In this case the hierarchy graph has not been updated yet.
+        RuntimeError
+            If the method is called before fit has been called.
+            In this case the hierarchy graph has not been updated yet.
         """
         if self.is_fitted_:
             output_hierarchy = self._hierarchy
