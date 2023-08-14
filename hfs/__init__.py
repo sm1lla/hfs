@@ -2,13 +2,16 @@
 Estimators for feature selection on hierarchical data.
 """
 from ._version import __version__
-from .feature_selection import EagerHierarchicalFeatureSelector, HierarchicalEstimator
-from .lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
+from .eagerHierarchicalFeatureSelector import (
+    EagerHierarchicalFeatureSelector,
+    HierarchicalEstimator,
+)
 from .gtd import GreedyTopDownSelector
 from .hill_climbing import BottomUpSelector, TopDownSelector
 from .hip import HIP
 from .hnb import HNB
 from .hnbs import HNBs
+from .lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
 from .mr import MR
 from .preprocessing import HierarchicalPreprocessor
 from .rnb import RNB

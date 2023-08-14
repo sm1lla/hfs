@@ -7,7 +7,7 @@ import numpy as np
 from scipy import sparse
 from sklearn.utils.validation import check_X_y
 
-from hfs.feature_selection import EagerHierarchicalFeatureSelector
+from hfs.eagerHierarchicalFeatureSelector import EagerHierarchicalFeatureSelector
 from hfs.helpers import compute_aggregated_values, get_leaves, normalize_score
 from hfs.metrics import cosine_similarity
 
