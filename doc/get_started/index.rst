@@ -23,6 +23,8 @@ Here is a simple example of how to use one of the hierarchical feature selection
 .. code-block:: python
 
     import networkx as nx
+    import numpy as np
+    
     from hfs import SHSELSelector
     from hfs.helpers import get_columns_for_numpy_hierarchy
 
