@@ -15,4 +15,4 @@ An edge :math:`e=(f_h, f_g)` becomes unavailable if there is already an edge :ma
 such that either :math:`f_i` or :math:`f_j` is an ancestor or descedant as a member of :math:`e` that has the same value.
 The UDAG is then turned in an MST by selecting any node as root node and marking the direction of all edges from it outwards to other vertices.
 Training and test set are then reduced to the features obtained with the MST and fed into a lazy TAN model.
-In contrast to their paper we give the obtained data sets to a customer estimator, which is per default a naive bayes.
+In contrast to their paper we give the obtained datasets to a customer estimator, which is per default a naive bayes.
