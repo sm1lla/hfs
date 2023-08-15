@@ -65,4 +65,19 @@ Second, we measure the performance of feature selection by the compression of th
 The hyperparameter k of lazy learning, that is the maximum number of selected features, was chosen in accordance to the papers with k = [30, 40, 50].
 The gene dataset was divided in a train-test set on a ratio of 70/30, since the dataset is relatively small and the lazy learning approach is executed per testing instance, which should not be too less.
 
+
+Results
+========
+
+
+Discussion
+===========
+
+
+Eager Learning
+***************
+
+Lazy Learning
+**************
+
 .. [1] Downloaded from https://data.dws.informatik.uni-mannheim.de/rmlod/LOD_ML_Datasets/data/datasets/SportTweets/ (2nd July 2023)

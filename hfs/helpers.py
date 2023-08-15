@@ -166,7 +166,7 @@ def shrink_dag(x_identifier, digraph):
 
 def connect_dag(x_identifiers, hierarchy: nx.DiGraph):
     """
-    Connects digraph (DAG), such that every node not in x_identifiers is removed from the DAG, and an new edge with its predecessor is built.
+    Connects digraph (DAG), so that every node not in x_identifiers is removed from the DAG, and an new edge with its predecessor is built.
 
     Parameters
     ----------
@@ -197,7 +197,9 @@ def connect_dag(x_identifiers, hierarchy: nx.DiGraph):
 
     # remove all nodes (and edges) that are not in x_identifier
     x_identifiers_set = set(x_identifiers)
-    nodes_to_remove = [node for node in hierarchy.nodes if node not in x_identifiers_set]
+    nodes_to_remove = [
+        node for node in hierarchy.nodes if node not in x_identifiers_set
+    ]
     hierarchy.remove_nodes_from(nodes_to_remove)
 
     return hierarchy
