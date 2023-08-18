@@ -363,7 +363,7 @@ def result_hill_selection_bu():
 def wrong_hierarchy_X():
     X = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
     hierarchy = nx.to_numpy_array(nx.DiGraph([(0, 1)]))
-    columns = [0, 1, 2]
+    columns = [0, 1]
     return (X, hierarchy, columns)
 
 
