@@ -16,7 +16,7 @@ More information about the ontology can be found in :cite:t:`go`.
 
 While there are implementations of hierarchical classification methods, for example in the Hiclass library by :cite:authors:`Hiclass`, 
 there are not many implementations of feature selection methods that deal with hierarchical structures. Some hierarchical 
-methods are implemented in the kgextension library [1]_, however it does not include an extensive collection.
+methods are implemented in the `kgextension library <https://github.com/om-hb/kgextension> [1]_, however it does not include an extensive collection.
 Most methods assume flat feature spaces without hierarchical dependencies. But as redundancy and relevance of features 
 can be obtained out of hierarchical information more precise :cite:p:`wanbook`, hierarchical feature selection aims at 
 adding more information to improve the step of selection. 

@@ -14,7 +14,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
     """Estimator for preprocessing hierarchical data for feature selection.
 
     The hierarchical feature selectors expect the input data and the
-    hierarchy graph to have a conform to certain pre-conditions.
+    hierarchy graph to conform to certain pre-conditions.
     This preprocessor prepares the data and graph for the feature
     selection.
     """
@@ -35,7 +35,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         selection algorithms:
             - every node in the hierarchy graph should be able to be mapped to
               one column in the dataset and every column in the dataset should
-              have a corresponding node in the hierarchy
+              have a corresponding node in the hierarchy.
             - for binary data, if a feature has the value 1, all of its descendents
               in the hierarchy should also have the value 1.
 
@@ -92,7 +92,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
 
         Returns
         -------
-        X_ : array of shape [n_samples, n_selected_features]
+        X_ : array of shape (n_samples, n_selected_features)
             The transformed dataset.
         """
         # Check is fit had been called

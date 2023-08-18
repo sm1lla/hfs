@@ -3,21 +3,17 @@
 Lazy learning
 =====================
 
-These methods can help you with the correct usage of the library.
-The data set as well as the hierarchy are structures not following a specific pattern, but just showing how to use the interfaces properly.
-Therefore the obtained predictions...
+These methods can help you with the correct usage of the library's lazy learning methods.
+The dataset as well as the hierarchy are structures not following a specific pattern, but just showing how to use the interfaces properly.
 """
 
 import networkx as nx
 import numpy as np
-import pandas as pd
 
 from hfs.hip import HIP
 from hfs.hnb import HNB
-from hfs.hnbs import HNBs
 from hfs.mr import MR
 from hfs.preprocessing import HierarchicalPreprocessor
-from hfs.rnb import RNB
 from hfs.tan import Tan
 
 

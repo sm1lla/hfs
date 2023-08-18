@@ -5,7 +5,7 @@ import numpy as np
 from networkx.algorithms.dag import descendants
 from sklearn.utils.validation import check_X_y
 
-from hfs.feature_selection import EagerHierarchicalFeatureSelector
+from hfs.eagerHierarchicalFeatureSelector import EagerHierarchicalFeatureSelector
 from hfs.helpers import get_paths
 from hfs.metrics import lift
 

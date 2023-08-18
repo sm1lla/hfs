@@ -38,7 +38,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
             The training input samples.
         y : array-like, shape (n_samples,) or None
             The target values. Only necessary for some estimators.
-        columns: list or None,
+        columns: list or None
             The mapping from the hierarchy graph's nodes to the columns in X.
             A list of ints. If this parameter is None the columns in X and
             the corresponding nodes in the hierarchy are expected to be in the
@@ -74,7 +74,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : array of shape [n_samples, n_selected_features]
+        X : array of shape (n_samples, n_selected_features)
             The input samples with only the selected features.
         """
         X = check_array(X, dtype=None, accept_sparse="csr")

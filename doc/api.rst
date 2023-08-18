@@ -14,6 +14,16 @@ HierarchicalEstimator
 
    HierarchicalEstimator
 
+HierarchicalPreprocessor
+========================
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   HierarchicalPreprocessor
+
+
 EagerHierarchicalFeatureSelector
 ================================
 
@@ -23,14 +33,14 @@ EagerHierarchicalFeatureSelector
 
    EagerHierarchicalFeatureSelector
 
-HierarchicalPreprocessor
-========================
+LazyHierarchicalFeatureSelector
+===============================
 
 .. autosummary::
    :toctree: generated/
    :template: class.rst
 
-   HierarchicalPreprocessor
+   LazyHierarchicalFeatureSelector
 
 
 TSELSelector
@@ -50,6 +60,16 @@ SHSELSelector
    :template: class.rst
 
    SHSELSelector
+
+HillClimbingSelector
+========================
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   HillClimbingSelector
+
 
 TopDownSelector
 ===============
@@ -77,6 +97,83 @@ GreedyTopDownSelector
    :template: class.rst
 
    GreedyTopDownSelector
+
+HIP
+======================
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   HIP
+
+HNB
+======================
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   HNB
+
+HNBs
+======================
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   HNBs
+
+MR
+======================
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   MR
+
+RNB
+======================
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   RNB
+
+Tan
+======================
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   Tan
+
+
+Helper methods
+=================
+
+get_columns_for_numpy_hierarchy
+********************************
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   get_columns_for_numpy_hierarchy
+
+create_mapping_columns_to_nodes
+********************************
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   create_mapping_columns_to_nodes
+
 
 
 
