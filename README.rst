@@ -25,12 +25,14 @@ Getting Started
 
 The package cannot be installed with pip or conda yet so to create your package, you need to clone the ``hfs`` repository::
 
-.. code-block:: console
+.. code-block:: bash
+
     $ git clone https://github.com/sm1lla/hfs.git
 
 We recommend that you create a new virtual environment for hfs in which you install the required packages with::
 
 .. code-block:: console
+
     $ pip install -r requirements.txt
 
 2. Usage
@@ -38,6 +40,7 @@ We recommend that you create a new virtual environment for hfs in which you inst
 Here is a simple example of how to use one of the hierarchical feature selection algorithms implemented in hfs:
 
 .. code-block:: python
+
     from hfs import SHSELSelector
     
     # Initialize selector
