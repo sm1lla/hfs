@@ -25,13 +25,9 @@ Getting Started
 
 The package cannot be installed with pip or conda yet so to create your package, you need to clone the ``hfs`` repository::
 
-.. code-block:: bash
-
     $ git clone https://github.com/sm1lla/hfs.git
 
 We recommend that you create a new virtual environment for hfs in which you install the required packages with::
-
-.. code-block:: console
 
     $ pip install -r requirements.txt
 
