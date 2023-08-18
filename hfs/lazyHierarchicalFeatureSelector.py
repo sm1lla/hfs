@@ -2,8 +2,7 @@ from abc import ABC
 
 import networkx as nx
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import classification_report
 from sklearn.naive_bayes import BernoulliNB
 
 from .base import HierarchicalEstimator
@@ -13,14 +12,14 @@ from .metrics import conditional_mutual_information
 
 class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
     """
-    Abstract class used for all filter methods.
+    Abstract class used for all lazy hierarchical feature selection methods.
 
     Every method should implement the method select_and_predict.
     """
 
     def __init__(self, hierarchy: np.ndarray = None):  # todo G = None
         """
-        Initialize a Filter with the required data.
+        Initialize a LazyHierarchicalFeatureSelector with the required data.
 
         Parameters
         ----------
@@ -31,7 +30,7 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
 
     def fit(self, X, y=None):
         """
-        Implementing the fit function for Sklearn Compatibility.
+        Implementing the fit function for Sklearn compatibility.
 
         Parameters
         ----------
@@ -53,7 +52,10 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
 
     def fit_selector(self, X_train, y_train, X_test, columns=None):
         """
-        Fit Filter class. Due to laziness fitting of parameters as well as predictions are obtained per instance.
+        Fit LazyHierarchicalFeatureSelector class.
+
+        Due to laziness fitting of parameters as well
+        as predictions are obtained per instance.
 
         Parameters
         ----------
@@ -80,10 +82,9 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
         self._xtrain = X_train
         self._ytrain = y_train
         self._xtest = X_test
-       
+
         self._features = np.zeros(shape=X_test.shape)
-        self._feature_length = np.zeros(self._xtest.shape[1],dtype=int)
-        
+        self._feature_length = np.zeros(self._xtest.shape[1], dtype=int)
 
         # Validate data
         checkData(self._hierarchy, self._xtrain, self._ytrain)
@@ -103,7 +104,9 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
     ):
         """
         Select features lazy for each test instance amd optionally predict target value of test instances.
+
         To be implemented by children.
+
         Parameters
         ----------
         predict :   {bool}
@@ -112,15 +115,18 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
             true if features selected for each test instance shall be saved.
         estimator : sklearn-compatible estimator.
             Estimator to use for predictions.
+
         Returns
         -------
-        predictions for test input samples, if predict = false, returns empty array
+        predictions for test input samples
+            if predict = false, returns empty array
         """
         pass
 
     def _get_nonredundant_features(self, idx):
         """
         Get nonredundant features without relevance score.
+
         Basic functionality of the algorithm HIP proposed by Wan & Freitas.
 
         Parameters
@@ -141,6 +147,7 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
     def _get_nonredundant_features_relevance(self, idx):
         """
         Get nonredundant features based on relevance score.
+
         Basic functionality of the HNB algorithm proposed by Wan & Freitas.
 
         Parameters
@@ -165,6 +172,7 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
     def _get_nonredundant_features_mr(self, idx):
         """
         Get nonredundant features based on the MR considering all pathes.
+
         Basic functionality of the HIP algorithm proposed by Wan & Freitas.
 
         Parameters
@@ -236,7 +244,6 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
     def _get_top_k(self):
         """
         Get k highest-ranked features by relevance.
-
         """
         counter = 0
         for node in reversed(self._sorted_relevance):
@@ -249,7 +256,7 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
 
     def _build_mst(self):
         """
-        Build minium spanning tree for each possible edge in the feature tree. 
+        Build minium spanning tree for each possible edge in the feature tree.
         """
         edges = self._hierarchy.edges
         self._edge_status = np.zeros((self.n_features_, self.n_features_))
@@ -273,6 +280,7 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
     def _get_nonredundant_features_from_mst(self, idx):
         """
         Get nonredundant features from MST.
+
         Basic functionality of the algorithm TAN proposed by Wan & Freitas.
 
         Parameters
@@ -377,6 +385,7 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
     def get_score(self, ytest, predictions):
         """
         Returns score of the predictions.
+
         Note that recall of the positive class is known as “sensitivity”;
         recall of the negative class is “specificity”
 
@@ -390,7 +399,7 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
         Returns
         -------
         report : dict
-            metrics of prediction. 
+            metrics of prediction.
         """
         avg_feature_length = 0
         for idx in range(0, self._xtest.shape[0] - 1):
