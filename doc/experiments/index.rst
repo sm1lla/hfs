@@ -38,7 +38,7 @@ build using hyponymy and hypernymy relationships between the types. For computat
 of the dataset. 
 
 
-Experiments Setup and Evaluation
+Experiment Setup and Evaluation
 =================================
 
 Eager Learning
@@ -56,37 +56,91 @@ scores are compared with a baseline where we classify the dataset without perfor
 Lazy Learning
 **************
 
-For the purpose of evaluating the methods on the real-world datasets and comparing the results with the papers proposing the methods, we adopted their metrics to build our prediction scores.
-First, we used two different measures of predictions i.e. accuracy and sensitivity x specificity.
-Sensitivity is the proportion of correctly classified positives while latter one denotes the proportion of correctly classified negatives (so the recall of positives and the recall of negatives).
-The predictions of the lazy learning methods are obtained by a Naive Bayes, which is already implemented in the methods.
-Second, we measure the performance of feature selection by the compression of the feature number, so the ratio of selected features to all features.
+For the purpose of evaluating the methods on the real-world datasets and comparing the results with the papers 
+proposing the methods, we adopt their metrics to build our prediction scores.
+First, we use accuracy to evaluate the classification performance.
+The predictions in the lazy learning methods are obtained by a Naive Bayes, which is already implemented in the methods.
+Secondly, we measure the performance of feature selection by the compression of the features, so the ratio 
+of selected features to all features.
 
-The hyperparameter k of lazy learning, that is the maximum number of selected features, was chosen in accordance to the papers with k = [30, 40, 50].
-
-The gene data set was divided in a train-test set on a ratio of 70/30, since the data set is relatively small and the lazy learning approach is executed per testing instance, which should not be too less.
+The hyperparameter k for lazy learning, that is the maximum number of selected features, was chosen in 
+accordance with the papers with k = [30, 40, 50].
+We evaluate the lazy learning methods on the gene dataset. It was divided into a train-test set on a ratio of 70/30, since the dataset is relatively 
+small and the lazy learning approach is executed per testing instance, which should not be too small.
 
 Results
 ========
-.. csv-table:: Lazy learning
+.. csv-table:: Eager Learning
+   :file: eagertable.csv
+   :widths: 10,10,10,10,10,10,10
+   :header-rows: 1
+
+The values in brackets are the results from the :cite:authors:`ristoski2014feature` paper.
+
+.. csv-table:: Lazy Learning
    :file: lazytable.csv
    :header-rows: 1
+
+.. csv-table:: 
+   :file: lazytable2.csv
+   :header-rows: 1
+
+The values in brackets are the results from :cite:authors:`hnb` and others.
 
 Discussion
 ==========
 
+Eager Learning
+**************
+For the eager approach we used a dataset that was also used in the paper by Ristoski and Paulheim :cite:p:`ristoski2014feature`. 
+However, we only used a subset of the dataset and achieved very different results even when only classifying the 
+complete feature set without performing feature selection. Therefore, it is difficult comparing the results. In the 
+table, we can see the results from the paper in brackets. The accuracy values from the paper are higher for all approaches. 
+Moreover, in the paper, the SHSEL algorithm achieves the best accuracy score whereas in our experiments the GTD approach had 
+the best result. We suspect that despite our dataset being based on the same data it is too different from the dataset used 
+in the paper. We only use a subset and we had to create the hierarchy ourselves and cannot confirm if it was created in the 
+exact same way as the hierarchy used in the experiments for the paper. 
+
+Instead of comparing the results with the paper it is more interesting to compare the different approaches to each other 
+and the baseline. Our results show that all feature selection approaches achieved a slightly better classification result 
+than the baseline. Additionally, we can see that lower compression rates, meaning fewer features, result in higher accuracy 
+scores. This shows us that eliminating redundant features can affect classification performance.
+
+When performing experiments we also noticed drastic differences in computation time between the 
+different algorithms. For the Hill Climbing Top Down approach we could not obtain any results because 
+the feature selection did not finish in a reasonable time. As we did not focus on exploring especially 
+efficient ways of implementing the algorithms we expect there to be some optimizations possible that would 
+decrease the computation time.
+
+Lazy Learning
+**************
+
 Regarding the experiments with the lazy learning approach, we see, that the feature selection has less impact on the prediction results.
-While the accuracy without any feature selection is 67.20%, the accuracy of the other methods is equally or worse.
-Those results differ from the results in the paper, which are given in brackets. They claim to archieve better results using the feature selection.
+While the accuracy without any feature selection is 67.20%, the accuracy of the other methods is equal or worse.
+Those results differ from the results in the paper, which are given in brackets. They claim to achieve better results using the feature selection.
 
 The further consideration of the rather similar accuracy values we have obtained suggests, that the Naive Bayes constantly predicts the same value.
 We verify this assumption with the calculation of the recall and precision.
 Since the recall of the postive class is nearly 0, the Naive Bayes is not learning.
-Computing the proportion of positive and negative occurences, we get a value near the precision scores, so the estimator chosen in the papers does not fit to the used data set.
-Especially for the methods HNB and RNB which allow to restrict the number of chosen feature resulting in very small compression rates, the Naive Bayes predicts athe negative class almost always.
+Computing the proportion of positive and negative occurences, we get a value near the precision scores, so the estimator chosen in the papers does not 
+fit to the used dataset.
+Especially for the methods HNB and RNB which allow to restrict the number of chosen feature resulting in very small compression rates, 
+the Naive Bayes predicts the negative class almost always.
 
-Hence, we repeated the experiments with a Gaussian Naive Bayes and a Decision Tree, but obtained similar predictions seeming like the classifier has not learned from the features.
+Hence, we repeated the experiments with a Gaussian Naive Bayes and a Decision Tree, but obtained similar predictions seeming 
+like the classifier has not learned from the features.
 
 We assume that the presented feature selection approaches - filtering out a lot of data - may be more valuable in larger datasets.
+
+
+Conclusion
+==========
+
+For both eager and lazy learning approaches we could not reproduce the results from the papers.. However, this does 
+not necessarily mean that the feature selection approaches do not work as well as the papers suggest. Small differences in implementation, configuration or 
+in the dataset can be the reason for our results. We do not have the exact same datasets or access to the original code so we do not 
+know all aspects in which our experiments differed. 
+Still, we achieved positive results with the eager learning approaches and found challenges like algorithms with high computational complexity
+which can be addressed in the future.
 
 .. [1] Downloaded from https://data.dws.informatik.uni-mannheim.de/rmlod/LOD_ML_Datasets/data/datasets/SportTweets/ (2nd July 2023)
