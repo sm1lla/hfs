@@ -63,21 +63,30 @@ The predictions of the lazy learning methods are obtained by a Naive Bayes, whic
 Second, we measure the performance of feature selection by the compression of the feature number, so the ratio of selected features to all features.
 
 The hyperparameter k of lazy learning, that is the maximum number of selected features, was chosen in accordance to the papers with k = [30, 40, 50].
-The gene dataset was divided in a train-test set on a ratio of 70/30, since the dataset is relatively small and the lazy learning approach is executed per testing instance, which should not be too less.
 
+The gene data set was divided in a train-test set on a ratio of 70/30, since the data set is relatively small and the lazy learning approach is executed per testing instance, which should not be too less.
 
 Results
 ========
-
+.. csv-table:: Lazy learning
+   :file: lazytable.csv
+   :header-rows: 1
 
 Discussion
-===========
+==========
 
+Regarding the experiments with the lazy learning approach, we see, that the feature selection has less impact on the prediction results.
+While the accuracy without any feature selection is 67.20%, the accuracy of the other methods is equally or worse.
+Those results differ from the results in the paper, which are given in brackets. They claim to archieve better results using the feature selection.
 
-Eager Learning
-***************
+The further consideration of the rather similar accuracy values we have obtained suggests, that the Naive Bayes constantly predicts the same value.
+We verify this assumption with the calculation of the recall and precision.
+Since the recall of the postive class is nearly 0, the Naive Bayes is not learning.
+Computing the proportion of positive and negative occurences, we get a value near the precision scores, so the estimator chosen in the papers does not fit to the used data set.
+Especially for the methods HNB and RNB which allow to restrict the number of chosen feature resulting in very small compression rates, the Naive Bayes predicts athe negative class almost always.
 
-Lazy Learning
-**************
+Hence, we repeated the experiments with a Gaussian Naive Bayes and a Decision Tree, but obtained similar predictions seeming like the classifier has not learned from the features.
+
+We assume that the presented feature selection approaches - filtering out a lot of data - may be more valuable in larger datasets.
 
 .. [1] Downloaded from https://data.dws.informatik.uni-mannheim.de/rmlod/LOD_ML_Datasets/data/datasets/SportTweets/ (2nd July 2023)
