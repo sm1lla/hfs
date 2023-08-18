@@ -37,12 +37,12 @@ class GreedyTopDownSelector(EagerHierarchicalFeatureSelector):
         self.iterate_first_level = iterate_first_level  # TODO: warning for DAG
 
     def fit(self, X, y, columns=None):
-        """Fitting function that sets self.representatives_.
+        """Fitting function that sets self.representatives\_.
 
         The number of columns in X and the number of nodes in the hierarchy
         are expected to be the same and each column should be mapped to
         exactly one node in the hierarchy with the columns parameter.
-        After fitting self.representatives_ includes the names of all
+        After fitting self.representatives\_ includes the names of all
         nodes from the hierarchy that are left after feature selection.
         The features are selected choosing nodes from the hierarchy that
         score in the heuristic function and aren't an ancestor or
