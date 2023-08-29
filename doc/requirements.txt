@@ -13,3 +13,4 @@ kgextension
 pytz
 pandas
 wandb
+numpydoc
