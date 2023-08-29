@@ -31,5 +31,4 @@ sphinx:
 # to build your documentation
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 python:
-  pip_install: true
   - requirements: requirements.txt
