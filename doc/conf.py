@@ -81,6 +81,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "hfs"
+copyright = "2013, Smilla Fox, Kathrin Thenhausen"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -206,7 +207,7 @@ html_static_path = ["_static"]
 # html_show_sphinx = True
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-# html_show_copyright = True
+html_show_copyright = True
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -217,7 +218,7 @@ html_static_path = ["_static"]
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "project-templatedoc"
+htmlhelp_basename = "hfsdoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -237,9 +238,9 @@ latex_elements = {
 latex_documents = [
     (
         "index",
-        "project-template.tex",
-        "project-template Documentation",
-        "Vighnesh Birodkar",
+        "hfs.tex",
+        "hfs Documentation",
+        "Smilla Fox, Kathrin Thenhausen",
         "manual",
     ),
 ]
@@ -272,9 +273,9 @@ latex_documents = [
 man_pages = [
     (
         "index",
-        "project-template",
-        "project-template Documentation",
-        ["Vighnesh Birodkar"],
+        "hfs",
+        "hfs Documentation",
+        ["Smilla Fox, Kathrin Thenhausen"],
         1,
     )
 ]
@@ -291,12 +292,12 @@ man_pages = [
 texinfo_documents = [
     (
         "index",
-        "project-template",
-        "project-template Documentation",
-        "Vighnesh Birodkar",
-        "project-template",
-        "One line description of project.",
-        "Miscellaneous",
+        "hfs",
+        "hfs Documentation",
+        "Smilla Fox, Kathrin Thenhausen",
+        "hfs",
+        "Hierarchical Feature Selection Library",
+        "",
     ),
 ]
 
