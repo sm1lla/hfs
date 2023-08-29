@@ -3,8 +3,9 @@ build:
   os: "ubuntu-22.04"
   tools:
     python: "3.11"
-formats:
-  - none
+
+formats: all
+
 requirements_file: requirements.txt
 python:
   pip_install: true
