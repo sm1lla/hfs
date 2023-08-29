@@ -1,0 +1,17 @@
+setuptools==58.5.3
+sphinx-gallery
+sphinx_rtd_theme
+info-gain
+matplotlib
+networkx
+numpy
+nxontology
+pyitlib
+scipy
+scikit-learn
+kgextension
+pytz
+pandas
+wandb
+numpydoc
+sphinxcontrib-bibtex
