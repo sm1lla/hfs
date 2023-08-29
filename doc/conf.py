@@ -81,7 +81,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "hfs"
-copyright = "2013, Smilla Fox, Kathrin Thenhausen"
+copyright = "2023, Smilla Fox, Kathrin Thenhausen"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
