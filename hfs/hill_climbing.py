@@ -121,7 +121,7 @@ class HillClimbingSelector(EagerHierarchicalFeatureSelector):
         if self.dataset_type == "numerical":
             normalized_matrix = np.zeros_like(score_matrix, dtype=float)
             for row_index in range(self._num_rows):
-                for column_index in range(self.n_features_):
+                for column_index in range(self.n_features):
                     score = score_matrix[row_index, column_index]
                     normalized_matrix[row_index, column_index] = normalize_score(
                         score, max(score_matrix[row_index, :])
@@ -506,7 +506,7 @@ class BottomUpSelector(HillClimbingSelector):
         result = count * (
             1
             + self.alpha
-            * (number_of_leaf_nodes - self.n_features_)
+            * (number_of_leaf_nodes - self.n_features)
             / number_of_leaf_nodes
         )
         return result

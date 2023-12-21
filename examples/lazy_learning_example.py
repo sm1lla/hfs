@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# %%
 """
 Lazy learning
 =====================
@@ -39,6 +40,25 @@ def preprocess():
 
 
 train, test, train_y_data, test_y_data, hierarchy = preprocess()
+# %%
+"""
+=========================================================================
+HieAODE - 
+=========================================================================
+"""
+
+print("\nHNB:")
+# Initialize and fit HNB model with threshold k = 3 features to select
+model = HNB(hierarchy=hierarchy, k=3)
+model.fit_selector(X_train=train, y_train=train_y_data, X_test=test)
+
+# Select features and predict
+predictions = model.select_and_predict(predict=True, saveFeatures=True)
+print(predictions)
+
+# Calculate score
+score = model.get_score(test_y_data, predictions)
+print(score)
 
 """
 =========================================================================
@@ -59,7 +79,7 @@ print(predictions)
 score = model.get_score(test_y_data, predictions)
 print(score)
 
-
+# %%
 """
 =========================================================================
 HNB-s 

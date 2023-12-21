@@ -47,7 +47,9 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
         X = self._validate_data(
             X,
         )
-        self.n_features_ = X.shape[1]
+        self.n_features = X.shape[1]
+        self.n_classes = np.unique(y).shape[0]
+
         return self
 
     def fit_selector(self, X_train, y_train, X_test, columns=None):
@@ -68,13 +70,13 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
             The target values, i.e., hierarchical class labels for classification.
         """
         # Create DAG
-        self.n_features_ = X_train.shape[1]
+        self.n_features = X_train.shape[1]
         self._set_hierarchy()
         self._hierarchy.remove_node("ROOT")
         if columns:
             self._columns = columns
         else:
-            self._columns = list(range(self.n_features_))
+            self._columns = list(range(self.n_features))
 
         mapping = {value: index for index, value in enumerate(self._columns)}
         self._hierarchy = nx.relabel_nodes(self._hierarchy, mapping)
@@ -259,8 +261,8 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
         Build minium spanning tree for each possible edge in the feature tree.
         """
         edges = self._hierarchy.edges
-        self._edge_status = np.zeros((self.n_features_, self.n_features_))
-        self._cmi = np.zeros((self.n_features_, self.n_features_))
+        self._edge_status = np.zeros((self.n_features, self.n_features))
+        self._cmi = np.zeros((self.n_features, self.n_features))
         self._sorted_edges = []
         for node1 in self._hierarchy.nodes:
             for node2 in self._hierarchy.nodes:
@@ -272,7 +274,7 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
                 self._edge_status[node1][node2] = 1
         sorted_indices = np.argsort(self._cmi, axis=None)
         for index in sorted_indices:
-            coordinates = divmod(index, self.n_features_)
+            coordinates = divmod(index, self.n_features)
 
             if coordinates[0] < coordinates[1]:
                 self._sorted_edges.append(coordinates)
@@ -295,9 +297,9 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
             for node2 in self._hierarchy:
                 self._edge_status[node1][node2] = 1
 
-        representants = [i for i in range(self.n_features_)]
+        representants = [i for i in range(self.n_features)]
         members = {}
-        for i in range(self.n_features_):
+        for i in range(self.n_features):
             members[i] = [i]
 
         # get paths
