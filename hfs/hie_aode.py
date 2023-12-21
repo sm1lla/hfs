@@ -1,5 +1,3 @@
-"HNB-select feature selection"
-
 import networkx as nx
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
@@ -13,7 +11,7 @@ class HieAODE(LazyHierarchicalFeatureSelector):
     """
 
     def __init__(self, hierarchy=None):
-        """Initializes a HNBs-Selector.
+        """Initializes a HieAODE-Selector.
 
         Parameters
         ----------
@@ -43,29 +41,45 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         -------
         predictions for test input samples, if predict = false, returns empty array.
         """
-        self.n_classes
-        self.n_features
 
-        cpts = []
-        for i, x_i in enumerate(self._xtest):
-            n_ancestors = nx.ancestors(self._hierarchy, i)
-            n_descendents = nx.descendants(self._hierarchy, i)
-            class_prior = np.zeros(self.n_classes, self.n_features, 2)
+        self.cpts = []
+        for sample in range(self._xtest.shape[0]):
+            x_i = self._xtest[sample]
+            class_prior = np.zeros((self.n_classes, self.n_features, 2))
 
-            ancestors_class_cpt = [
-                np.zeros(self.n_classes, self.n_features, 2)
-                for _ in range(n_ancestors)
-            ]
+            for feature_idx in range(len(x_i)):
+                for c in range(self.n_classes):
+                    for v in range(2):
+                        class_prior[c][feature_idx][v] = (
+                            np.sum(self._ytrain == c and x_i == v)
+                            / self._ytrain.shape[0]
+                        )
 
-            descendents_class_cpt = [
-                np.zeros(self.n_classes, self.n_features, 2)
-                for _ in range(n_descendents)
-            ]
+                ancestors = nx.ancestors(self._hierarchy, feature_idx)
+                n_ancestors = len(ancestors)
+                n_descendents = len(nx.descendants(self._hierarchy, feature_idx))
 
-            for feature in x_i:
+                ancestors_class_cpt = [
+                    np.zeros((self.n_classes, self.n_features, 2))
+                    for _ in range(n_ancestors)
+                ]
 
+                for a in range(n_ancestors):
+                    for c in range(self.n_classes):
+                        for v in range(2):
+                            ancestors_class_cpt[a][c][feature_idx][v] = np.sum(
+                                self._ytrain == c
+                                and self._xtrain[sample, feature_idx] == v
+                            ) / np.sum(self._ytrain == c)
 
-            cpts.append(
+                descendents_class_cpt = [
+                    np.zeros((self.n_classes, self.n_features, 2))
+                    for _ in range(n_descendents)
+                ]
+
+                # Todo calculate descendents
+
+            self.cpts.append(
                 {
                     "prior": class_prior,
                     "ancestors": ancestors_class_cpt,

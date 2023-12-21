@@ -71,6 +71,8 @@ class LazyHierarchicalFeatureSelector(HierarchicalEstimator, ABC):
         """
         # Create DAG
         self.n_features = X_train.shape[1]
+        self.n_classes = np.unique(y_train).shape[0]
+
         self._set_hierarchy()
         self._hierarchy.remove_node("ROOT")
         if columns:

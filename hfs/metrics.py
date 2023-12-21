@@ -4,7 +4,8 @@ Different metric functions.
 import numpy as np
 from info_gain.info_gain import info_gain, info_gain_ratio
 from numpy.linalg import norm
-from pyitlib import discrete_random_variable as drv
+
+# from pyitlib import discrete_random_variable as drv
 from scipy import sparse
 
 
@@ -95,7 +96,9 @@ def conditional_mutual_information(node1, node2, y):
     ----------
     float : The conditional mutual information value.
     """
-    return drv.information_mutual_conditional(node1, node2, y)
+    raise NotImplementedError(
+        "Bye pyitlib"
+    )  # drv.information_mutual_conditional(node1, node2, y)
 
 
 def cosine_similarity(i: np.ndarray, j: np.ndarray):

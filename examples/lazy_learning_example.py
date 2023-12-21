@@ -11,6 +11,7 @@ The dataset as well as the hierarchy are structures not following a specific pat
 import networkx as nx
 import numpy as np
 
+from hfs.hie_aode import HieAODE
 from hfs.hip import HIP
 from hfs.hnb import HNB
 from hfs.mr import MR
@@ -47,15 +48,15 @@ HieAODE -
 =========================================================================
 """
 
-print("\nHNB:")
+print("\HieAODE:")
 # Initialize and fit HNB model with threshold k = 3 features to select
-model = HNB(hierarchy=hierarchy, k=3)
+model = HieAODE(hierarchy=hierarchy)
 model.fit_selector(X_train=train, y_train=train_y_data, X_test=test)
-
+# %%
 # Select features and predict
 predictions = model.select_and_predict(predict=True, saveFeatures=True)
 print(predictions)
-
+# %%
 # Calculate score
 score = model.get_score(test_y_data, predictions)
 print(score)
