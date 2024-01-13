@@ -23,6 +23,7 @@ pandas = "^2.1.4"
 wandb = "^0.16.1"
 numpydoc = "^1.6.0"
 sphinxcontrib-bibtex = "^2.6.1"
+pytest = "^7.4.4"
 
 
 [tool.poetry.group.dev.dependencies]
