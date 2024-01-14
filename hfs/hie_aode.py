@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 import networkx as nx
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
@@ -82,7 +80,7 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         for c in range(self.n_classes):
             for value in range(2):
                 self.cpts["prior"][feature_idx][c][value] = (
-                        (np.sum(self._ytrain == c) & (sample == value))
+                        np.sum((self._ytrain == c) & (sample == value))
                         / self._ytrain.shape[0]
                 )
 
