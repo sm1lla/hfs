@@ -28,6 +28,7 @@ pytest = "^7.4.4"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.27.1"
+black = "^23.12.1"
 
 [build-system]
 requires = ["poetry-core"]
