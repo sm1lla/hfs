@@ -78,8 +78,6 @@ class HieAODE(LazyHierarchicalFeatureSelector):
                     self.calculate_prob_given_ascendant_class(ascendant=ascendant_idx)
 
                 descendants = nx.descendants(self._hierarchy, feature_idx)
-                # Remove elements from descendants that are in ascendants
-                descendants = [item for item in descendants if item not in ascendants]
                 # question what value is calculated for the descendants?
                 # P (x_j=0|y, x_i=sample[feature_idx])
                 # P (x_j=1|y, x_i=sample[feature_idx])
@@ -93,7 +91,7 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         for c in range(self.n_classes):
             if self.cpts["prior"][feature_idx][c][value] == -1:
                 self.cpts["prior"][feature_idx][c][value] = (
-                    np.sum((self._ytrain == c) & (sample == value))
+                    np.sum((self._ytrain == c) & (self._xtrain[:,feature_idx] == value))
                     / self._ytrain.shape[0]
                 )
 
