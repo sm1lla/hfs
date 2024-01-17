@@ -48,7 +48,7 @@ HieAODE -
 =========================================================================
 """
 
-print("\HieAODE:")
+print("\nHieAODE:")
 # Initialize and fit HNB model with threshold k = 3 features to select
 model = HieAODE(hierarchy=hierarchy)
 model.fit_selector(X_train=train, y_train=train_y_data, X_test=test)

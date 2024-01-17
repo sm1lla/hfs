@@ -44,8 +44,8 @@ def test_calculate_dependency_ascendant_class(data):
     expected[1][1][0] = 0.0
     expected[1][0][1] = 0.0
     expected[1][1][1] = 1.0
-    ascendants = nx.ancestors(selector._hierarchy, feature_idx)
+    ancestors = nx.ancestors(selector._hierarchy, feature_idx)
 
-    for a in range(len(ascendants)):
-        selector.calculate_prob_given_ascendant_class(ascendant=a)
-    assert np.array_equal(selector.cpts["ascendants"], expected)
+    for a in range(len(ancestors)):
+        selector.calculate_prob_given_ascendant_class(ancestor=a)
+    assert np.array_equal(selector.cpts["ancestors"], expected)
