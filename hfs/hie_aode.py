@@ -35,7 +35,8 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         """
         super(HieAODE, self).fit_selector(X_train, y_train, X_test, columns)
         self.cpts = dict(
-            prior=np.full((self.n_features, self.n_classes, 2), -1),  # P(y, x_i )
+            prior=np.full((self.n_features, self.n_classes, 2), -1),
+            #(x_j (descendent), x_i (current feature), class, value)  # P(y, x_i )
             descendants=np.full(
                 (self.n_features, self.n_features, self.n_classes, 2), -1
             ),  # P(x_j|y, x_i)
@@ -63,10 +64,16 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         -------
         predictions for test input samples, if predict = false, returns empty array.
         """
-
-        for sample_idx in range(self._xtest.shape[0]):
+        n_samples = self._xtest.shape[0]
+        sample_sum = np.zeros(n_samples, self.n_classes)
+        for sample_idx in range(n_samples):
             sample = self._xtest[sample_idx]
+
+            descendant_product = np.ones(self.n_classes)
+            ancestor_product = np.ones(self.n_classes)
+
             for feature_idx in range(len(sample)):
+
                 self.calculate_class_prior(
                     sample=sample, feature_idx=feature_idx, value=sample[feature_idx]
                 )
@@ -86,6 +93,27 @@ class HieAODE(LazyHierarchicalFeatureSelector):
                     self.calculate_prob_descendant_given_class_feature(
                         descendant_idx=descendant_idx, feature_idx=feature_idx
                     )
+
+                ancestor_product = np.prod(
+                    self.cpts["ascendants"][ascendants, :, sample], axis=0,
+                )
+
+                descendant_product = np.prod(
+                    self.cpts["descendants"][descendants, feature_idx , :, sample[feature_idx]], axis=0
+                )
+
+                feature_prior = np.prod(
+                    self.cpts["prior"][feature_idx, :, sample[feature_idx]
+                    ])
+
+                feature_product = np.multiply(ancestor_product, descendant_product)
+                feature_product = np.multiply(feature_product, feature_prior)
+                
+                sample_sum[sample_idx] = np.add(sample_sum, feature_product)
+
+        y = np.argmax(sample_sum, axis=1)
+        return y if predict else np.array([])
+
 
     def calculate_class_prior(self, sample, feature_idx, value):
         for c in range(self.n_classes):
