@@ -36,7 +36,7 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         super(HieAODE, self).fit_selector(X_train, y_train, X_test, columns)
         self.cpts = dict(
             prior=np.full((self.n_features, self.n_classes, 2), -1),
-            #(x_j (descendent), x_i (current feature), class, value)  # P(y, x_i )
+            # (x_j (descendent), x_i (current feature), class, value)  # P(y, x_i )
             descendants=np.full(
                 (self.n_features, self.n_features, self.n_classes, 2), -1
             ),  # P(x_j|y, x_i)
@@ -72,7 +72,6 @@ class HieAODE(LazyHierarchicalFeatureSelector):
             descendant_product = np.ones(self.n_classes)
             ancestor_product = np.ones(self.n_classes)
             for feature_idx in range(len(sample)):
-
                 self.calculate_class_prior(
                     sample=sample, feature_idx=feature_idx, value=sample[feature_idx]
                 )
@@ -103,27 +102,31 @@ class HieAODE(LazyHierarchicalFeatureSelector):
                     descendant_product = np.zeros((self.n_classes))
                 else:
                     descendant_product = np.prod(
-                        self.cpts["descendants"][descendants, feature_idx, :, sample[feature_idx]], axis=0
+                        self.cpts["descendants"][
+                            descendants, feature_idx, :, sample[feature_idx]
+                        ],
+                        axis=0,
                     )
 
                 feature_prior = np.prod(
-                    self.cpts["prior"][feature_idx, :, sample[feature_idx]
-                    ])
+                    self.cpts["prior"][feature_idx, :, sample[feature_idx]]
+                )
 
                 feature_product = np.multiply(ancestor_product, descendant_product)
                 feature_product = np.multiply(feature_product, feature_prior)
-                
+
                 sample_sum[sample_idx] = np.add(sample_sum[sample_idx], feature_product)
 
         y = np.argmax(sample_sum, axis=1)
         return y if predict else np.array([])
 
-
     def calculate_class_prior(self, sample, feature_idx, value):
         for c in range(self.n_classes):
             if self.cpts["prior"][feature_idx][c][value] == -1:
                 self.cpts["prior"][feature_idx][c][value] = (
-                    np.sum((self._ytrain == c) & (self._xtrain[:,feature_idx] == value))
+                    np.sum(
+                        (self._ytrain == c) & (self._xtrain[:, feature_idx] == value)
+                    )
                     / self._ytrain.shape[0]
                 )
 
@@ -135,9 +138,7 @@ class HieAODE(LazyHierarchicalFeatureSelector):
                     (self._ytrain == c) & (self._xtrain[:, ancestor] == value)
                 )
                 p_class = np.sum(self._ytrain == c)
-                self.cpts["ancestors"][ancestor][c][value] = (
-                    p_class_ascendant / p_class
-                )
+                self.cpts["ancestors"][ancestor][c][value] = p_class_ascendant / p_class
 
     def calculate_prob_descendant_given_class_feature(
         self, descendant_idx, feature_idx
@@ -152,7 +153,9 @@ class HieAODE(LazyHierarchicalFeatureSelector):
                     total = np.sum(mask)
 
                     if total > 0:
-                        prob_descendant_given_c_feature = np.sum(descendant[mask]) / total
+                        prob_descendant_given_c_feature = (
+                            np.sum(descendant[mask]) / total
+                        )
                     else:
                         prob_descendant_given_c_feature = 0
 

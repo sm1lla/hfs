@@ -27,7 +27,7 @@ class MR(LazyHierarchicalFeatureSelector):
     ):
         """
         Select features lazy for each test instance amd optionally predict target value of test instances.
-        The features are selected such that for each path only the most relevant features are preserved 
+        The features are selected such that for each path only the most relevant features are preserved
         following the relevance score defined in helpers.py.
 
         Parameters

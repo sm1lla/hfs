@@ -99,11 +99,11 @@ def hip(hierarchy, train, y_train, test, y_test, k, columns, path):
         file.write("\nHIP:\n")
         file.write(json.dumps(score))
 
-def naive_bayes(hierarchy, train, y_train, test, y_test, k, columns,path):
-    
+
+def naive_bayes(hierarchy, train, y_train, test, y_test, k, columns, path):
     clf = BernoulliNB()
     clf.fit(train, y_train)
-    predictions =  clf.predict(test)
+    predictions = clf.predict(test)
     score = classification_report(y_true=y_test, y_pred=predictions, output_dict=True)
     with open(path, "a") as file:
         file.write("\nBaseline:\n")
@@ -117,7 +117,7 @@ def evaluate(data, k):
     preprocessor.fit(train, columns=columns)
     train = preprocessor.transform(train)
     test = preprocessor.transform(test)
-    
+
     hierarchy = preprocessor.get_hierarchy()
     graph = nx.DiGraph(hierarchy)
     columns = create_mapping_columns_to_nodes(pd.DataFrame(train), graph)
@@ -134,7 +134,7 @@ def evaluate(data, k):
             y_test=y_test,
             k=k,
             columns=columns,
-            path = path
+            path=path,
         )
 
 

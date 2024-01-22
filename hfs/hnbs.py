@@ -11,6 +11,7 @@ class HNBs(LazyHierarchicalFeatureSelector):
     """
     Select non-redundant features following the algorithm proposed by Wan and Freitas.
     """
+
     def __init__(self, hierarchy=None):
         """Initializes a HNBs-Selector.
 
@@ -48,5 +49,7 @@ class HNBs(LazyHierarchicalFeatureSelector):
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
-            self._feature_length[idx] = len([nodes for nodes, status in self._instance_status.items() if status])
+            self._feature_length[idx] = len(
+                [nodes for nodes, status in self._instance_status.items() if status]
+            )
         return predictions

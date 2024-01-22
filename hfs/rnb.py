@@ -53,5 +53,7 @@ class RNB(LazyHierarchicalFeatureSelector):
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
-            self._feature_length[idx] = len([nodes for nodes, status in self._instance_status.items() if status])
+            self._feature_length[idx] = len(
+                [nodes for nodes, status in self._instance_status.items() if status]
+            )
         return predictions

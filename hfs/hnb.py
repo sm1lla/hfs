@@ -13,7 +13,6 @@ class HNB(LazyHierarchicalFeatureSelector):
     """
 
     def __init__(self, hierarchy=None, k=0):
-
         """Initializes a HNB-Selector.
 
         Parameters

@@ -28,7 +28,7 @@ class Tan(LazyHierarchicalFeatureSelector):
         Select features lazy for each test instance amd optionally predict target value of test instances.
         It builds a minimal spanning tree (MST), by first adding all possible edges,
         that meets certain conditions (to remove redundancy and selecting most relevant features) to an undirected graph (UDAG).
-        Afterwards features are obtained from the tree and can be used for prediction.        
+        Afterwards features are obtained from the tree and can be used for prediction.
 
         Parameters
         ----------
@@ -52,5 +52,7 @@ class Tan(LazyHierarchicalFeatureSelector):
                 predictions = np.append(predictions, self._predict(idx, estimator)[0])
             if saveFeatures:
                 self._features[idx] = np.array(list(self._instance_status.values()))
-            self._feature_length[idx] = len([nodes for nodes, status in self._instance_status.items() if status])
+            self._feature_length[idx] = len(
+                [nodes for nodes, status in self._instance_status.items() if status]
+            )
         return predictions
