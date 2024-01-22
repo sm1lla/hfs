@@ -1,12 +1,14 @@
 """
 Different metric functions.
 """
+from collections import Counter
+
 import numpy as np
 from info_gain.info_gain import info_gain, info_gain_ratio
 from numpy.linalg import norm
-from dit import Distribution
-from dit.multivariate import conditional_entropy
 from scipy import sparse
+
+from hfs.lib.pyitlib import information_mutual_conditional as imc
 
 
 def lift(data, labels):
@@ -96,19 +98,7 @@ def conditional_mutual_information(node1, node2, y):
     ----------
     float : The conditional mutual information value.
     """
-    # Create a joint distribution from the data
-    data = list(zip(node1, node2, y))
-    dist = Distribution(data)
-    dist.set_rv_names('XYC')
-
-    # Calculate the conditional mutual information
-    # I(X; Y | C) = H(X | C) + H(Y | C) - H(XY | C)
-    H_X_given_C = conditional_entropy(dist, 'X', 'C')
-    H_Y_given_C = conditional_entropy(dist, 'Y', 'C')
-    H_XY_given_C = conditional_entropy(dist, 'XY', 'C')
-
-    return H_X_given_C + H_Y_given_C - H_XY_given_C
-
+    return imc(node1, node2, y)
 
 
 def cosine_similarity(i: np.ndarray, j: np.ndarray):

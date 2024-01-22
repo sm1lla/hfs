@@ -6,7 +6,7 @@ from sklearn.naive_bayes import BernoulliNB
 from .lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
 
 
-class Tan(LazyHierarchicalFeatureSelector):
+class TAN(LazyHierarchicalFeatureSelector):
     """
     Select non-redundant features following the algorithm proposed by Wan and Freitas.
     """
@@ -19,7 +19,7 @@ class Tan(LazyHierarchicalFeatureSelector):
         hierarchy : np.ndarray
             The hierarchy graph as an adjacency matrix.
         """
-        super(Tan, self).__init__(hierarchy)
+        super(TAN, self).__init__(hierarchy)
 
     def select_and_predict(
         self, predict=True, saveFeatures=False, estimator=BernoulliNB()

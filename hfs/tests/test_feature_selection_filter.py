@@ -2,14 +2,13 @@ import numpy as np
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from hfs.tan import Tan
+from hfs.selectors.hip import HIP
+from hfs.selectors.hnb import HNB
+from hfs.selectors.hnbs import HNBs
+from hfs.selectors.mr import MR
+from hfs.selectors.rnb import RNB
+from hfs.selectors.tan import TAN
 
-from ..lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
-from ..hip import HIP
-from ..hnb import HNB
-from ..hnbs import HNBs
-from ..mr import MR
-from ..rnb import RNB
 from .fixtures.fixtures import *
 
 
@@ -201,7 +200,7 @@ def test_HIP(data):
 )
 def test_TAN(data):
     hierarchy, X_train_ones, X_train, y_train, X_test, y_test, resulted_features = data
-    selector = Tan(nx.to_numpy_array(hierarchy))
+    selector = TAN(nx.to_numpy_array(hierarchy))
     selector.fit_selector(X_train=X_train_ones, y_train=y_train, X_test=X_test)
     selector._xtrain = X_train
     selector._hierarchy = hierarchy

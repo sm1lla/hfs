@@ -3,17 +3,12 @@ import pathlib
 
 import networkx as nx
 import pandas as pd
-from sklearn.naive_bayes import BernoulliNB
 from sklearn.metrics import accuracy_score, classification_report
-from hfs.data.data_utils import create_mapping_columns_to_nodes
+from sklearn.naive_bayes import BernoulliNB
 
-from hfs.hip import HIP
-from hfs.hnb import HNB
-from hfs.hnbs import HNBs
-from hfs.mr import MR
+from hfs.data_utils import create_mapping_columns_to_nodes
 from hfs.preprocessing import HierarchicalPreprocessor
-from hfs.rnb import RNB
-from hfs.tan import Tan
+from hfs.selectors import HIP, HNB, MR, RNB, TAN, HNBs
 
 
 def data():
@@ -81,12 +76,12 @@ def mr(hierarchy, train, y_train, test, y_test, k, columns, path):
 
 
 def tan(hierarchy, train, y_train, test, y_test, k, columns, path):
-    model = Tan(hierarchy=hierarchy)
+    model = TAN(hierarchy=hierarchy)
     model.fit_selector(X_train=train, y_train=y_train, X_test=test, columns=columns)
     pred = model.select_and_predict(predict=True, saveFeatures=True)
     score = model.get_score(y_test, pred)
     with open(path, "a") as file:
-        file.write("\nTan:\n")
+        file.write("\nTAN:\n")
         file.write(json.dumps(score))
 
 

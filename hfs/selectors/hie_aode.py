@@ -26,21 +26,21 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         P (y, x_i )
         class_prior
 
-        self.n_ancestors = self.n_descendants = self.n_features
+        self.n_ancestors = self._n_descendants = self._n_features
         P (x_k|y)
-        ancestors_class_cpt = (self.n_ancestors, self.n_classes, self.n_features, n_values)
+        ancestors_class_cpt = (self.n_ancestors, self._n_classes, self._n_features, n_values)
 
         P (x_j|y, x_i)
-        feature_descendants_class_cpt = (self.n_features, self.n_descendants, self.n_classes, n_values)
+        feature_descendants_class_cpt = (self._n_features, self._n_descendants, self._n_classes, n_values)
         """
         super(HieAODE, self).fit_selector(X_train, y_train, X_test, columns)
         self.cpts = dict(
-            prior=np.full((self.n_features, self.n_classes, 2), -1),
+            prior=np.full((self._n_features, self._n_classes, 2), -1),
             # (x_j (descendent), x_i (current feature), class, value)  # P(y, x_i )
             descendants=np.full(
-                (self.n_features, self.n_features, self.n_classes, 2), -1
+                (self._n_features, self._n_features, self._n_classes, 2), -1
             ),  # P(x_j|y, x_i)
-            ancestors=np.full((self.n_features, self.n_classes, 2), -1),  # P(x_k|y)
+            ancestors=np.full((self._n_features, self._n_classes, 2), -1),  # P(x_k|y)
         )
 
     def select_and_predict(
@@ -65,12 +65,12 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         predictions for test input samples, if predict = false, returns empty array.
         """
         n_samples = self._xtest.shape[0]
-        sample_sum = np.zeros((n_samples, self.n_classes))
+        sample_sum = np.zeros((n_samples, self._n_classes))
         for sample_idx in range(n_samples):
             sample = self._xtest[sample_idx]
 
-            descendant_product = np.ones(self.n_classes)
-            ancestor_product = np.ones(self.n_classes)
+            descendant_product = np.ones(self._n_classes)
+            ancestor_product = np.ones(self._n_classes)
             for feature_idx in range(len(sample)):
                 self.calculate_class_prior(
                     sample=sample, feature_idx=feature_idx, value=sample[feature_idx]
@@ -93,13 +93,13 @@ class HieAODE(LazyHierarchicalFeatureSelector):
                     )
 
                 if len(ancestors) <= 0:
-                    ancestor_product = np.zeros((self.n_classes))
+                    ancestor_product = np.zeros((self._n_classes))
                 else:
                     ancestor_product = np.prod(
                         self.cpts["ancestors"][ancestors, :, sample[ancestors]], axis=0
                     )
                 if len(descendants) <= 0:
-                    descendant_product = np.zeros((self.n_classes))
+                    descendant_product = np.zeros((self._n_classes))
                 else:
                     descendant_product = np.prod(
                         self.cpts["descendants"][
@@ -121,7 +121,7 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         return y if predict else np.array([])
 
     def calculate_class_prior(self, sample, feature_idx, value):
-        for c in range(self.n_classes):
+        for c in range(self._n_classes):
             if self.cpts["prior"][feature_idx][c][value] == -1:
                 self.cpts["prior"][feature_idx][c][value] = (
                     np.sum(
@@ -132,7 +132,7 @@ class HieAODE(LazyHierarchicalFeatureSelector):
 
     def calculate_prob_given_ascendant_class(self, ancestor):
         # Calculate P(x_k | y) where x_k=ascendant and y = c
-        for c in range(self.n_classes):
+        for c in range(self._n_classes):
             for value in range(2):
                 p_class_ascendant = np.sum(
                     (self._ytrain == c) & (self._xtrain[:, ancestor] == value)
@@ -143,7 +143,7 @@ class HieAODE(LazyHierarchicalFeatureSelector):
     def calculate_prob_descendant_given_class_feature(
         self, descendant_idx, feature_idx
     ):
-        for c in range(self.n_classes):
+        for c in range(self._n_classes):
             for value in range(2):
                 if descendant_idx != feature_idx:
                     descendant = self._xtrain[:, descendant_idx]

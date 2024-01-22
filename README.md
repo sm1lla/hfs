@@ -8,8 +8,7 @@ Introduction
 Welcome to the **hfs** repository!👋 
 This library provides several hierarchical feature selection algorithms.
 
-Many real-world settings contain hierarchical relations. While in text mining, words can be ordered in generalization-specialization relationships in bioinformatics the function of genes is often described as a hierarchy. We can make use of these relationships between datasets' features by using special hierarchical feature selection algorithms that reduce redundancy in the data. This can not only make tasks like classification faster but also improve the results. Depending on use case and preference you can choose from lazy and eager hierarchical feature selection algorithms in this library. 
-
+Many real-world settings contain hierarchical relations. While in text mining, words can be ordered in generalization-specialization relationships in bioinformatics the function of genes is often described as a hierarchy. We can make use of these relationships between datasets' features by using special hierarchical feature selection algorithms that reduce redundancy in the data. This can not only make tasks like classification faster but also improve the results. Depending on use case and preference you can choose from lazy and eager hierarchical feature selection algorithms in this library.
 
 Getting Started
 ===================================================
@@ -19,13 +18,13 @@ Getting Started
 
 The package cannot be installed with pip or conda yet so to create your package, you need to clone the ``hfs`` repository::
 
-    $ git clone https://github.com/sm1lla/hfs.git
+    ``git clone https://github.com/hasso-plattner-institute/hfs.git
 
-We recommend that you create a new virtual environment for hfs in which you install the required packages with::
+    Install the environment using::
 
-    $ pip install -r requirements.txt
+    ```poetry install```
 
-2. Usage
+1. Usage
 -------------------------------------------
 Here is a simple example of how to use one of the hierarchical feature selection algorithms implemented in hfs:
 

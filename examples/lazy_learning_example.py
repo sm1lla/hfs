@@ -11,12 +11,8 @@ The dataset as well as the hierarchy are structures not following a specific pat
 import networkx as nx
 import numpy as np
 
-from hfs.hie_aode import HieAODE
-from hfs.hip import HIP
-from hfs.hnb import HNB
-from hfs.mr import MR
 from hfs.preprocessing import HierarchicalPreprocessor
-from hfs.tan import Tan
+from hfs.selectors import HIP, HNB, MR, RNB, TAN, HieAODE, HNBs
 
 
 # Define data
@@ -89,7 +85,7 @@ HNB-s
 
 print("HNB-s:")
 # Initialize and fit HNBs model
-model = HNB(hierarchy=hierarchy)
+model = HNBs(hierarchy=hierarchy)
 model.fit_selector(X_train=train, y_train=train_y_data, X_test=test)
 
 # Select features and predict
@@ -109,7 +105,7 @@ RNB - Relevance-based Naive Bayes
 
 print("\nRNB:")
 # Initialize and fit RNB model with threshold k = 3 features to select
-model = HNB(hierarchy=hierarchy)
+model = RNB(hierarchy=hierarchy)
 model.fit_selector(X_train=train, y_train=train_y_data, X_test=test)
 
 # Select features and predict
@@ -165,7 +161,7 @@ TAN - Hierarchical Redundancy Eliminated Tree Augmented Naive Bayes
 """
 print("\nTAN:")
 # Initialize and fit Tan model
-model = Tan(hierarchy=hierarchy)
+model = TAN(hierarchy=hierarchy)
 model.fit_selector(X_train=train, y_train=train_y_data, X_test=test)
 
 # Select features and predict
