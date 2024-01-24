@@ -52,7 +52,14 @@ Contributing
 We welcome contributions! If you would like to contribute to the project, 
 feel free to create a pull request.
 
+Linting and Testing
+```
+poetry run black .
+```
 
+```
+poetry run pytest hfs
+```
 Happy feature selecting!
 
 
