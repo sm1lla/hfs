@@ -36,7 +36,7 @@ def test_calculate_dependency_ascendant_class(data):
     sample_idx = 1
     sample = test_x_data[1]
     feature_idx = 2
-    expected = np.full((selector._n_features, selector._n_classes, 2), -1)
+    expected = np.full((selector.n_features_in_, selector.n_classes_, 2), -1)
     expected[0][0][0] = 0.0
     expected[0][1][0] = 0.0
     expected[0][0][1] = 1.0

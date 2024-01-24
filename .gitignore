@@ -80,3 +80,6 @@ slurm-*.out
 
 # WandB
 wandb
+
+# Weird file kgextension generates
+rate_limits.db

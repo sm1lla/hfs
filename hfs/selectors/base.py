@@ -52,11 +52,11 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
 
         X = check_array(X, accept_sparse=True)
 
-        self._n_features = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         if columns:
             self._columns = columns
         else:
-            self._columns = list(range(self._n_features))
+            self._columns = list(range(self.n_features_in_))
 
         self._set_hierarchy()
 
@@ -79,7 +79,7 @@ class HierarchicalEstimator(BaseEstimator, TransformerMixin):
         """
         X = check_array(X, dtype=None, accept_sparse="csr")
 
-        if self._n_features != X.shape[1]:
+        if self.n_features_in_ != X.shape[1]:
             raise ValueError("X has a different shape than during fitting.")
 
         return X

@@ -75,7 +75,7 @@ class EagerHierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
             The input samples with only the selected features.
         """
         X = check_array(X, dtype=None, accept_sparse="csr")
-        if self._n_features != X.shape[1]:
+        if self.n_features_in_ != X.shape[1]:
             raise ValueError("X has a different shape than during fitting.")
         return super().transform(X)
 
@@ -88,14 +88,14 @@ class EagerHierarchicalFeatureSelector(SelectorMixin, HierarchicalEstimator):
         return np.asarray(
             [
                 True if index in representatives_indices else False
-                for index in range(self._n_features)
+                for index in range(self.n_features_in_)
             ]
         )
 
     def _check_hierarchy_X(self):
         not_in_hierarchy = [
             feature_index
-            for feature_index in range(self._n_features)
+            for feature_index in range(self.n_features_in_)
             if feature_index not in self._columns
         ]
         if not_in_hierarchy:

@@ -70,7 +70,7 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
         X = check_array(X, accept_sparse=True)
         super().fit(X, y, columns)
         if columns is None:
-            self._columns = [-1] * self._n_features
+            self._columns = [-1] * self.n_features_in_
 
         self._extend_dag()
         self._shrink_dag()
@@ -96,14 +96,14 @@ class HierarchicalPreprocessor(HierarchicalEstimator):
             The transformed dataset.
         """
         # Check is fit had been called
-        check_is_fitted(self, "_n_features")
+        check_is_fitted(self, "is_fitted_")
 
         # Input validation
         X = check_array(X, accept_sparse=True)
 
         # Check that the input is of the same shape as the one passed
         # during fit.
-        if X.shape[1] != self._n_features:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError(
                 "Shape of input is different from what was seen" "in `fit`"
             )
