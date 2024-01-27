@@ -35,12 +35,16 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         """
         super(HieAODE, self).fit_selector(X_train, y_train, X_test, columns)
         self.cpts = dict(
-            prior=np.full((self.n_features, self.n_classes, 2), -1),
-            #(x_j (descendent), x_i (current feature), class, value)  # P(y, x_i )
+            # prior = P(y, x_i)
+            prior=np.full((self.n_features, # x_i
+                           self.n_classes,  # y
+                           2  # value
+                           ), -1, dtype=float),
+            #(x_j (descendent), x_i (current feature), class, value)  )
             descendants=np.full(
-                (self.n_features, self.n_features, self.n_classes, 2), -1
+                (self.n_features, self.n_features, self.n_classes, 2, 2), -1,dtype=float
             ),  # P(x_j|y, x_i)
-            ancestors=np.full((self.n_features, self.n_classes, 2), -1),  # P(x_k|y)
+            ancestors=np.full((self.n_features, self.n_classes, 2), -1, dtype=float),  # P(x_k|y)
         )
 
     def select_and_predict(
@@ -72,22 +76,14 @@ class HieAODE(LazyHierarchicalFeatureSelector):
             descendant_product = np.ones(self.n_classes)
             ancestor_product = np.ones(self.n_classes)
             for feature_idx in range(len(sample)):
-
-                self.calculate_class_prior(
-                    sample=sample, feature_idx=feature_idx, value=sample[feature_idx]
-                )
+                self.calculate_class_prior(feature_idx=feature_idx)
 
                 ancestors = list(nx.ancestors(self._hierarchy, feature_idx))
-                # question what value is calculated for the ancestors?
-                # P (x_k = 1|y)? P (x_k=0|y)
                 for ancestor_idx in ancestors:
                     self.calculate_prob_given_ascendant_class(ancestor=ancestor_idx)
 
                 descendants = list(nx.descendants(self._hierarchy, feature_idx))
-                # question what value is calculated for the descendants?
-                # P (x_j=0|y, x_i=sample[feature_idx])
-                # P (x_j=1|y, x_i=sample[feature_idx])
-                # # P (x_j=sample[descendant_idx]|y, x_i=sample[feature_idx])?
+                # P (x_j=sample[descendant_idx]|y, x_i=sample[feature_idx])
                 for descendant_idx in descendants:
                     self.calculate_prob_descendant_given_class_feature(
                         descendant_idx=descendant_idx, feature_idx=feature_idx
@@ -103,7 +99,7 @@ class HieAODE(LazyHierarchicalFeatureSelector):
                     descendant_product = np.zeros((self.n_classes))
                 else:
                     descendant_product = np.prod(
-                        self.cpts["descendants"][descendants, feature_idx, :, sample[feature_idx]], axis=0
+                        self.cpts["descendants"][descendants, feature_idx, :, sample[feature_idx], sample[descendants]], axis=0
                     )
 
                 feature_prior = np.prod(
@@ -119,22 +115,22 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         return y if predict else np.array([])
 
 
-    def calculate_class_prior(self, sample, feature_idx, value):
+    def calculate_class_prior(self, feature_idx):
+        n_samples = self._ytrain.shape[0]
         for c in range(self.n_classes):
-            if self.cpts["prior"][feature_idx][c][value] == -1:
-                self.cpts["prior"][feature_idx][c][value] = (
-                    np.sum((self._ytrain == c) & (self._xtrain[:,feature_idx] == value))
-                    / self._ytrain.shape[0]
-                )
+            for value in range(2):
+                if self.cpts["prior"][feature_idx][c][value] == -1:
+                    value_sum = np.sum((self._ytrain == c) & (self._xtrain[:,feature_idx] == value))
+                    self.cpts["prior"][feature_idx][c][value] = value_sum / n_samples
 
     def calculate_prob_given_ascendant_class(self, ancestor):
         # Calculate P(x_k | y) where x_k=ascendant and y = c
         for c in range(self.n_classes):
+            p_class = np.sum(self._ytrain == c)
             for value in range(2):
                 p_class_ascendant = np.sum(
                     (self._ytrain == c) & (self._xtrain[:, ancestor] == value)
                 )
-                p_class = np.sum(self._ytrain == c)
                 self.cpts["ancestors"][ancestor][c][value] = (
                     p_class_ascendant / p_class
                 )
@@ -143,19 +139,19 @@ class HieAODE(LazyHierarchicalFeatureSelector):
         self, descendant_idx, feature_idx
     ):
         for c in range(self.n_classes):
-            for value in range(2):
-                if descendant_idx != feature_idx:
-                    descendant = self._xtrain[:, descendant_idx]
+            for feature_value in range(2):
+                # Calculate P(y, x_i = value)
+                mask = (self._xtrain[:, feature_idx] == feature_value) & (self._ytrain == c)
+                total = np.sum(mask)
+                for descendant_value in range(2):
+                    if descendant_idx != feature_idx:
+                        if total > 0:
+                            descendant = self._xtrain[:, descendant_idx]
+                            d = np.sum(descendant[mask] == descendant_value)
+                            prob_descendant_given_c_feature = d / total
+                        else:
+                            prob_descendant_given_c_feature = 0
 
-                    # Calculate P(x_j | y, x_i = value)
-                    mask = (feature_idx == value) & (self._ytrain == c)
-                    total = np.sum(mask)
-
-                    if total > 0:
-                        prob_descendant_given_c_feature = np.sum(descendant[mask]) / total
-                    else:
-                        prob_descendant_given_c_feature = 0
-
-                    self.cpts["descendants"][descendant][feature_idx][c][
-                        value
-                    ] = prob_descendant_given_c_feature
+                        self.cpts["descendants"][descendant_idx][feature_idx][c][descendant_value][
+                            feature_value
+                        ] = prob_descendant_given_c_feature
