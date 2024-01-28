@@ -194,6 +194,50 @@ def expected_descendants_lazy_data2():
             ],
         ],
     ]
+    descendants[3][2] = [  # feature 3 is a descendant of feature 2
+        [  # Class 0
+            [  # Descendant value 0
+                1.0 / 2.0,  # Feature value 0
+                0.0,  # Feature value 1
+            ],
+            [  # Descendant value 1
+                1.0/2.0,  # Feature value 0
+                0.0,  # Feature value 1
+            ],
+        ],
+        [  # Class 1
+            [  # Descendant value 0
+                0.0,  # Feature value 0
+                1.0 / 2.0,  # Feature value 1
+            ],
+            [  # Descendant value 1
+                0.0,  # Feature value 0
+                1.0 / 2.0,  # Feature value 1
+            ],
+        ],
+    ]
+    descendants[2][3] = [  # feature 2 is a descendant of feature 3
+        [  # Class 0
+            [  # Descendant value 0
+                1.0 / 1.0,  # Feature value 0
+                1.0/1.0,  # Feature value 1
+            ],
+            [  # Descendant value 1
+                0.0 / 1.0,  # Feature value 0
+                0.0/1.0,  # Feature value 1
+            ],
+        ],
+        [  # Class 1
+            [  # Descendant value 0
+                0.0/1.0,  # Feature value 0
+                0.0 / 1.0,  # Feature value 1
+            ],
+            [  # Descendant value 1
+                1.0/1.0,  # Feature value 0
+                1.0 / 1.0,  # Feature value 1
+            ],
+        ],
+    ]
     return descendants
 
 

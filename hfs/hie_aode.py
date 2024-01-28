@@ -75,14 +75,14 @@ class HieAODE(LazyHierarchicalFeatureSelector):
 
             descendant_product = np.ones(self.n_classes)
             ancestor_product = np.ones(self.n_classes)
-            for feature_idx in range(len(sample)):
+            for feature_idx in range(self.n_features):
                 self.calculate_class_prior(feature_idx=feature_idx)
 
                 ancestors = list(nx.ancestors(self._hierarchy, feature_idx))
                 for ancestor_idx in ancestors:
                     self.calculate_prob_given_ascendant_class(ancestor=ancestor_idx)
 
-                descendants = list(nx.descendants(self._hierarchy, feature_idx))
+                descendants = [feature for feature in range(self.n_features) if feature != feature_idx and feature not in ancestors]
                 # P (x_j=sample[descendant_idx]|y, x_i=sample[feature_idx])
                 for descendant_idx in descendants:
                     self.calculate_prob_descendant_given_class_feature(
