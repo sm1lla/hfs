@@ -1,12 +1,14 @@
 """
 Different metric functions.
 """
+from collections import Counter
+
 import numpy as np
 from info_gain.info_gain import info_gain, info_gain_ratio
 from numpy.linalg import norm
-
-# from pyitlib import discrete_random_variable as drv
 from scipy import sparse
+
+from hfs.lib.pyitlib import information_mutual_conditional as imc
 
 
 def lift(data, labels):
@@ -81,7 +83,7 @@ def information_gain(data, labels):
 
 
 def conditional_mutual_information(node1, node2, y):
-    """Calculates conditional mutual information for two features.
+    """Calculates conditional mutual information for two features using the dit library.
 
     Parameters
     ----------
@@ -96,9 +98,7 @@ def conditional_mutual_information(node1, node2, y):
     ----------
     float : The conditional mutual information value.
     """
-    raise NotImplementedError(
-        "Bye pyitlib"
-    )  # drv.information_mutual_conditional(node1, node2, y)
+    return imc(node1, node2, y)
 
 
 def cosine_similarity(i: np.ndarray, j: np.ndarray):
