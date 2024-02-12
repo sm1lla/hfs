@@ -4,6 +4,9 @@ from sklearn.naive_bayes import BernoulliNB
 
 from .lazyHierarchicalFeatureSelector import LazyHierarchicalFeatureSelector
 
+SMOOTHING_FACTOR = 1
+PRIOR_PROBABILITY = 0.5
+
 
 class HieAODE(LazyHierarchicalFeatureSelector):
     """
@@ -148,26 +151,28 @@ class HieAODE(LazyHierarchicalFeatureSelector):
                 p_class_ascendant = np.sum(
                     (self._ytrain == c) & (self._xtrain[:, ancestor] == value)
                 )
-                self.cpts["ancestors"][ancestor][c][value] = p_class_ascendant / p_class
+                self.cpts["ancestors"][ancestor][c][value] = (
+                    p_class_ascendant + SMOOTHING_FACTOR * PRIOR_PROBABILITY
+                ) / (p_class + SMOOTHING_FACTOR)
 
     def calculate_prob_descendant_given_class_feature(
         self, descendant_idx, feature_idx
     ):
         for c in range(self.n_classes_):
             for feature_value in range(2):
-                # Calculate P(y, x_i = value)
+                # Calculate P(y, x_i = feature_value)
                 mask = (self._xtrain[:, feature_idx] == feature_value) & (
                     self._ytrain == c
                 )
-                total = np.sum(mask)
+                p_class_feature = np.sum(mask)
                 for descendant_value in range(2):
                     if descendant_idx != feature_idx:
-                        if total > 0:
-                            descendant = self._xtrain[:, descendant_idx]
-                            d = np.sum(descendant[mask] == descendant_value)
-                            prob_descendant_given_c_feature = d / total
-                        else:
-                            prob_descendant_given_c_feature = 0
+                        # Calculate P(y, x_i = feature_value, x_j = descendant_value)
+                        descendant = self._xtrain[:, descendant_idx]
+                        p_class_feature_descendant = np.sum(descendant[mask] == descendant_value)
+                        prob_descendant_given_c_feature = (
+                            p_class_feature_descendant + SMOOTHING_FACTOR * PRIOR_PROBABILITY
+                        ) / (p_class_feature + SMOOTHING_FACTOR)
 
                         self.cpts["descendants"][descendant_idx][feature_idx][c][
                             descendant_value
